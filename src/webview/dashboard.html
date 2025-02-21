@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QCode Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Marked.js for Markdown rendering in chat -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Custom scrollbar styling */
         ::-webkit-scrollbar { width: 8px; }
@@ -15,38 +15,112 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .active-tab { border-bottom: 2px solid #0d9488; color: #0d9488; }
-    </style>
-</head>
-<body class="min-h-screen font-sans antialiased flex items-center justify-center p-4" data-theme="${THEME}">    <div class="w-full max-w-2xl bg-white rounded-xl  overflow-hidden">
-    <style>
+        .tab-btn { display: flex; align-items: center; justify-content: center; }
+        .tab-btn i { font-size: 1.25rem; }
+
+        /* Media queries for tabs */
+        @media (max-width: 640px) {
+            .tab-btn span { display: none; }
+            .tab-btn i { display: inline-block; }
+            .tab-btn { padding: 0.75rem; min-width: 0; }
+        }
+        @media (min-width: 641px) {
+            .tab-btn i { display: none; }
+            .tab-btn span { display: inline-block; }
+        }
+
+        /* Theme-specific styles */
         body[data-theme="light"] {
             background-color: #f4f4f5;
-            color: #18181b;
+            color: #18181b; /* Dark text for light theme */
         }
         body[data-theme="dark"] {
             background-color: #18181b;
+            color: #f4f4f5; /* Light text for dark theme */
+        }
+
+        /* Container background */
+        body[data-theme="light"] .bg-white {
+            background-color: #ffffff;
+        }
+        body[data-theme="dark"] .bg-white {
+            background-color: #27272a;
+        }
+
+        /* Title colors */
+        body[data-theme="light"] .title-text {
+            color: #18181b; /* Dark text for light theme */
+        }
+        body[data-theme="dark"] .title-text {
+            color: #f4f4f5; /* Light text for dark theme */
+        }
+
+        /* Quick Action buttons */
+        body[data-theme="light"] .action-btn {
+            background-color: #f4f4f5;
+            color: #18181b;
+        }
+        body[data-theme="light"] .action-btn:hover {
+            background-color: #e4e4e7;
+        }
+        body[data-theme="dark"] .action-btn {
+            background-color: #27272a;
             color: #f4f4f5;
         }
-        body[data-theme="light"] .bg-white { background-color: #ffffff; }
-        body[data-theme="dark"] .bg-white { background-color: #27272a; }
-        body[data-theme="light"] .text-zinc-800 { color: #18181b; }
-        body[data-theme="dark"] .text-zinc-800 { color: #f4f4f5; }
+        body[data-theme="dark"] .action-btn:hover {
+            background-color: #3f3f46;
+        }
+
+        /* Ensure Tailwind text colors adapt */
+        body[data-theme="dark"] .text-zinc-700 {
+            color: #d4d4d8; /* Lighter grey for dark theme */
+        }
+        body[data-theme="dark"] .text-zinc-600 {
+            color: #a1a1aa; /* Lighter grey for dark theme */
+        }
+        body[data-theme="dark"] .text-zinc-500 {
+            color: #71717a; /* Lighter grey for dark theme */
+        }
     </style>
-    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
-    </div>
-    <!-- Tab Navigation -->
+</head>
+<body class="min-h-screen font-sans antialiased flex items-center justify-center p-4" data-theme="${THEME}">    <div class="w-full max-w-2xl bg-white rounded-xl overflow-hidden">
+    <div class="w-full max-w-2xl bg-white rounded-xl overflow-hidden">
+        <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+        <!-- Tab Navigation (unchanged) -->
         <div class="flex border-b border-zinc-200 overflow-x-auto">
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">Chat</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="history">History</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="account">Account</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="live">Live AI</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="settings">Settings</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="info">Info</button>
-            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="actions">Actions</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">
+                <i class="fas fa-comment hidden"></i>
+                <span>Chat</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="history">
+                <i class="fas fa-history hidden"></i>
+                <span>History</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="account">
+                <i class="fas fa-user hidden"></i>
+                <span>Account</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="live">
+                <i class="fas fa-microphone hidden"></i>
+                <span>Live AI</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="settings">
+                <i class="fas fa-cog hidden"></i>
+                <span>Settings</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="info">
+                <i class="fas fa-info-circle hidden"></i>
+                <span>Info</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="actions">
+                <i class="fas fa-bolt hidden"></i>
+                <span>Actions</span>
+            </button>
         </div>
 
-        <!-- Tab Content -->
+        <!-- Tab Content (unchanged) -->
         <div class="p-6">
             <!-- Chat Tab -->
             <div id="chat" class="tab-content active">
@@ -59,19 +133,19 @@
 
             <!-- Chat History Tab -->
             <div id="history" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Chat History</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Chat History</h3>
                 <div id="history-list" class="space-y-2"></div>
             </div>
 
             <!-- Account Tab -->
             <div id="account" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Account</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Account</h3>
                 <div id="account-content" class="space-y-4"></div>
             </div>
 
             <!-- Live AI Assistant Tab -->
             <div id="live" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Live AI Assistant</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Live AI Assistant</h3>
                 <div class="text-center">
                     <svg id="mic-icon" class="w-16 h-16 mx-auto text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                     <p id="mic-status" class="mt-2 text-sm text-zinc-600">Click to start listening...</p>
@@ -81,7 +155,7 @@
 
             <!-- Settings Tab -->
             <div id="settings" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Settings</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Settings</h3>
                 <form id="settings-form" class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Grok3 API Keys</label>
@@ -132,13 +206,12 @@
                             <option value="dark">Dark</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>
-                </form>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>                </form>
             </div>
 
             <!-- Info Tab -->
             <div id="info" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Info</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Info</h3>
                 <div id="info-content" class="space-y-4">
                     <div>
                         <p class="text-sm font-medium text-zinc-600">Remaining Tokens</p>
@@ -161,47 +234,46 @@
 
             <!-- Quick Actions Tab -->
             <div id="actions" class="tab-content">
-                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Quick Actions</h3>
+                <h3 class="text-lg font-semibold title-text mb-4">Quick Actions</h3>
                 <div id="actions-list" class="space-y-2">
-                    <button class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100" data-tab="chat">Go to Chat</button>
-                    <button class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100" data-tab="history">View History</button>
-                    <a href="https://github.com/QLineTech" target="_blank" class="block w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Author</a>
-                    <button id="contact-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Contact Us</button>
-                    <button id="partner-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Partnership</button>
-                    <button id="donate-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Donate</button>
+                    <button class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors" data-tab="chat">Go to Chat</button>
+                    <button class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors" data-tab="history">View History</button>
+                    <a href="https://github.com/QLineTech" target="_blank" class="action-btn block w-full text-left px-3 py-2 rounded-md transition-colors">Author</a>
+                    <button id="contact-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Contact Us</button>
+                    <button id="partner-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Partnership</button>
+                    <button id="donate-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Donate</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Dialogs for Quick Actions -->
-    <div id="contact-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg max-w-md w-full">
-            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Contact Us</h4>
-            <form id="contact-form" class="space-y-4">
-                <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
-                <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
-                <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md" rows="3"></textarea>
-                <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700">Send</button>
-            </form>
-            <button id="close-contact" class="mt-2 text-sm text-zinc-600 hover:underline">Close</button>
+        <!-- Dialogs for Quick Actions -->
+        <div id="contact-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Contact Us</h4>
+                <form id="contact-form" class="space-y-4">
+                    <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
+                    <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
+                    <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md" rows="3"></textarea>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700">Send</button>
+                </form>
+                <button id="close-contact" class="mt-2 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
+        </div>
+        <div id="partner-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Partnership</h4>
+                <p class="text-sm text-zinc-600">Interested in partnering with QLineTech? Contact us!</p>
+                <button id="close-partner" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
+        </div>
+        <div id="donate-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Donate</h4>
+                <p class="text-sm text-zinc-600">Support QCode development!</p>
+                <button id="close-donate" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
         </div>
     </div>
-    <div id="partner-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg max-w-md w-full">
-            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Partnership</h4>
-            <p class="text-sm text-zinc-600">Interested in partnering with QLineTech? Contact us!</p>
-            <button id="close-partner" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
-        </div>
-    </div>
-    <div id="donate-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg max-w-md w-full">
-            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Donate</h4>
-            <p class="text-sm text-zinc-600">Support QCode development!</p>
-            <button id="close-donate" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
-        </div>
-    </div>
-
     <script>
         const vscode = acquireVsCodeApi();
         let chatHistory = [];
@@ -216,12 +288,7 @@
             vscode.postMessage({ type: 'saveSettings', settings });
         });
 
-        window.addEventListener('message', event => {
-            const message = event.data;
-            if (message.type === 'setTheme') {
-                document.body.setAttribute('data-theme', message.theme);
-            }
-        });
+
 
         function showError(message) {
             const errorDiv = document.createElement('div');
@@ -243,7 +310,6 @@
             currentState = { ...currentState, ...newState };
             renderUI();
         }
-
 
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -427,9 +493,13 @@
         window.addEventListener('message', event => {
             const message = event.data;
             const chatDisplay = document.getElementById('chat-display');
+            
+
             if (message.type === 'chatResponse') {
                 chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-green-50 rounded-md"><span class="font-medium text-green-700">Grok3:</span> ${marked.parse(message.text)}</div>`;
                 chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } else if (message.type === 'setTheme') {
+                document.body.setAttribute('data-theme', message.theme);
             } else if (message.type === 'chatError') {
                 chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-red-50 rounded-md text-red-700">${message.text}</div>`;
                 chatDisplay.scrollTop = chatDisplay.scrollHeight;

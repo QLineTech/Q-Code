@@ -31,15 +31,33 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
     private readonly _context: vscode.ExtensionContext;
     private _settings: QCodeSettings;
     private _disposables: vscode.Disposable[] = [];
+    private _themeListener?: vscode.Disposable;
 
     private cleanup() {
         this._disposables.forEach(d => d.dispose());
         this._disposables = [];
     }
 
+    private getEffectiveTheme(): string {
+        if (this._settings.theme !== 'system') {
+            return this._settings.theme;
+        }
+        const themeKind = vscode.window.activeColorTheme.kind;
+        return themeKind === vscode.ColorThemeKind.Light ? 'light' : 'dark';
+    }
+
     constructor(context: vscode.ExtensionContext) {
         this._context = context;
         this._settings = getValidSettings(context.globalState.get('qcode.settings'));
+    
+        // Listen for VSCode theme changes
+        this._themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
+            if (this._settings.theme === 'system' && this._webviewView) {
+                const effectiveTheme = this.getEffectiveTheme();
+                this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
+            }
+        });
+        this._disposables.push(this._themeListener);
     }
 
     public get settings(): QCodeSettings {
@@ -55,12 +73,18 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
         await this._context.globalState.update('qcode.settings', newSettings);
         
         if (this._webviewView) {
+            // Send the effective theme
+            const effectiveTheme = this.getEffectiveTheme();
+            this._webviewView.webview.postMessage({ 
+                type: 'setTheme', 
+                theme: effectiveTheme 
+            });
             this._webviewView.webview.postMessage({ 
                 type: 'settingsUpdate',
                 settings: this._settings
             });
         }
-
+    
         // Reconnect WebSocket if settings changed
         if (newSettings.websocket.active !== this._settings.websocket.active ||
             newSettings.websocket.address !== this._settings.websocket.address) {
@@ -108,9 +132,9 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
                 enableScripts: true,
                 localResourceRoots: [vscode.Uri.file(this._context.extensionPath)]
             };
-
+    
             const panelTheme = this._settings.theme;
-
+    
             getWebviewContentFromFile(
                 JSON.stringify(this._settings),
                 this._context,
@@ -118,12 +142,15 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
             ).then(html => {
                 if (this._webviewView && !token.isCancellationRequested) {
                     this._webviewView.webview.html = html;
+                    // Send the effective theme
+                    const effectiveTheme = this.getEffectiveTheme();
+                    this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
                 }
             }).catch(error => {
                 console.error('Failed to load webview content:', error);
                 vscode.window.showErrorMessage('Failed to load QCode panel');
             });
-
+    
             webviewView.webview.onDidReceiveMessage(
                 async (message) => {
                     try {
@@ -136,7 +163,7 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
                 undefined,
                 this._disposables
             );
-
+    
             webviewView.onDidDispose(() => {
                 this.cleanup();
             });
@@ -456,6 +483,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('qcode.openPanel', async () => {
             console.log("qcode.openPanel called");
+
             // Focus the qcode-view in the activity bar
             await vscode.commands.executeCommand('qcode-view.focus');
         }),
@@ -513,6 +541,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Add all disposables to context subscriptions
     context.subscriptions.push(...disposables);
+
 }
 
 export function deactivate() {
