@@ -589,7 +589,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register openPanel and showPanel commands
     context.subscriptions.push(
         vscode.commands.registerCommand('qcode.openPanel', async () => {
-            console.log("qcode.openPanel called");
+            // console.log("qcode.openPanel called");
 
             // Focus the qcode-view in the activity bar
             await vscode.commands.executeCommand('qcode-view.focus');
