@@ -4,6 +4,7 @@
   "description": "QLineTech Coding Assistant",
   "version": "2.3.7",
   "publisher": "QLineTech",
+  "license": "SEE LICENSE IN LICENSE.md",
   "engines": {
     "vscode": "^1.97.0"
   },
