@@ -1,4 +1,4 @@
-# ./util/build.ps1
+# ./util/build_win.ps1
 
 # Move to the root directory (one level up from script location)
 Set-Location -Path $PSScriptRoot\..
@@ -12,26 +12,49 @@ if (-not (Test-Path $buildsDir)) {
 # Read package.json and parse it
 $packageJsonPath = "package.json"
 $packageJson = Get-Content -Path $packageJsonPath -Raw | ConvertFrom-Json
+$packageName = $packageJson.name
 
-# Get the current version and split it into components
+# Get current version
 $currentVersion = $packageJson.version
-$versionParts = $currentVersion -split '\.'
-$major = [int]$versionParts[0]
-$minor = [int]$versionParts[1]
-$patch = [int]$versionParts[2]
 
-# Increment the patch version
-$patch += 1
-$newVersion = "$major.$minor.$patch"
+# Check for existing versions in builds directory
+$existingVersions = Get-ChildItem -Path $buildsDir -Filter "$packageName-*.vsix" | 
+    ForEach-Object { 
+        if ($_.Name -match "$packageName-(\d+\.\d+\.\d+)\.vsix") {
+            [Version]$matches[1]
+        }
+    } |
+    Sort-Object -Descending
 
-# Update the version in the package.json object
+if ($existingVersions) {
+    $latestVersion = $existingVersions[0]
+    Write-Host "Found existing version: $latestVersion"
+    
+    # Compare with current version
+    if ([Version]$currentVersion -le $latestVersion) {
+        # Increment from the latest found version
+        $versionParts = $latestVersion.ToString() -split '\.'
+        $major = [int]$versionParts[0]
+        $minor = [int]$versionParts[1]
+        $patch = [int]$versionParts[2] + 1
+        $newVersion = "$major.$minor.$patch"
+    } else {
+        # Use version from package.json as it's newer
+        $newVersion = $currentVersion
+    }
+} else {
+    Write-Host "No existing versions found"
+    $newVersion = $currentVersion
+}
+
+# Update the version in package.json
 $packageJson.version = $newVersion
 $packageJson | ConvertTo-Json -Depth 100 | Set-Content -Path $packageJsonPath
 Write-Host "Version updated to $newVersion in package.json"
 
 # Run vsce package with output directory specified
 Write-Host "Packaging the extension..."
-$vsixFile = "qcode-$newVersion.vsix"
+$vsixFile = "$packageName-$newVersion.vsix"
 $vsixPath = Join-Path $buildsDir $vsixFile
 vsce package -o $vsixPath
 
