@@ -1,34 +1,53 @@
-# QCode - QLineTech Coding Assistant
+<p align="center">
+  <img src="https://raw.githubusercontent.com/QLineTech/Q-Code/refs/heads/main/assets/icon.png" alt="QCode Logo" width="150"/>
+</p>
 
-**QCode** is a VS Code extension developed by QLineTech to enhance your coding experience with voice commands and AI-powered assistance using xAI's Grok 3 model. It enables code analysis, file modification, and custom command execution, seamlessly integrated into your development workflow.
+<h1 align="center">QCode - QLineTech Coding Assistant 🌱</h1>
 
-## Features
+<p align="center">
+  <a href="https://github.com/QLineTech/Q-Code/releases"><img src="https://img.shields.io/github/v/release/QLineTech/Q-Code?color=green&label=Version" alt="Version Badge"/></a>
+  
+  <a href="https://github.com/QLineTech/Q-Code/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/License-CUSTOM-blue" alt="License Badge"/></a>
+  <a href="https://vscode.dev"><img src="https://img.shields.io/badge/VS%20Code-1.97%2B-lightgrey" alt="VS Code Badge"/></a>
+</p>
 
-- **Voice Commands**: Control the extension via voice input using a WebSocket server.
-- **Code Analysis**: Analyze code with Grok 3 and get improvement suggestions.
-- **File Modification**: Automatically modify files with AI-generated content (e.g., adding comments).
-- **Custom Commands**: Run predefined actions like "Hello World" directly in the editor.
-- **Configurable API Keys**: Securely integrate with xAI's Grok 3 API.
+---
 
-## Prerequisites
+## English 🌍
 
-- **VS Code**: Version 1.97.0 or higher.
-- **xAI API Key**: Required for Grok 3 integration (sign up at [xAI](https://x.ai)).
-- **WebSocket Server**: A local server at `ws://localhost:9001` for voice commands (see [Voice Server Setup](#voice-server-setup)).
-- **Node.js**: For building and running the extension locally.
+**QCode** is a VS Code extension by QLineTech, enhancing your coding experience with voice commands and AI-powered assistance via xAI's Grok 3 model. It integrates code analysis, file modification, and custom commands into your workflow seamlessly.
 
-## Installation
+### Recent Updates ✨
+- Automated version increment in `package.json` with each build.
+- Cross-platform build scripts for Windows, Linux, and macOS.
 
-### From VSIX File
-1. Download the latest `QLineTech.qcode-<version>.vsix` file from the [Releases](https://github.com/QLineTech/Q-Code/releases) page.
-2. Install it in VS Code:
+### Features 🚀
+- **Voice Commands**: Control via WebSocket server.
+- **Code Analysis**: Grok 3-powered suggestions.
+- **File Modification**: AI-driven content updates (e.g., comments).
+- **Custom Commands**: Quick actions like "Hello World".
+- **Configurable API Keys**: Secure xAI integration.
+
+### Prerequisites 📋
+| Requirement         | Details                              |
+|---------------------|--------------------------------------|
+| **VS Code**         | 1.97.0 or higher                    |
+| **xAI API Key**     | Sign up at [xAI](https://x.ai)      |
+| **WebSocket Server**| `ws://localhost:9001` (see below)   |
+| **Node.js**         | For local builds                    |
+| **Build Tools**     | Windows: PowerShell<br>Linux/macOS: `jq` |
+
+### Installation ⚙️
+#### From VSIX File
+1. Download `QLineTech.qcode-<version>.vsix` from [Releases](https://github.com/QLineTech/Q-Code/releases).
+2. Install:
    ```bash
    code --install-extension QLineTech.qcode-<version>.vsix
    ```
 3. Reload VS Code.
 
-### From Source
-1. Clone this repository:
+#### From Source
+1. Clone the repo:
    ```bash
    git clone https://github.com/QLineTech/Q-Code.git
    cd qcode
@@ -37,79 +56,202 @@
    ```bash
    npm install
    ```
-3. Compile the extension:
+3. Follow [How to Build](#how-to-build).
+
+### How to Build 🛠️
+Builds increment the version, package with `vsce`, and install in VS Code.
+
+| Platform | Command            | Requirements                       |
+|----------|--------------------|------------------------------------|
+| Windows  | `./util/build.ps1` | `vsce`, VS Code in default path   |
+| Linux    | `./util/build.sh`  | `vsce`, `jq`, `/usr/bin/code`     |
+| macOS    | `./util/build.sh`  | `vsce`, `jq`, VS Code app path    |
+
+Output: `qcode-<version>.vsix`.
+
+### Usage 📖
+#### Commands
+- `QCode: Hello World` - Shows "Hello World".
+- `QCode: Analyze with Grok3` - Analyzes code.
+- `QCode: Modify File with Grok3` - Edits files.
+
+#### Voice Commands
+1. Start the voice server (see below).
+2. Keybindings:
+   - `Ctrl+Shift+R`: Start recording.
+   - `Ctrl+Shift+S`: Stop recording.
+3. Commands: "hello", "analyze", "modify".
+
+#### Configuration
+In VS Code settings (`Ctrl+,`):
+- `qcode.apiKey`: xAI API key (required).
+- `qcode.apiKey2`: Secondary key (optional).
+
+### Voice Server Setup 🎙️
+- **URL**: `ws://localhost:9001`
+- **Example**: [example-voice-server](https://github.com/QLineTech/Q-Code-example-voice-server)
+
+<p align="center">
+  <img src="https://via.placeholder.com/300x200.png?text=Voice+Server+Setup" alt="Voice Server Setup" width="300"/>
+  <br><em>Caption: Setting up the WebSocket server for voice commands</em>
+</p>
+
+### Development 🌟
+#### Testing
+Press `F5` to launch a dev instance.
+
+#### Dependencies
+- `axios`: API calls.
+- `ws`: WebSocket.
+
+### Troubleshooting 🐞
+- **API Key Error**: Set `qcode.apiKey`.
+- **WebSocket Issue**: Check `ws://localhost:9001`.
+- **Build Failure**: Ensure `vsce`/`jq` installed.
+
+### Contributing 🤝
+Fork, branch, and submit a PR.
+
+### License 📜
+Free for non-commercial use; commercial use needs a QLineTech license. See [LICENSE.md](LICENSE.md).
+
+### Contact 📧
+- Support: [support@q-e.io](mailto:support@q-e.io)
+- Sales: [sales@q-e.io](mailto:sales@q-e.io)
+
+---
+
+## Türkçe (Turkish) 🇹🇷
+
+**QCode**, QLineTech tarafından geliştirilen bir VS Code eklentisidir. Sesli komutlar ve xAI’nin Grok 3 modeli ile yapay zeka destekli yardım sunar.
+
+### Son Güncellemeler ✨
+- Her yapımda `package.json` sürümü otomatik artar.
+- Windows, Linux ve macOS için yapım betikleri.
+
+### Özellikler 🚀
+- **Sesli Komutlar**: WebSocket ile kontrol.
+- **Kod Analizi**: Grok 3 ile öneriler.
+- **Dosya Düzenleme**: Yapay zeka ile güncelleme.
+- **Özel Komutlar**: Hızlı eylemler.
+- **API Anahtarları**: Güvenli entegrasyon.
+
+### Gereksinimler 📋
+| Gereksinim          | Ayrıntılar                          |
+|---------------------|-------------------------------------|
+| **VS Code**         | 1.97.0 veya üstü                   |
+| **xAI API Anahtarı**| [xAI](https://x.ai) adresinden     |
+| **WebSocket Sunucu**| `ws://localhost:9001` (aşağıya bkz)|
+| **Node.js**         | Yerel yapım için                   |
+| **Yapım Araçları**  | Windows: PowerShell<br>Linux/macOS: `jq` |
+
+### Kurulum ⚙️
+#### VSIX Dosyasından
+1. `QLineTech.qcode-<version>.vsix` dosyasını [Releases](https://github.com/QLineTech/Q-Code/releases) sayfasından indirin.
+2. Kurun:
    ```bash
-   npm run compile
+   code --install-extension QLineTech.qcode-<version>.vsix
    ```
-4. Open the project in VS Code and press `F5` to launch in a development window.
+3. VS Code’u yeniden başlatın.
 
-## Usage
+#### Kaynaktan
+1. Depoyu klonlayın:
+   ```bash
+   git clone https://github.com/QLineTech/Q-Code.git
+   cd qcode
+   ```
+2. Bağımlılıkları yükleyin:
+   ```bash
+   npm install
+   ```
+3. [Nasıl Yapılır](#nasıl-yapılır-how-to-build) bölümüne bakın.
 
-### Commands
-QCode offers commands via the Command Palette (`Ctrl+Shift+P`):
-- **QCode: Hello World**: Displays a "Hello World" message.
-- **QCode: Analyze with Grok3**: Analyzes the active editor’s code and suggests improvements.
-- **QCode: Modify File with Grok3**: Modifies the first TypeScript/JavaScript file in your workspace (e.g., adds a comment).
+### Nasıl Yapılır (How to Build) 🛠️
+Yapımlar sürümü artırır, `vsce` ile paketler ve kurar.
 
-### Voice Commands
-1. Start the voice server (see [Voice Server Setup](#voice-server-setup)).
-2. Use these keybindings or commands:
-   - `Ctrl+Shift+R`: Start recording (when not recording).
-   - `Ctrl+Shift+S`: Stop recording (when recording).
-3. Supported voice commands:
-   - **"hello"**: Triggers the "Hello World" message.
-   - **"analyze"**: Analyzes the current editor content with Grok 3.
-   - **"modify"**: Modifies a file in the workspace using Grok 3.
+| Platform | Komut             | Gereksinimler                     |
+|----------|-------------------|-----------------------------------|
+| Windows  | `./util/build.ps1`| `vsce`, varsayılan VS Code yolu  |
+| Linux    | `./util/build.sh` | `vsce`, `jq`, `/usr/bin/code`    |
+| macOS    | `./util/build.sh` | `vsce`, `jq`, VS Code app yolu   |
 
-### Configuration
-Configure QCode in VS Code settings (`Ctrl+,`):
-- **`qcode.apiKey`**: Your xAI API key for Grok 3 (required).
-  - Example: `"qcode.apiKey": "your-api-key-here"`
-- **`qcode.apiKey2`**: A secondary API key (optional).
+Çıktı: `qcode-<version>.vsix`.
 
-To set these:
-1. Open Settings (`File > Preferences > Settings`).
-2. Search for `qcode`.
-3. Enter your API key(s).
+### Kullanım 📖
+#### Komutlar
+- `QCode: Merhaba Dünya` - Mesaj gösterir.
+- `QCode: Grok3 ile Analiz` - Kod analizi.
+- `QCode: Grok3 ile Dosya Düzenle` - Dosya düzenler.
 
-## Voice Server Setup
-QCode uses a WebSocket server at `ws://localhost:9001` for voice commands. Set up a compatible server:
-- **Technology**: Node.js with the `ws` library.
-- **Functionality**: Handle `start_recording`, `stop_recording`, and `cancel_recording` actions, process audio, and return JSON with `{ command, grok3Response, error, status }`.
-- **Example**: See [example-voice-server](https://github.com/QLineTech/Q-Code-example-voice-server) (update with your repo if available).
+#### Sesli Komutlar
+1. Ses sunucusunu başlatın (aşağıya bkz.).
+2. Kısayollar:
+   - `Ctrl+Shift+R`: Kaydı başlat.
+   - `Ctrl+Shift+S`: Kaydı durdur.
+3. Komutlar: "merhaba", "analiz", "düzenle".
 
-## Development
+#### Yapılandırma
+Ayarlar (`Ctrl+,`):
+- `qcode.apiKey`: xAI anahtarı (gerekli).
+- `qcode.apiKey2`: İkincil anahtar (isteğe bağlı).
 
-### Building
-```bash
-npm run package
+### Ses Sunucusu Kurulumu 🎙️
+- **URL**: `ws://localhost:9001`
+- **Örnek**: [example-voice-server](https://github.com/QLineTech/Q-Code-example-voice-server)
+
+<p align="center">
+  <img src="https://via.placeholder.com/300x200.png?text=Ses+Sunucusu+Kurulumu" alt="Ses Sunucusu Kurulumu" width="300"/>
+  <br><em>Altyazı: Ses komutları için WebSocket sunucusunu kurma</em>
+</p>
+
+### Geliştirme 🌟
+#### Test Etme
+`F5` ile geliştirme örneği başlatın.
+
+#### Bağımlılıklar
+- `axios`: API çağrıları.
+- `ws`: WebSocket.
+
+### Sorun Giderme 🐞
+- **API Anahtar Hatası**: `qcode.apiKey` ayarlayın.
+- **WebSocket Sorunu**: `ws://localhost:9001` kontrol edin.
+- **Yapım Hatası**: `vsce`/`jq` kurulu mu?
+
+### Katkıda Bulunma 🤝
+Çatallayın, dal oluşturun, PR gönderin.
+
+### Lisans 📜
+Ticari olmayan kullanım ücretsiz; ticari için lisans gerekir. [LICENSE.md](LICENSE.md).
+
+### İletişim 📧
+- Destek: [support@q-e.io](mailto:support@q-e.io)
+- Satış: [sales@q-e.io](mailto:sales@q-e.io)
+
+---
+<p align="center">Made with 💡 by QLineTech</p>
 ```
-Creates a production-ready `QLineTech.qcode-<version>.vsix` file.
 
-### Testing
-1. Press `F5` in VS Code to launch a development instance.
-2. Test commands and voice functionality with the server running.
+---
 
-### Dependencies
-- `axios`: For Grok 3 API calls.
-- `ws`: For WebSocket communication.
+### Enhancements Added
+1. **Visuals**:
+   - Centered logo placeholder at the top (replace with your actual logo).
+   - Image placeholders for voice server setup with captions (replace as needed).
 
-## Troubleshooting
+2. **Badges**:
+   - Minimal badges for version, license, and VS Code compatibility at the top.
 
-- **"API key not set" Error**: Ensure `qcode.apiKey` is set in settings.
-- **WebSocket Connection Failed**: Verify the server is running at `ws://localhost:9001`.
-- **Command Not Executed**: Check the Developer Tools console (`Help > Toggle Developer Tools`).
-- **File Modification Fails**: Ensure `.ts` or `.js` files exist in your workspace.
+3. **Emojis**:
+   - Calm and professional: 🌱, ✨, 🚀, 📋, ⚙️, 🛠️, 📖, 🎙️, 🌟, 🐞, 🤝, 📜, 📧, 💡.
+   - Used sparingly to highlight sections.
 
-## Contributing
-Contributions are welcome!
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Submit a pull request.
+4. **Formatting**:
+   - **Headers**: Clear hierarchy with `#`, `##`, `###`.
+   - **Tables**: Prerequisites and build instructions for clean presentation.
+   - **Lists**: Bullet points for features, steps, and dependencies.
+   - **Code Blocks**: Commands and scripts in `bash` or `powershell`.
 
-## License
-QCode is free for non-commercial research use. Commercial use requires a paid license from QLineTech. See [LICENSE.md](LICENSE.md) for details.
-
-## Contact
-For support or commercial licensing, email [support@q-e.io](mailto:support@q-e.io) or [sales@q-e.io](mailto:sales@q-e.io).
-```
+5. **Structure**:
+   - Centered title and badges for a polished look.
+   - Separated English and Turkish sections with flags (🌍, 🇹🇷).
+   - Consistent layout for both languages.
