@@ -26,6 +26,23 @@ interface QCodeSettings {
     analyzeAIs: string[];
 }
 
+// Add this interface near the top of extension.ts, after EditorContext
+interface ChatHistoryEntry {
+    prompt: string;
+    response: string;
+    timestamp: string;
+    context: EditorContext | null;
+}
+
+// Add this interface near the top of extension.ts
+interface EditorContext {
+    fileName: string;
+    fileType: string;
+    content: string;
+    selection: string | null;
+    filePath: string;
+}
+
 class QCodePanelProvider implements vscode.WebviewViewProvider {
     private _webviewView?: vscode.WebviewView;
     private readonly _context: vscode.ExtensionContext;
@@ -37,6 +54,13 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
         this._disposables.forEach(d => d.dispose());
         this._disposables = [];
     }
+
+    public sendMessage(message: any) {
+        if (this._webviewView) {
+            this._webviewView.webview.postMessage(message);
+        }
+    }
+    
 
     private getEffectiveTheme(): string {
         if (this._settings.theme !== 'system') {
@@ -94,6 +118,12 @@ class QCodePanelProvider implements vscode.WebviewViewProvider {
 
     private async handleWebviewMessage(message: any) {
         switch (message.type) {
+            case 'sendChatMessage':
+                    await vscode.commands.executeCommand('qcode.sendChatMessage', message.text);
+                    break;
+            case 'getChatHistory':
+                await vscode.commands.executeCommand('qcode.getChatHistory');
+                break;
             case 'saveSettings':
                 const settings = getValidSettings(message.settings);
                 await this.updateSettings(settings);
@@ -399,6 +429,83 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new QCodePanelProvider(context);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('qcode-view', provider)
+    );
+
+    // Add chat message handler
+    context.subscriptions.push(
+        vscode.commands.registerCommand('qcode.sendChatMessage', async (text: string) => {
+            try {
+                const editor = vscode.window.activeTextEditor;
+                let editorContext: EditorContext | null = null;
+
+                if (editor) {
+                    const document = editor.document;
+                    editorContext = {
+                        fileName: path.basename(document.fileName),
+                        fileType: document.languageId,
+                        content: document.getText(),
+                        selection: editor.selection.isEmpty ? null : document.getText(editor.selection),
+                        filePath: document.fileName
+                    };
+                }
+
+                // Send context to webview using public method
+                provider.sendMessage({
+                    type: 'chatContext',
+                    context: editorContext,
+                    prompt: text
+                });
+
+                // Process with AI
+                // TODO 
+                // const promptWithContext = editorContext 
+                //     ? `File: ${editorContext.fileName} (${editorContext.fileType})\n` +
+                //       (editorContext.selection ? `Selected code:\n${editorContext.selection}\n\n` : '') +
+                //       `Full content:\n${editorContext.content}\n\nUser prompt: ${text}`
+                //     : text;
+
+                // const response = await queryAI(promptWithContext, 'grok3AI');
+                
+                provider.sendMessage({
+                    type: 'chatResponse',
+                    // text: response,
+                    text: "FAKE RESPONSE",
+                    prompt: text,
+                    context: editorContext
+                });
+
+                // Update chat history with proper typing
+                const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+                const newEntry: ChatHistoryEntry = {
+                    prompt: text,
+                    // response,
+                    response: "FAKE RESPONSE",
+                    timestamp: new Date().toISOString(),
+                    context: editorContext
+                };
+                chatHistory.push(newEntry);
+                await context.globalState.update('qcode.chatHistory', chatHistory);
+
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                provider.sendMessage({
+                    type: 'chatError',
+                    text: `Error: ${message}`
+                });
+                console.error('Chat error:', error);
+            }
+        })
+    );
+
+    // Add chat history getter
+    context.subscriptions.push(
+        vscode.commands.registerCommand('qcode.getChatHistory', async () => {
+            const chatHistory = context.globalState.get('qcode.chatHistory', []);
+            provider.sendMessage({
+                type: 'chatHistory',
+                history: chatHistory
+            });
+        })
     );
 
     let isRecording = false;
