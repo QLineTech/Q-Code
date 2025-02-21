@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCode Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for Markdown rendering in chat -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .active-tab { border-bottom: 2px solid #0d9488; color: #0d9488; }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased flex items-center justify-center p-4" data-theme="${THEME}">    <div class="w-full max-w-2xl bg-white rounded-xl  overflow-hidden">
+    <style>
+        body[data-theme="light"] {
+            background-color: #f4f4f5;
+            color: #18181b;
+        }
+        body[data-theme="dark"] {
+            background-color: #18181b;
+            color: #f4f4f5;
+        }
+        body[data-theme="light"] .bg-white { background-color: #ffffff; }
+        body[data-theme="dark"] .bg-white { background-color: #27272a; }
+        body[data-theme="light"] .text-zinc-800 { color: #18181b; }
+        body[data-theme="dark"] .text-zinc-800 { color: #f4f4f5; }
+    </style>
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
+    </div>
+    <!-- Tab Navigation -->
+        <div class="flex border-b border-zinc-200 overflow-x-auto">
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">Chat</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="history">History</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="account">Account</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="live">Live AI</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="settings">Settings</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="info">Info</button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="actions">Actions</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content active">
+                <div id="chat-display" class="h-64 overflow-y-auto bg-zinc-50 p-4 rounded-md border border-zinc-200 mb-4 prose prose-sm max-w-none"></div>
+                <div class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ask anything..." class="flex-1 px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <button id="chat-send" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors">Send</button>
+                </div>
+            </div>
+
+            <!-- Chat History Tab -->
+            <div id="history" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Chat History</h3>
+                <div id="history-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Account Tab -->
+            <div id="account" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Account</h3>
+                <div id="account-content" class="space-y-4"></div>
+            </div>
+
+            <!-- Live AI Assistant Tab -->
+            <div id="live" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Live AI Assistant</h3>
+                <div class="text-center">
+                    <svg id="mic-icon" class="w-16 h-16 mx-auto text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                    <p id="mic-status" class="mt-2 text-sm text-zinc-600">Click to start listening...</p>
+                    <button id="toggle-recording" class="mt-4 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors">Start</button>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Settings</h3>
+                <form id="settings-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Grok3 API Keys</label>
+                        <textarea id="grok3-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">OpenAI API Keys</label>
+                        <textarea id="openai-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Anthropic API Keys</label>
+                        <textarea id="anthropic-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Groq API Keys</label>
+                        <textarea id="groq-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Ollama API Keys</label>
+                        <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">DeepSeek API Keys</label>
+                        <textarea id="deepseek-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Temperature (0-1)</label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                        <span id="temp-value" class="text-sm text-zinc-500">0.7</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Context Volume Sensitivity (0-100)</label>
+                        <input type="range" id="volume-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                        <span id="vol-value" class="text-sm text-zinc-500">50</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Language</label>
+                        <select id="language" class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="en">English</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Theme</label>
+                        <select id="theme" class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="system">System</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>
+                </form>
+            </div>
+
+            <!-- Info Tab -->
+            <div id="info" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Info</h3>
+                <div id="info-content" class="space-y-4">
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Remaining Tokens</p>
+                        <p id="tokens" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Requests Made</p>
+                        <p id="requests" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Lines of Code Generated</p>
+                        <p id="lines" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Languages Used</p>
+                        <div id="languages" class="flex flex-wrap gap-2 mt-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Tab -->
+            <div id="actions" class="tab-content">
+                <h3 class="text-lg font-semibold text-zinc-700 mb-4">Quick Actions</h3>
+                <div id="actions-list" class="space-y-2">
+                    <button class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100" data-tab="chat">Go to Chat</button>
+                    <button class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100" data-tab="history">View History</button>
+                    <a href="https://github.com/QLineTech" target="_blank" class="block w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Author</a>
+                    <button id="contact-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Contact Us</button>
+                    <button id="partner-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Partnership</button>
+                    <button id="donate-btn" class="w-full text-left px-3 py-2 bg-zinc-50 rounded-md hover:bg-zinc-100">Donate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialogs for Quick Actions -->
+    <div id="contact-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg max-w-md w-full">
+            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Contact Us</h4>
+            <form id="contact-form" class="space-y-4">
+                <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
+                <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
+                <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md" rows="3"></textarea>
+                <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700">Send</button>
+            </form>
+            <button id="close-contact" class="mt-2 text-sm text-zinc-600 hover:underline">Close</button>
+        </div>
+    </div>
+    <div id="partner-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg max-w-md w-full">
+            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Partnership</h4>
+            <p class="text-sm text-zinc-600">Interested in partnering with QLineTech? Contact us!</p>
+            <button id="close-partner" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+        </div>
+    </div>
+    <div id="donate-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg max-w-md w-full">
+            <h4 class="text-lg font-semibold text-zinc-700 mb-4">Donate</h4>
+            <p class="text-sm text-zinc-600">Support QCode development!</p>
+            <button id="close-donate" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        let chatHistory = [];
+        let isRecording = false;
+        
+        document.getElementById('settings-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const settings = {
+                language: document.getElementById('language').value,
+                theme: document.getElementById('theme').value
+            };
+            vscode.postMessage({ type: 'saveSettings', settings });
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.type === 'setTheme') {
+                document.body.setAttribute('data-theme', message.theme);
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        // Add proper state management
+        let currentState = {
+            isLoading: false,
+            theme: 'system',
+            chatHistory: [],
+            settings: null
+        };
+
+        function updateState(newState) {
+            currentState = { ...currentState, ...newState };
+            renderUI();
+        }
+
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active state from all tabs and contents
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active-tab');
+                });
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Add active state to clicked tab and its content
+                btn.classList.add('active-tab');
+                const tabContent = document.getElementById(btn.dataset.tab);
+                if (tabContent) {
+                    tabContent.classList.add('active');
+                } else {
+                    console.error(`Tab content not found for tab: ${btn.dataset.tab}`);
+                }
+
+                // Trigger tab-specific actions
+                switch (btn.dataset.tab) {
+                    case 'history':
+                        updateHistoryList();
+                        break;
+                    case 'settings':
+                        loadSettings();
+                        break;
+                    case 'info':
+                        loadInfo();
+                        break;
+                }
+            });
+        });
+
+        // Chat functionality
+        document.getElementById('chat-send').addEventListener('click', () => {
+            const text = document.getElementById('chat-input').value;
+            if (text) {
+                const chatDisplay = document.getElementById('chat-display');
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-teal-50 rounded-md"><span class="font-medium text-teal-700">You:</span> ${text}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                vscode.postMessage({ type: 'sendChatMessage', text });
+                document.getElementById('chat-input').value = '';
+            }
+        });
+
+        // Chat history
+        function updateHistoryList() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = chatHistory.length ? 
+                chatHistory.map(item => `
+                    <div class="p-3 bg-zinc-50 rounded-md border border-zinc-200">
+                        <p class="text-sm text-zinc-600"><strong>Prompt:</strong> ${item.prompt}</p>
+                        <p class="text-sm text-zinc-600 prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
+                        <p class="text-xs text-zinc-500">${new Date(item.timestamp).toLocaleString()}</p>
+                    </div>
+                `).join('') : 
+                '<p class="text-sm text-zinc-500">No chat history yet.</p>';
+        }
+
+        // Account (basic login/register toggle)
+        const accountContent = document.getElementById('account-content');
+        accountContent.innerHTML = `
+            <div id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-600">Email</label>
+                    <input type="email" id="email" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-600">Password</label>
+                    <input type="password" id="password" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <button id="login-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Login</button>
+                <p class="text-sm text-zinc-600">No account? <button id="show-register" class="text-teal-600 hover:underline">Register</button></p>
+            </div>
+        `;
+        document.getElementById('show-register').addEventListener('click', () => {
+            accountContent.innerHTML = `
+                <div id="register-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Email</label>
+                        <input type="email" id="reg-email" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Password</label>
+                        <input type="password" id="reg-password" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <button id="register-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Register</button>
+                    <p class="text-sm text-zinc-600">Have an account? <button id="show-login" class="text-teal-600 hover:underline">Login</button></p>
+                </div>
+            `;
+            document.getElementById('show-login').addEventListener('click', () => location.reload());
+        });
+
+        // Live AI Assistant
+        const micIcon = document.getElementById('mic-icon');
+        const micStatus = document.getElementById('mic-status');
+        const toggleBtn = document.getElementById('toggle-recording');
+        toggleBtn.addEventListener('click', () => {
+            isRecording = !isRecording;
+            if (isRecording) {
+                micIcon.classList.add('animate-pulse');
+                micStatus.textContent = 'Listening...';
+                toggleBtn.textContent = 'Stop';
+                vscode.postMessage({ type: 'startRecording' });
+            } else {
+                micIcon.classList.remove('animate-pulse');
+                micStatus.textContent = 'Click to start listening...';
+                toggleBtn.textContent = 'Start';
+                vscode.postMessage({ type: 'stopRecording' });
+            }
+        });
+
+        // Settings
+        function loadSettings() {
+            vscode.postMessage({ type: 'getSettings' });
+        }
+        document.getElementById('settings-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const settings = {
+                grok3Keys: document.getElementById('grok3-keys').value,
+                openaiKeys: document.getElementById('openai-keys').value,
+                anthropicKeys: document.getElementById('anthropic-keys').value,
+                groqKeys: document.getElementById('groq-keys').value,
+                ollamaKeys: document.getElementById('ollama-keys').value,
+                deepseekKeys: document.getElementById('deepseek-keys').value,
+                temperature: document.getElementById('temperature').value,
+                volumeSensitivity: document.getElementById('volume-sensitivity').value
+            };
+            vscode.postMessage({ type: 'saveSettings', settings });
+        });
+        document.getElementById('temperature').addEventListener('input', e => {
+            document.getElementById('temp-value').textContent = e.target.value;
+        });
+        document.getElementById('volume-sensitivity').addEventListener('input', e => {
+            document.getElementById('vol-value').textContent = e.target.value;
+        });
+
+        // Info
+        function loadInfo() {
+            vscode.postMessage({ type: 'getInfo' });
+        }
+
+        // Quick Actions
+        document.querySelectorAll('#actions-list button[data-tab]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector(`.tab-btn[data-tab="${btn.dataset.tab}"]`).click();
+            });
+        });
+        document.getElementById('contact-btn').addEventListener('click', () => {
+            document.getElementById('contact-dialog').classList.remove('hidden');
+        });
+        document.getElementById('partner-btn').addEventListener('click', () => {
+            document.getElementById('partner-dialog').classList.remove('hidden');
+        });
+        document.getElementById('donate-btn').addEventListener('click', () => {
+            document.getElementById('donate-dialog').classList.remove('hidden');
+        });
+        document.getElementById('close-contact').addEventListener('click', () => {
+            document.getElementById('contact-dialog').classList.add('hidden');
+        });
+        document.getElementById('close-partner').addEventListener('click', () => {
+            document.getElementById('partner-dialog').classList.add('hidden');
+        });
+        document.getElementById('close-donate').addEventListener('click', () => {
+            document.getElementById('donate-dialog').classList.add('hidden');
+        });
+        document.getElementById('contact-form').addEventListener('submit', e => {
+            e.preventDefault();
+            vscode.postMessage({ type: 'contact', data: {
+                name: e.target[0].value,
+                email: e.target[1].value,
+                message: e.target[2].value
+            } });
+            document.getElementById('contact-dialog').classList.add('hidden');
+        });
+
+        // Message handler
+        window.addEventListener('message', event => {
+            const message = event.data;
+            const chatDisplay = document.getElementById('chat-display');
+            if (message.type === 'chatResponse') {
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-green-50 rounded-md"><span class="font-medium text-green-700">Grok3:</span> ${marked.parse(message.text)}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } else if (message.type === 'chatError') {
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-red-50 rounded-md text-red-700">${message.text}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } else if (message.type === 'chatHistory') {
+                chatHistory = message.history;
+                updateHistoryList();
+            } else if (message.type === 'settings') {
+                document.getElementById('grok3-keys').value = message.settings.grok3Keys || '';
+                document.getElementById('openai-keys').value = message.settings.openaiKeys || '';
+                document.getElementById('anthropic-keys').value = message.settings.anthropicKeys || '';
+                document.getElementById('groq-keys').value = message.settings.groqKeys || '';
+                document.getElementById('ollama-keys').value = message.settings.ollamaKeys || '';
+                document.getElementById('deepseek-keys').value = message.settings.deepseekKeys || '';
+                document.getElementById('temperature').value = message.settings.temperature || '0.7';
+                document.getElementById('volume-sensitivity').value = message.settings.volumeSensitivity || '50';
+                document.getElementById('temp-value').textContent = message.settings.temperature || '0.7';
+                document.getElementById('vol-value').textContent = message.settings.volumeSensitivity || '50';
+            } else if (message.type === 'info') {
+                document.getElementById('tokens').textContent = message.info.tokens || 'N/A';
+                document.getElementById('requests').textContent = message.info.requests || '0';
+                document.getElementById('lines').textContent = message.info.lines || '0';
+                const languagesDiv = document.getElementById('languages');
+                languagesDiv.innerHTML = message.info.languages?.map(lang => `
+                    <span class="inline-flex items-center px-2 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V6h2c1.1 0 2-.9 2-2v1.64c2.39 1.39 4 3.96 4 6.86 0 1.94-.78 3.7-2.1 4.89z"/></svg>
+                        ${lang}
+                    </span>
+                `).join('') || 'None';
+            }
+        });
+
+        // Initial data requests
+        vscode.postMessage({ type: 'getChatHistory' });
+    </script>
+</body>
+</html>

@@ -1,7 +1,11 @@
 const esbuild = require("esbuild");
+const fs = require("fs").promises; // Use promises for async operations
+const path = require("path");
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
+
+
 
 /**
  * @type {import('esbuild').Plugin}
@@ -23,6 +27,28 @@ const esbuildProblemMatcherPlugin = {
 	},
 };
 
+/**
+ * Plugin to copy webview assets
+ * @type {import('esbuild').Plugin}
+ */
+const copyWebviewAssetsPlugin = {
+	name: "copy-webview-assets",
+	setup(build) {
+	  build.onEnd(async (result) => {
+		if (result.errors.length > 0) return; // Skip if build failed
+		try {
+		  const srcPath = path.join(__dirname, "src", "webview", "dashboard.html");
+		  const destPath = path.join(__dirname, "dist", "webview", "dashboard.html");
+		  await fs.mkdir(path.dirname(destPath), { recursive: true }); // Ensure dist/webview exists
+		  await fs.copyFile(srcPath, destPath);
+		  console.log(`Copied dashboard.html to ${destPath}`);
+		} catch (err) {
+		  console.error("Failed to copy webview assets:", err);
+		}
+	  });
+	},
+  };
+
 async function main() {
 	const ctx = await esbuild.context({
 		entryPoints: [
@@ -40,6 +66,7 @@ async function main() {
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
+			copyWebviewAssetsPlugin, 
 		],
 	});
 	if (watch) {
@@ -48,6 +75,8 @@ async function main() {
 		await ctx.rebuild();
 		await ctx.dispose();
 	}
+
+	
 }
 
 main().catch(e => {
