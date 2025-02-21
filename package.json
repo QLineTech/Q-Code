@@ -22,31 +22,35 @@
     "main":  "./dist/extension.js",
     "contributes":  {
                         "commands":  [
-                                         {
-                                             "command":  "qcode.startRecording",
-                                             "title":  "Start Voice Recording"
-                                         },
-                                         {
-                                             "command":  "qcode.stopRecording",
-                                             "title":  "Stop Voice Recording"
-                                         },
-                                         {
-                                             "command":  "qcode.cancelRecording",
-                                             "title":  "Cancel Voice Recording"
-                                         },
-                                         {
-                                             "command":  "qcode.helloWorld",
-                                             "title":  "QCode: Hello World"
-                                         },
-                                         {
-                                             "command":  "qcode.analyzeWithGrok3",
-                                             "title":  "QCode: Analyze with Grok3"
-                                         },
-                                         {
-                                             "command":  "qcode.modifyFile",
-                                             "title":  "QCode: Modify File with Grok3"
-                                         }
-                                     ],
+                            {
+                                "command": "qcode.openPanel",
+                                "title": "QCode: Open Panel"
+                            },
+                            {
+                                "command":  "qcode.startRecording",
+                                "title":  "Start Voice Recording"
+                            },
+                            {
+                                "command":  "qcode.stopRecording",
+                                "title":  "Stop Voice Recording"
+                            },
+                            {
+                                "command":  "qcode.cancelRecording",
+                                "title":  "Cancel Voice Recording"
+                            },
+                            {
+                                "command":  "qcode.helloWorld",
+                                "title":  "QCode: Hello World"
+                            },
+                            {
+                                "command":  "qcode.analyzeWithGrok3",
+                                "title":  "QCode: Analyze with Grok3"
+                            },
+                            {
+                                "command":  "qcode.modifyFile",
+                                "title":  "QCode: Modify File with Grok3"
+                            }
+                        ],
                         "keybindings":  [
                                             {
                                                 "command":  "qcode.startRecording",

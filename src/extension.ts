@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import Axios from 'axios';
 import WebSocket from 'ws';
+import * as path from 'path';
 
 const API_URL = 'https://api.x.ai/v1/chat/completions';
 let ws: WebSocket;
@@ -47,6 +48,21 @@ async function writeFile(filePath: string, content: string): Promise<void> {
     } catch (error) {
         console.error('Write file error:', error);
         throw error;
+    }
+}
+
+async function getWebviewContentFromFile(apiKey: string, context: vscode.ExtensionContext): Promise<string> {
+    try {
+        const htmlPath = vscode.Uri.file(
+            path.join(context.extensionPath, 'src', 'webview', 'panel.html')
+        );
+        const content = await vscode.workspace.fs.readFile(htmlPath);
+        let htmlContent = Buffer.from(content).toString('utf8');
+        htmlContent = htmlContent.replace('${API_KEY}', apiKey || '');
+        return htmlContent;
+    } catch (error) {
+        console.error('Error loading webview content:', error);
+        return '<h1>Error loading panel</h1><p>Could not load the panel content.</p>';
     }
 }
 
@@ -156,7 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
         vscode.commands.registerCommand('qcode.cancelRecording', () => {
-            if (ws.readyState === WebSocket.OPEN && isRecording) {
+            if (ws.readyState === WebSocket.OPEN && !isRecording) {
                 isRecording = false;
                 startTime = null;
                 vscode.commands.executeCommand('setContext', 'qcode.recording', false);
@@ -180,6 +196,41 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('qcode.helloWorld', commandMap['hello']),
         vscode.commands.registerCommand('qcode.analyzeWithGrok3', commandMap['analyze']),
         vscode.commands.registerCommand('qcode.modifyFile', commandMap['modify']),
+        vscode.commands.registerCommand('qcode.openPanel', async () => {
+            const apiKey = vscode.workspace.getConfiguration().get('qcode.apiKey') as string || '';
+            const panel = vscode.window.createWebviewPanel(
+                'qcodePanel',
+                'QCode Panel',
+                vscode.ViewColumn.One,
+                { enableScripts: true }
+            );
+            panel.webview.html = await getWebviewContentFromFile(apiKey, context);
+            panel.webview.onDidReceiveMessage(
+                message => {
+                    switch (message.type) {
+                        case 'setApiKey':
+                            vscode.workspace.getConfiguration().update(
+                                'qcode.apiKey',
+                                message.apiKey,
+                                vscode.ConfigurationTarget.Global
+                            );
+                            vscode.window.showInformationMessage('API Key updated');
+                            break;
+                        case 'sendChatMessage':
+                            queryGrok3(message.text)
+                                .then(response => {
+                                    panel.webview.postMessage({ type: 'chatResponse', text: response });
+                                })
+                                .catch(error => {
+                                    panel.webview.postMessage({ type: 'chatError', text: error.message });
+                                });
+                            break;
+                    }
+                },
+                undefined,
+                context.subscriptions
+            );
+        }),
         { dispose: () => ws.close() }
     );
 }
