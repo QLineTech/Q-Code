@@ -12,8 +12,32 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #71717a; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* Updated tab content styling */
+        .tab-content {
+            display: none;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 1.5rem;
+            z-index: 1; /* Add this */
+            opacity: 0; /* Add this */
+            transition: opacity 0.3s ease; /* Optional: adds smooth transition */
+        }
+        
+        .tab-content.active {
+            display: block;
+            position: relative;
+            z-index: 2; /* Add this - higher than inactive tabs */
+            opacity: 1; /* Add this */
+        }
+        
+        .tab-content-container {
+            position: relative;
+            height: calc(100vh - 3rem);
+            overflow-y: auto;
+        }
         .active-tab { border-bottom: 2px solid #0d9488; color: #0d9488; }
         .tab-btn { display: flex; align-items: center; justify-content: center; }
         .tab-btn i { font-size: 1.25rem; }
@@ -32,14 +56,13 @@
         /* Theme-specific styles */
         body[data-theme="light"] {
             background-color: #f4f4f5;
-            color: #18181b; /* Dark text for light theme */
+            color: #18181b;
         }
         body[data-theme="dark"] {
             background-color: #18181b;
-            color: #f4f4f5; /* Light text for dark theme */
+            color: #f4f4f5;
         }
 
-        /* Container background */
         body[data-theme="light"] .bg-white {
             background-color: #ffffff;
         }
@@ -47,12 +70,53 @@
             background-color: #27272a;
         }
 
-        /* Title colors */
-        body[data-theme="light"] .title-text {
-            color: #18181b; /* Dark text for light theme */
+        /* Improved text visibility for inputs and selects */
+        body[data-theme="light"] input,
+        body[data-theme="light"] textarea,
+        body[data-theme="light"] select {
+            color: #18181b;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.2);
         }
-        body[data-theme="dark"] .title-text {
-            color: #f4f4f5; /* Light text for dark theme */
+
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] textarea,
+        body[data-theme="dark"] select {
+            color: #f4f4f5;
+            background: rgba(39, 39, 42, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glass effect for text fields */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body[data-theme="dark"] .glass-input {
+            background: rgba(39, 39, 42, 0.7);
+        }
+
+        body[data-theme="dark"] .glass-input:focus {
+            background: rgba(39, 39, 42, 0.9);
+        }
+
+        /* Dropdown text visibility */
+        body[data-theme="light"] select option {
+            color: #18181b;
+            background: #ffffff;
+        }
+
+        body[data-theme="dark"] select option {
+            color: #f4f4f5;
+            background: #27272a;
         }
 
         /* Quick Action buttons */
@@ -73,23 +137,72 @@
 
         /* Ensure Tailwind text colors adapt */
         body[data-theme="dark"] .text-zinc-700 {
-            color: #d4d4d8; /* Lighter grey for dark theme */
+            color: #d4d4d8;
         }
         body[data-theme="dark"] .text-zinc-600 {
-            color: #a1a1aa; /* Lighter grey for dark theme */
+            color: #a1a1aa;
         }
         body[data-theme="dark"] .text-zinc-500 {
-            color: #71717a; /* Lighter grey for dark theme */
+            color: #71717a;
+        }
+
+        /* Full-screen adjustments */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .full-screen-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-navigation {
+            flex-shrink: 0;
+        }
+
+        .tab-content-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat tab specific styles */
+        #chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #chat-display {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 0; /* Remove bottom margin to avoid gap */
+        }
+
+        #chat-form {
+            flex-shrink: 0;
+            margin-top: 1rem; /* Add some spacing above the form */
+        }
+
+        /* Remove extra grey border inside the input area */
+        #chat-input {
+            border: none !important; /* Remove the inner border */
         }
     </style>
 </head>
-<body class="min-h-screen font-sans antialiased flex items-center justify-center p-4" data-theme="${THEME}">    <div class="w-full max-w-2xl bg-white rounded-xl overflow-hidden">
-    <div class="w-full max-w-2xl bg-white rounded-xl overflow-hidden">
+<body class="font-sans antialiased" data-theme="${THEME}">
+    <div class="full-screen-container bg-white rounded-xl overflow-hidden">
         <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
             <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
         </div>
-        <!-- Tab Navigation (unchanged) -->
-        <div class="flex border-b border-zinc-200 overflow-x-auto">
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation flex border-b border-zinc-200 overflow-x-auto">
             <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">
                 <i class="fas fa-comment hidden"></i>
                 <span>Chat</span>
@@ -120,15 +233,108 @@
             </button>
         </div>
 
-        <!-- Tab Content (unchanged) -->
-        <div class="p-6">
+        <!-- Tab Content -->
+        <div class="tab-content-container">
             <!-- Chat Tab -->
-            <div id="chat" class="tab-content active">
-                <div id="chat-display" class="h-64 overflow-y-auto bg-zinc-50 p-4 rounded-md border border-zinc-200 mb-4 prose prose-sm max-w-none"></div>
-                <div class="flex space-x-2">
-                    <input type="text" id="chat-input" placeholder="Ask anything..." class="flex-1 px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
-                    <button id="chat-send" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors">Send</button>
-                </div>
+            <div id="chat" class="tab-content active flex flex-col">
+                <div id="chat-display" class="p-4 rounded-md border border-zinc-200/20 prose prose-sm max-w-none"></div>                <form id="chat-form">
+                    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                        <div class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-600">
+                            <div class="flex flex-wrap items-center divide-gray-200 sm:divide-x sm:rtl:divide-x-reverse dark:divide-gray-600">
+                                <div class="flex items-center space-x-1 rtl:space-x-reverse sm:pe-4">
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 12 20">
+                                            <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M1 6v8a5 5 0 1 0 10 0V4.5a3.5 3.5 0 1 0-7 0V13a2 2 0 0 0 4 0V6"/>
+                                        </svg>
+                                        <span class="sr-only">Attach file</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+                                            <path d="M8 0a7.992 7.992 0 0 0-6.583 12.535 1 1 0 0 0 .12.183l.12.146c.112.145.227.285.326.4l5.245 6.374a1 1 0 0 0 1.545-.003l5.092-6.205c.206-.222.4-.455.578-.7l.127-.155a.934.934 0 0 0 .122-.192A8.001 8.001 0 0 0 8 0Zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"/>
+                                        </svg>
+                                        <span class="sr-only">Embed map</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+                                            <path d="M14.066 0H7v5a2 2 0 0 1-2 2H0v11a1.97 1.97 0 0 0 1.934 2h12.132A1.97 1.97 0 0 0 16 18V2a1.97 1.97 0 0 0-1.934-2ZM10.5 6a1.5 1.5 0 1 1 0 2.999A1.5 1.5 0 0 1 10.5 6Zm2.221 10.515a1 1 0 0 1-.858.485h-8a1 1 0 0 1-.9-1.43L5.6 10.039a.978.978 0 0 1 .936-.57 1 1 0 0 1 .9.632l1.181 2.981.541-1a.945.945 0 0 1 .883-.522 1 1 0 0 1 .879.529l1.832 3.438a1 1 0 0 1-.031.988Z"/>
+                                            <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.98 2.98 0 0 0 .13 5H5Z"/>
+                                        </svg>
+                                        <span class="sr-only">Upload image</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 20">
+                                            <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.96 2.96 0 0 0 .13 5H5Z"/>
+                                            <path d="M14.067 0H7v5a2 2 0 0 1-2 2H0v11a1.969 1.969 0 0 0 1.933 2h12.134A1.97 1.97 0 0 0 16 18V2a1.97 1.97 0 0 0-1.933-2ZM6.709 13.809a1 1 0 1 1-1.418 1.409l-2-2.013a1 1 0 0 1 0-1.412l2-2a1 1 0 0 1 1.414 1.414L5.412 12.5l1.297 1.309Zm6-.6-2 2.013a1 1 0 1 1-1.418-1.409l1.3-1.307-1.295-1.295a1 1 0 0 1 1.414-1.414l2 2a1 1 0 0 1-.001 1.408v.004Z"/>
+                                        </svg>
+                                        <span class="sr-only">Format code</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM13.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm-7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm3.5 9.5A5.5 5.5 0 0 1 4.6 11h10.81A5.5 5.5 0 0 1 10 15.5Z"/>
+                                        </svg>
+                                        <span class="sr-only">Add emoji</span>
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap items-center space-x-1 rtl:space-x-reverse sm:ps-4">
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 18">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.5 3h9.563M9.5 9h9.563M9.5 15h9.563M1.5 13a2 2 0 1 1 3.321 1.5L1.5 17h5m-5-15 2-1v6m-2 0h4"/>
+                                        </svg>
+                                        <span class="sr-only">Add list</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M18 7.5h-.423l-.452-1.09.3-.3a1.5 1.5 0 0 0 0-2.121L16.01 2.575a1.5 1.5 0 0 0-2.121 0l-.3.3-1.089-.452V2A1.5 1.5 0 0 0 11 .5H9A1.5 1.5 0 0 0 7.5 2v.423l-1.09.452-.3-.3a1.5 1.5 0 0 0-2.121 0L2.576 3.99a1.5 1.5 0 0 0 0 2.121l.3.3L2.423 7.5H2A1.5 1.5 0 0 0 .5 9v2A1.5 1.5 0 0 0 2 12.5h.423l.452 1.09-.3.3a1.5 1.5 0 0 0 0 2.121l1.415 1.413a1.5 1.5 0 0 0 2.121 0l.3-.3 1.09.452V18A1.5 1.5 0 0 0 9 19.5h2a1.5 1.5 0 0 0 1.5-1.5v-.423l1.09-.452.3.3a1.5 1.5 0 0 0 2.121 0l1.415-1.414a1.5 1.5 0 0 0 0-2.121l-.3-.3.452-1.09H18a1.5 1.5 0 0 0 1.5-1.5V9A1.5 1.5 0 0 0 18 7.5Zm-8 6a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/>
+                                        </svg>
+                                        <span class="sr-only">Settings</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M18 2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2ZM2 18V7h6.7l.4-.409A4.309 4.309 0 0 1 15.753 7H18v11H2Z"/>
+                                            <path d="M8.139 10.411 5.289 13.3A1 1 0 0 0 5 14v2a1 1 0 0 0 1 1h2a1 1 0 0 0 .7-.288l2.886-2.851-3.447-3.45ZM14 8a2.463 2.463 0 0 0-3.484 0l-.971.983 3.468 3.468.987-.971A2.463 2.463 0 0 0 14 8Z"/>
+                                        </svg>
+                                        <span class="sr-only">Timeline</span>
+                                    </button>
+                                    <button type="button" class="p-2 text-gray-500 rounded-sm cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+                                            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+                                        </svg>
+                                        <span class="sr-only">Download</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" data-tooltip-target="tooltip-fullscreen" class="p-2 text-gray-500 rounded-sm cursor-pointer sm:ms-auto hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 19 19">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 1h5m0 0v5m0-5-5 5M1.979 6V1H7m0 16.042H1.979V12M18 12v5.042h-5M13 12l5 5M2 1l5 5m0 6-5 5"/>
+                                </svg>
+                                <span class="sr-only">Full screen</span>
+                            </button>
+                            <div id="tooltip-fullscreen" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700">
+                                Show full screen
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
+                            <label for="chat-input" class="sr-only">Ask anything...</label>
+                            <textarea id="chat-input" rows="3" class="block w-full px-0 text-sm text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" placeholder="Ask anything..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700 mt-2">
+                            <i class="fas fa-paper-plane mr-2"></i> Send
+                        </button>
+                    </div>
+                </form>
+                <script>
+                    // Add Enter key submission functionality
+                    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault(); // Prevents adding a new line
+                            document.getElementById('chat-form').submit();
+                        }
+                    });
+                </script>
             </div>
 
             <!-- Chat History Tab -->
@@ -157,29 +363,68 @@
             <div id="settings" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Settings</h3>
                 <form id="settings-form" class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <label class="block text-sm font-medium text-zinc-600">WebSocket</label>
+                        <input type="checkbox" id="websocket-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">AI Models</label>
+                        <div class="mt-2 space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Grok3</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>OpenAI</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Anthropic</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Groq</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Ollama</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>DeepSeek</label>
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Grok3 API Keys</label>
-                        <textarea id="grok3-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="grok3-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-grok3" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">OpenAI API Keys</label>
-                        <textarea id="openai-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="openai-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-openai" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Anthropic API Keys</label>
-                        <textarea id="anthropic-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="anthropic-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-anthropic" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Groq API Keys</label>
-                        <textarea id="groq-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="groq-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-groq" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Ollama API Keys</label>
-                        <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-ollama" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">DeepSeek API Keys</label>
-                        <textarea id="deepseek-keys" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500" rows="3" placeholder="One per line"></textarea>
+                        <textarea id="deepseek-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-deepseek" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Temperature (0-1)</label>
@@ -193,20 +438,21 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium">Language</label>
-                        <select id="language" class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <select id="language" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                             <option value="en">English</option>
                             <option value="fr">Français</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium">Theme</label>
-                        <select id="theme" class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <select id="theme" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                             <option value="system">System</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>                </form>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>
+                </form>
             </div>
 
             <!-- Info Tab -->
@@ -251,9 +497,9 @@
             <div class="bg-white p-6 rounded-lg max-w-md w-full">
                 <h4 class="text-lg font-semibold text-zinc-700 mb-4">Contact Us</h4>
                 <form id="contact-form" class="space-y-4">
-                    <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
-                    <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md">
-                    <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md" rows="3"></textarea>
+                    <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input">
+                    <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input">
+                    <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input" rows="3"></textarea>
                     <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700">Send</button>
                 </form>
                 <button id="close-contact" class="mt-2 text-sm text-zinc-600 hover:underline">Close</button>
@@ -274,21 +520,70 @@
             </div>
         </div>
     </div>
+
     <script>
         const vscode = acquireVsCodeApi();
         let chatHistory = [];
         let isRecording = false;
-        
+
+        // Chat functionality with Enter key support
+        const chatInput = document.getElementById('chat-input');
+        document.getElementById('chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendChat();
+        });
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChat();
+            }
+        });
+
+        function sendChat() {
+            const text = chatInput.value.trim();
+            if (text) {
+                const chatDisplay = document.getElementById('chat-display');
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-teal-50 rounded-md"><span class="font-medium text-teal-700">You:</span> ${text}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                vscode.postMessage({ type: 'sendChatMessage', text });
+                chatInput.value = '';
+            }
+        }
+
+        // Settings form submission
         document.getElementById('settings-form').addEventListener('submit', e => {
             e.preventDefault();
             const settings = {
+                websocket: document.getElementById('websocket-toggle').checked,
+                aiModels: {
+                    grok3: document.getElementById('grok3-toggle').checked,
+                    openai: document.getElementById('openai-toggle').checked,
+                    anthropic: document.getElementById('anthropic-toggle').checked,
+                    groq: document.getElementById('groq-toggle').checked,
+                    ollama: document.getElementById('ollama-toggle').checked,
+                    deepseek: document.getElementById('deepseek-toggle').checked
+                },
+                grok3Keys: document.getElementById('grok3-keys').value,
+                openaiKeys: document.getElementById('openai-keys').value,
+                anthropicKeys: document.getElementById('anthropic-keys').value,
+                groqKeys: document.getElementById('groq-keys').value,
+                ollamaKeys: document.getElementById('ollama-keys').value,
+                deepseekKeys: document.getElementById('deepseek-keys').value,
+                temperature: document.getElementById('temperature').value,
+                volumeSensitivity: document.getElementById('volume-sensitivity').value,
                 language: document.getElementById('language').value,
                 theme: document.getElementById('theme').value
             };
             vscode.postMessage({ type: 'saveSettings', settings });
         });
 
-
+        // API key test buttons
+        ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'].forEach(model => {
+            document.getElementById(`test-${model}`).addEventListener('click', () => {
+                const keys = document.getElementById(`${model}-keys`).value;
+                vscode.postMessage({ type: 'testApiKey', model, keys });
+            });
+        });
 
         function showError(message) {
             const errorDiv = document.createElement('div');
@@ -298,7 +593,6 @@
             setTimeout(() => errorDiv.remove(), 3000);
         }
 
-        // Add proper state management
         let currentState = {
             isLoading: false,
             theme: 'system',
@@ -314,51 +608,30 @@
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remove active state from all tabs and contents
-                document.querySelectorAll('.tab-btn').forEach(b => {
-                    b.classList.remove('active-tab');
-                });
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
+                    content.style.display = 'none'; // Add this line
                 });
-
-                // Add active state to clicked tab and its content
+                
+                // Add active class to clicked tab and corresponding content
                 btn.classList.add('active-tab');
                 const tabContent = document.getElementById(btn.dataset.tab);
                 if (tabContent) {
                     tabContent.classList.add('active');
-                } else {
-                    console.error(`Tab content not found for tab: ${btn.dataset.tab}`);
+                    tabContent.style.display = 'block'; // Add this line
                 }
-
-                // Trigger tab-specific actions
+        
+                // Your existing tab-specific logic
                 switch (btn.dataset.tab) {
-                    case 'history':
-                        updateHistoryList();
-                        break;
-                    case 'settings':
-                        loadSettings();
-                        break;
-                    case 'info':
-                        loadInfo();
-                        break;
+                    case 'history': updateHistoryList(); break;
+                    case 'settings': loadSettings(); break;
+                    case 'info': loadInfo(); break;
                 }
             });
         });
 
-        // Chat functionality
-        document.getElementById('chat-send').addEventListener('click', () => {
-            const text = document.getElementById('chat-input').value;
-            if (text) {
-                const chatDisplay = document.getElementById('chat-display');
-                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-teal-50 rounded-md"><span class="font-medium text-teal-700">You:</span> ${text}</div>`;
-                chatDisplay.scrollTop = chatDisplay.scrollHeight;
-                vscode.postMessage({ type: 'sendChatMessage', text });
-                document.getElementById('chat-input').value = '';
-            }
-        });
-
-        // Chat history
         function updateHistoryList() {
             const historyList = document.getElementById('history-list');
             historyList.innerHTML = chatHistory.length ? 
@@ -372,17 +645,16 @@
                 '<p class="text-sm text-zinc-500">No chat history yet.</p>';
         }
 
-        // Account (basic login/register toggle)
         const accountContent = document.getElementById('account-content');
         accountContent.innerHTML = `
             <div id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-zinc-600">Email</label>
-                    <input type="email" id="email" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <input type="email" id="email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-zinc-600">Password</label>
-                    <input type="password" id="password" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <input type="password" id="password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                 </div>
                 <button id="login-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Login</button>
                 <p class="text-sm text-zinc-600">No account? <button id="show-register" class="text-teal-600 hover:underline">Register</button></p>
@@ -393,11 +665,11 @@
                 <div id="register-form" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Email</label>
-                        <input type="email" id="reg-email" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <input type="email" id="reg-email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-zinc-600">Password</label>
-                        <input type="password" id="reg-password" class="mt-1 w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <input type="password" id="reg-password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
                     </div>
                     <button id="register-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Register</button>
                     <p class="text-sm text-zinc-600">Have an account? <button id="show-login" class="text-teal-600 hover:underline">Login</button></p>
@@ -406,7 +678,6 @@
             document.getElementById('show-login').addEventListener('click', () => location.reload());
         });
 
-        // Live AI Assistant
         const micIcon = document.getElementById('mic-icon');
         const micStatus = document.getElementById('mic-status');
         const toggleBtn = document.getElementById('toggle-recording');
@@ -425,24 +696,10 @@
             }
         });
 
-        // Settings
         function loadSettings() {
             vscode.postMessage({ type: 'getSettings' });
         }
-        document.getElementById('settings-form').addEventListener('submit', e => {
-            e.preventDefault();
-            const settings = {
-                grok3Keys: document.getElementById('grok3-keys').value,
-                openaiKeys: document.getElementById('openai-keys').value,
-                anthropicKeys: document.getElementById('anthropic-keys').value,
-                groqKeys: document.getElementById('groq-keys').value,
-                ollamaKeys: document.getElementById('ollama-keys').value,
-                deepseekKeys: document.getElementById('deepseek-keys').value,
-                temperature: document.getElementById('temperature').value,
-                volumeSensitivity: document.getElementById('volume-sensitivity').value
-            };
-            vscode.postMessage({ type: 'saveSettings', settings });
-        });
+
         document.getElementById('temperature').addEventListener('input', e => {
             document.getElementById('temp-value').textContent = e.target.value;
         });
@@ -450,12 +707,10 @@
             document.getElementById('vol-value').textContent = e.target.value;
         });
 
-        // Info
         function loadInfo() {
             vscode.postMessage({ type: 'getInfo' });
         }
 
-        // Quick Actions
         document.querySelectorAll('#actions-list button[data-tab]').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelector(`.tab-btn[data-tab="${btn.dataset.tab}"]`).click();
@@ -489,11 +744,9 @@
             document.getElementById('contact-dialog').classList.add('hidden');
         });
 
-        // Message handler
         window.addEventListener('message', event => {
             const message = event.data;
             const chatDisplay = document.getElementById('chat-display');
-            
 
             if (message.type === 'chatResponse') {
                 chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-green-50 rounded-md"><span class="font-medium text-green-700">Grok3:</span> ${marked.parse(message.text)}</div>`;
@@ -507,6 +760,13 @@
                 chatHistory = message.history;
                 updateHistoryList();
             } else if (message.type === 'settings') {
+                document.getElementById('websocket-toggle').checked = message.settings.websocket || false;
+                document.getElementById('grok3-toggle').checked = message.settings.aiModels?.grok3 || true;
+                document.getElementById('openai-toggle').checked = message.settings.aiModels?.openai || true;
+                document.getElementById('anthropic-toggle').checked = message.settings.aiModels?.anthropic || true;
+                document.getElementById('groq-toggle').checked = message.settings.aiModels?.groq || true;
+                document.getElementById('ollama-toggle').checked = message.settings.aiModels?.ollama || true;
+                document.getElementById('deepseek-toggle').checked = message.settings.aiModels?.deepseek || true;
                 document.getElementById('grok3-keys').value = message.settings.grok3Keys || '';
                 document.getElementById('openai-keys').value = message.settings.openaiKeys || '';
                 document.getElementById('anthropic-keys').value = message.settings.anthropicKeys || '';
@@ -517,6 +777,8 @@
                 document.getElementById('volume-sensitivity').value = message.settings.volumeSensitivity || '50';
                 document.getElementById('temp-value').textContent = message.settings.temperature || '0.7';
                 document.getElementById('vol-value').textContent = message.settings.volumeSensitivity || '50';
+                document.getElementById('language').value = message.settings.language || 'en';
+                document.getElementById('theme').value = message.settings.theme || 'system';
             } else if (message.type === 'info') {
                 document.getElementById('tokens').textContent = message.info.tokens || 'N/A';
                 document.getElementById('requests').textContent = message.info.requests || '0';
@@ -528,10 +790,11 @@
                         ${lang}
                     </span>
                 `).join('') || 'None';
+            } else if (message.type === 'apiTestResult') {
+                showError(`${message.model} API test: ${message.success ? 'Success' : 'Failed'}`);
             }
         });
 
-        // Initial data requests
         vscode.postMessage({ type: 'getChatHistory' });
     </script>
 </body>

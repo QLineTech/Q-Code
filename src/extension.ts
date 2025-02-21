@@ -283,7 +283,7 @@ function connectWebSocket(settings: QCodeSettings) {
             
             ws.on('error', (error) => {
                 console.warn('WebSocket error, skipping:', error);
-                vscode.window.showWarningMessage('WebSocket connection failed, continuing without it.');
+                // vscode.window.showWarningMessage('WebSocket connection failed, continuing without it.');
                 ws?.close();
                 ws = undefined;
             });
