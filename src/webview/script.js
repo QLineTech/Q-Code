@@ -1,6 +1,20 @@
 const vscode = acquireVsCodeApi();
 let chatHistory = [];
 let isRecording = false;
+// Add these variables at the top with other globals
+let recordingTimer = null;
+let recordingStartTime = null;
+
+
+// Add this function to update recording time display
+function updateRecordingTime() {
+    if (!recordingStartTime) return;
+    
+    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const seconds = (elapsed % 60).toString().padStart(2, '0');
+    document.getElementById('recording-time').textContent = `Recording: ${minutes}:${seconds}`;
+}
 
 // Chat functionality
 const chatInput = document.getElementById('chat-input');
@@ -324,6 +338,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     vscode.postMessage({ type: 'getSettings' });
     vscode.postMessage({ type: 'getChatHistory' });
+
+    // Recording controls
+    const startButton = document.getElementById('start-recording');
+    const stopButton = document.getElementById('stop-recording');
+    const micIcon = document.getElementById('mic-icon');
+    const recordingIndicator = document.getElementById('recording-indicator');
+    const micStatus = document.getElementById('mic-status');
+    const recordingTime = document.getElementById('recording-time');
+
+    startButton.addEventListener('click', () => {
+        if (!startButton.disabled) {
+            vscode.postMessage({ type: 'startRecording' });
+            startRecordingUI();
+        }
+    });
+
+    stopButton.addEventListener('click', () => {
+        if (!stopButton.disabled) {
+            vscode.postMessage({ type: 'stopRecording' });
+            stopRecordingUI();
+        }
+    });
+
+    function startRecordingUI() {
+        isRecording = true;
+        recordingStartTime = Date.now();
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        micIcon.classList.add('text-red-600');
+        micIcon.classList.remove('text-teal-600');
+        recordingIndicator.classList.remove('hidden');
+        micStatus.textContent = 'Listening...';
+        recordingTime.classList.remove('hidden');
+        recordingTimer = setInterval(updateRecordingTime, 1000);
+    }
+
+    function stopRecordingUI() {
+        isRecording = false;
+        recordingStartTime = null;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        micIcon.classList.remove('text-red-600');
+        micIcon.classList.add('text-teal-600');
+        recordingIndicator.classList.add('hidden');
+        micStatus.textContent = 'Click to start listening...';
+        recordingTime.classList.add('hidden');
+        clearInterval(recordingTimer);
+    }
+
 });
 
 // Handle messages from the extension
@@ -370,6 +433,24 @@ window.addEventListener('message', event => {
         loadSettings(message.settings);
     } else if (message.type === 'apiTestResult') {
         showError(`${message.model} API test: ${message.success ? 'Success' : 'Failed'}`);
+    } else if (message.type === 'recordingStarted') {
+        startRecordingUI();
+    } else if (message.type === 'recordingStopped') {
+        stopRecordingUI();
+    } else if (message.type === 'transcription') {
+        // Switch to chat tab
+        const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
+        if (chatTabBtn) {
+            chatTabBtn.click(); // Trigger tab switch
+            
+            // Set transcription as chat input and send
+            const transcription = message.transcription;
+            chatInput.value = transcription;
+            sendChat();
+            
+            // Optional: Show notification
+            showNotification(`Transcription received: "${transcription}"`);
+        }
     }
 });
 

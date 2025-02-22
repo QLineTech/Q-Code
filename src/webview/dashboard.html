@@ -152,10 +152,23 @@
             <!-- Live AI Assistant Tab -->
             <div id="live" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Live AI Assistant</h3>
-                <div class="text-center">
-                    <svg id="mic-icon" class="w-16 h-16 mx-auto text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                <div class="text-center p-4">
+                    <div class="relative inline-block">
+                        <svg id="mic-icon" class="w-16 h-16 mx-auto text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                        </svg>
+                        <div id="recording-indicator" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full hidden"></div>
+                    </div>
                     <p id="mic-status" class="mt-2 text-sm text-zinc-600">Click to start listening...</p>
-                    <button id="toggle-recording" class="mt-4 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors">Start</button>
+                    <div class="mt-4 space-x-2">
+                        <button id="start-recording" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Start Recording
+                        </button>
+                        <button id="stop-recording" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Stop Recording
+                        </button>
+                    </div>
+                    <p id="recording-time" class="mt-2 text-sm text-zinc-600 hidden">Recording: 00:00</p>
                 </div>
             </div>
 
