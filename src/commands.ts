@@ -67,7 +67,9 @@ export const commandMap: { [key: string]: () => Promise<void> } = {
     },
     'analyze': async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) throw new Error('No active editor found');
+        if (!editor) {
+            throw new Error('No active editor found');
+        }
         const content = editor.document.getText();
         const prompt = `Analyze this code and suggest improvements:\n\n${content}`;
         const settings = vscode.workspace.getConfiguration().get('qcode') as QCodeSettings;
