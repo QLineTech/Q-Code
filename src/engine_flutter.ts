@@ -4,14 +4,41 @@ import { ExtensionContext } from 'vscode'; // Add this import
 
 // engine_flutter.ts
 export class FlutterEngine {
-    static async processPrompt(prompt: string, context: EditorContext, extContext: ExtensionContext): Promise<string> { 
+    static async processPrompt(prompt: string, context: EditorContext, extContext: ExtensionContext,states: {
+        attachRelated: boolean;
+        thinking: boolean;
+        webAccess: boolean;
+        autoApply: boolean;
+        folderStructure: boolean;
+    }): Promise<string> { 
         let response = `Flutter project detected. Processing prompt: "${prompt}"\n`;
         
-        // Add Flutter-specific logic here
-        if (prompt.toLowerCase().includes('widget')) {
-            response += 'This appears to be a widget-related query.\n';
-            // Add more Flutter-specific processing
+        // Handle web access
+        if (states.webAccess) {
+            // This is a placeholder - you'd need to implement actual web search
+            response += '[Web access enabled - search results would be included here]\n';
         }
+
+        // Handle thinking (verbose processing)
+        if (states.thinking) {
+            response += `[Processing thoughts: Analyzing "${prompt}" with context]\n`;
+        }
+
+        // Append additional context based on states
+        // if (states.attachRelated && editorContext.relatedFiles) {
+        //     response += `\nRelated Files:\n${editorContext.relatedFiles.join('\n')}`;
+        // }
+        // if (states.folderStructure && editorContext.project.folderStructure) {
+        //     response += `\nFolder Structure:\n${editorContext.project.folderStructure}`;
+        // }
+
+        // Handle auto-apply (placeholder - implementation depends on your needs)
+        if (states.autoApply) {
+            response += '\n[Auto-apply enabled - changes would be applied automatically]';
+            // Add logic here to apply changes to the editor if needed
+        }
+
+        
         
         response += `Context: ${context.fileName} (${context.fileType} file)`;
 

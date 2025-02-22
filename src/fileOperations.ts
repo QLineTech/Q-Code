@@ -20,3 +20,10 @@ export async function writeFile(filePath: string, content: string): Promise<void
         throw new Error(`Failed to write file: ${filePath}`);
     }
 }
+
+async function getFolderStructure(rootPath: string): Promise<string> {
+    const folderStructure = await vscode.workspace.fs.readDirectory(vscode.Uri.file(rootPath));
+    return folderStructure
+        .map(([name, type]) => `${type === vscode.FileType.Directory ? '📁' : '📄'} ${name}`)
+        .join('\n');
+}

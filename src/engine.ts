@@ -8,12 +8,20 @@ import { EditorContext, ProjectType } from './types';
 import { ExtensionContext } from 'vscode';
 
 export class EngineHandler {
-    static async processPrompt(prompt: string, editorContext: EditorContext, extContext: ExtensionContext): Promise<string> {        
+    static async processPrompt(prompt: string, editorContext: EditorContext, extContext: ExtensionContext,
+        states: {
+            attachRelated: boolean;
+            thinking: boolean;
+            webAccess: boolean;
+            autoApply: boolean;
+            folderStructure: boolean;
+        },
+    ): Promise<string> {        
         const projectType = editorContext.project.type.type;
-        
+
         switch (projectType) {
             case 'flutter':
-                return await FlutterEngine.processPrompt(prompt, editorContext, extContext);
+                return await FlutterEngine.processPrompt(prompt, editorContext, extContext, states);
             // case 'python':
             //     return await PythonEngine.processPrompt(prompt, context);
             // case 'laravel':

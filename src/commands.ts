@@ -94,7 +94,14 @@ async function detectProjectType(
 export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
-    provider: QCodePanelProvider
+    provider: QCodePanelProvider,
+    states: {
+        attachRelated: boolean;
+        thinking: boolean;
+        webAccess: boolean;
+        autoApply: boolean;
+        folderStructure: boolean;
+    }
 ) {
     try {
         const editor = vscode.window.activeTextEditor;
@@ -135,9 +142,8 @@ export async function sendChatMessage(
 
         provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
         
-        // Use EngineHandler instead of direct JSON response
-        const response = editorContext 
-            ? await EngineHandler.processPrompt(text, editorContext, context) // Pass context
+        const response = editorContext
+            ? await EngineHandler.processPrompt(text, editorContext, context, states)
             : 'No editor context available.';
             
         provider.sendMessage({ 
@@ -163,6 +169,8 @@ export async function sendChatMessage(
         console.error('Chat error:', error);
     }
 }
+
+
 
 export async function getChatHistory(context: vscode.ExtensionContext, provider: QCodePanelProvider) {
     const chatHistory = context.globalState.get('qcode.chatHistory', []);
