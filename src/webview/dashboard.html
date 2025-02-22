@@ -52,82 +52,91 @@
         <!-- Tab Content -->
         <div class="tab-content-container">
             <!-- Chat Tab -->
-            <div id="chat" class="tab-content active flex flex-col">
-                <div id="chat-display" class="p-4 rounded-md border border-zinc-200/20 prose prose-sm max-w-none"></div>
-                <form id="chat-form">
-                    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-                        <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
-                            <label for="chat-input" class="sr-only">Ask anything...</label>
-                            <textarea id="chat-input" rows="3" class="block w-full px-0 text-base text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" placeholder="Ask anything..." required></textarea>
-                        </div>
-                    </div>
-                    <!-- AI Model Toggles -->
-                    <div class="mb-4 px-4 grid grid-cols-2 md:grid-cols-3 gap-2">
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-grok3-toggle" class="text-sm text-zinc-600">Grok3</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-openai-toggle" class="text-sm text-zinc-600">OpenAI</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-anthropic-toggle" class="text-sm text-zinc-600">Anthropic</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-groq-toggle" class="text-sm text-zinc-600">Groq</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-ollama-toggle" class="text-sm text-zinc-600">Ollama</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="chat-deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-deepseek-toggle" class="text-sm text-zinc-600">DeepSeek</label>
-                        </div>
-                        <hr />
-                        <!-- New State Toggles -->
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="attach-related-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="attach-related-toggle" class="text-sm text-zinc-600 flex items-center">
-                                <i class="fas fa-link mr-1"></i> Related
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="thinking-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="thinking-toggle" class="text-sm text-zinc-600 flex items-center">
-                                <i class="fas fa-brain mr-1"></i> Thinking
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="web-access-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="web-access-toggle" class="text-sm text-zinc-600 flex items-center">
-                                <i class="fas fa-globe mr-1"></i> Web
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="auto-apply-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="auto-apply-toggle" class="text-sm text-zinc-600 flex items-center">
-                                <i class="fas fa-robot mr-1"></i> Auto
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="checkbox" id="folder-structure-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="folder-structure-toggle" class="text-sm text-zinc-600 flex items-center">
-                                <i class="fas fa-folder mr-1"></i> Folder
-                            </label>
-                        </div>
-                    </div>
-                    <div class="flex justify-end px-4">
-                        <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700">
-                            <i class="fas fa-paper-plane mr-2"></i> Send
-                        </button>
-                    </div>
-                </form>
+<div id="chat" class="tab-content active flex flex-col">
+    <div id="chat-display" class="p-4 rounded-md border border-zinc-200/20 prose prose-sm max-w-none"></div>
+    <form id="chat-form" class="space-y-3">
+        <div class="w-full border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+            <textarea 
+                id="chat-input" 
+                rows="3" 
+                class="block w-full px-4 py-2 text-base text-gray-800 bg-white border-0 rounded-lg focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" 
+                placeholder="Ask anything..." 
+                required
+            ></textarea>
+        </div>
+        
+        <!-- Toggles Container -->
+        <div class="px-2 grid grid-cols-3 gap-2 text-sm text-zinc-600">
+            <!-- AI Model Toggles -->
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-grok3-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-grok3-toggle">Grok3</label>
             </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-openai-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-openai-toggle">OpenAI</label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-anthropic-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-anthropic-toggle">Anthropic</label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-groq-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-groq-toggle">Groq</label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-ollama-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-ollama-toggle">Ollama</label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="chat-deepseek-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="chat-deepseek-toggle">DeepSeek</label>
+            </div>
+            
+            <!-- State Toggles -->
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="attach-related-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="attach-related-toggle" class="flex items-center">
+                    <i class="fas fa-link mr-1"></i>Related
+                </label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="thinking-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="thinking-toggle" class="flex items-center">
+                    <i class="fas fa-brain mr-1"></i>Thinking
+                </label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="web-access-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="web-access-toggle" class="flex items-center">
+                    <i class="fas fa-globe mr-1"></i>Web
+                </label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="auto-apply-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="auto-apply-toggle" class="flex items-center">
+                    <i class="fas fa-robot mr-1"></i>Auto
+                </label>
+            </div>
+            <div class="flex items-center space-x-1">
+                <input type="checkbox" id="folder-structure-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                <label for="folder-structure-toggle" class="flex items-center">
+                    <i class="fas fa-folder mr-1"></i>Folder
+                </label>
+            </div>
+        </div>
 
+        <div class="flex justify-end px-2">
+            <button 
+                type="submit" 
+                id="chat-send" 
+                class="inline-flex items-center px-4 py-1.5 text-sm font-medium text-white border border-gray-200/50 bg-teal-600 rounded-lg hover:bg-teal-700 focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900"
+            >
+                <i class="fas fa-paper-plane mr-1"></i>Send
+            </button>
+        </div>
+    </form>
+</div>
             <!-- Chat History Tab -->
             <div id="history" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Chat History</h3>
