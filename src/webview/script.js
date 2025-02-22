@@ -74,14 +74,13 @@ function setupChatToggleListeners() {
         const chatToggle = document.getElementById(`chat-${model}-toggle`);
         if (chatToggle) {
             chatToggle.addEventListener('change', () => {
-                syncToggles('chat-', '');
-                updateSettings();
+                syncToggles('chat-', ''); // Sync chat to settings
+                updateSettings(); // Save the updated settings
                 console.log(`Chat toggle ${model} changed to ${chatToggle.checked}`);
             });
         }
     });
 }
-
 // Add event listeners for settings toggles
 function setupSettingsToggleListeners() {
     const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
@@ -89,14 +88,15 @@ function setupSettingsToggleListeners() {
         const settingsToggle = document.getElementById(`${model}-toggle`);
         if (settingsToggle) {
             settingsToggle.addEventListener('change', () => {
-                syncToggles('', 'chat-');
+                syncToggles('', 'chat-'); // Sync settings to chat
+                updateSettings(); // Save the updated settings
                 console.log(`Settings toggle ${model} changed to ${settingsToggle.checked}`);
             });
         }
     });
 }
 
-// Update settings when chat toggles change
+// Update settings when toggles or other inputs change
 function updateSettings() {
     const settings = {
         websocket: document.getElementById('websocket-toggle')?.checked || false,
@@ -113,14 +113,14 @@ function updateSettings() {
         theme: document.getElementById('theme')?.value || 'system'
     };
     vscode.postMessage({ type: 'saveSettings', settings });
-    console.log('Settings updated:', settings.aiModels);
+    console.log('Settings updated and saved:', settings);
 }
-
 // Settings form submission
 document.getElementById('settings-form').addEventListener('submit', e => {
     e.preventDefault();
     updateSettings();
-    syncToggles('', 'chat-');
+    syncToggles('', 'chat-'); // Ensure chat toggles reflect settings after save
+    console.log('Settings form submitted');
 });
 
 // API key test buttons
@@ -260,6 +260,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded');
     setupChatToggleListeners();
     setupSettingsToggleListeners();
+    
+    // Add change listeners to other settings inputs
+    ['websocket-toggle', 'temperature', 'volume-sensitivity', 'language', 'theme'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', () => {
+                updateSettings();
+                console.log(`${id} changed, settings updated`);
+            });
+        }
+    });
+
     loadSettings(); // Request settings immediately on load
 });
 
