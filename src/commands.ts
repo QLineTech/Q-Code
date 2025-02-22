@@ -95,15 +95,16 @@ export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
     provider: QCodePanelProvider,
-    states: {
-        attachRelated: boolean;
-        thinking: boolean;
-        webAccess: boolean;
-        autoApply: boolean;
-        folderStructure: boolean;
-    }
+    // states: {
+    //     attachRelated: boolean;
+    //     thinking: boolean;
+    //     webAccess: boolean;
+    //     autoApply: boolean;
+    //     folderStructure: boolean;
+    // }
 ) {
     try {
+        var states = undefined;
         if(states  === undefined) {
             states = {
                 attachRelated: false,
