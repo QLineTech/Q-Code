@@ -12,9 +12,6 @@ const API_URLS: { [key: string]: string } = {
     anthropicAI: 'https://api.anthropic.com/v1/complete'
 };
 
-interface AIResponse {
-    choices: Array<{ message: { content: string } }>;
-}
 
 const rateLimiter = new Map<string, number>();
 

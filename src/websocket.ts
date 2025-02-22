@@ -1,25 +1,15 @@
 import WebSocket from 'ws';
 import * as vscode from 'vscode';
-import { QCodeSettings } from './types';
+import { QCodeSettings, ServerMessage } from './types';
 
 let ws: WebSocket | undefined;
 let wsReconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-// Define the nested message interfaces
-interface TranscriptionData {
-    status: string;
-    transcription: string;
-}
 
-interface ServerMessage {
-    status: string;
-    message: string;
-    transcription: TranscriptionData;
-}
 
 export function connectWebSocket(settings: QCodeSettings) {
-    if (!settings.websocket.active) return;
+    if (!settings.websocket.active) {return;}
     if (wsReconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
         vscode.window.showWarningMessage('Max WebSocket reconnect attempts reached.');
         wsReconnectAttempts = 0;

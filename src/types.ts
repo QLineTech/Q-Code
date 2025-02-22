@@ -27,7 +27,23 @@ export interface EditorContext {
     };
 }
 
-// Define the type for aiModels based on your settings
+export interface AIModelConfig {
+    active: boolean;
+    apiKeys: string[]; 
+    models: string[];
+    temperature: number; // 0 to 1
+    volumeSensitivity: number;
+}
+
+export interface ChatStates {
+    attachRelated: boolean;
+    thinking: boolean;
+    webAccess: boolean;
+    autoApply: boolean;
+    folderStructure: boolean;
+    extra: string[];
+}
+
 export interface AIModels {
     grok3: boolean;
     openai: boolean;
@@ -51,6 +67,17 @@ export interface ChatHistoryEntry {
     context: EditorContext | null;
 }
 
+export interface TranscriptionData {
+    status: string;
+    transcription: string;
+}
+
+export interface ServerMessage {
+    status: string;
+    message: string;
+    transcription: TranscriptionData;
+}
+
 export interface CodeChange {
     file: string;
     line: number;
@@ -64,6 +91,14 @@ export interface CodeChange {
 
 
 export interface QCodeSettings {
+    aiModels: {
+        grok3: AIModelConfig;
+        openai: AIModelConfig;
+        anthropic: AIModelConfig;
+        groq: AIModelConfig;
+        ollama: AIModelConfig;
+        deepseek: AIModelConfig;
+    };
     grok3AI: { active: boolean; apiKeys: string[] };
     openAI: { active: boolean; apiKeys: string[] };
     ollamaAI: { active: boolean; apiKeys: string[] };
@@ -73,6 +108,7 @@ export interface QCodeSettings {
     language: string;
     websocket: { active: boolean; address: string };
     analyzeAIs: string[];
+    chatStates: ChatStates; 
 }
 
 
