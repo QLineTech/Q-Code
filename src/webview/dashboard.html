@@ -61,8 +61,35 @@
                             <textarea id="chat-input" rows="3" class="block w-full px-0 text-base text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" placeholder="Ask anything..." required></textarea>
                         </div>
                     </div>
-                    <div class="flex justify-end">
-                        <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700 mt-2">
+                    <!-- AI Model Toggles -->
+                    <div class="mb-4 px-4 grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-grok3-toggle" class="text-sm text-zinc-600">Grok3</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-openai-toggle" class="text-sm text-zinc-600">OpenAI</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-anthropic-toggle" class="text-sm text-zinc-600">Anthropic</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-groq-toggle" class="text-sm text-zinc-600">Groq</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-ollama-toggle" class="text-sm text-zinc-600">Ollama</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="chat-deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="chat-deepseek-toggle" class="text-sm text-zinc-600">DeepSeek</label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end px-4">
+                        <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700">
                             <i class="fas fa-paper-plane mr-2"></i> Send
                         </button>
                     </div>
