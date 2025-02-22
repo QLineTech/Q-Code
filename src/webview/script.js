@@ -175,7 +175,7 @@ function updateHistoryList() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = chatHistory.length ?
         chatHistory.map(item => `
-            <div class="p-3 bg-zinc-50 rounded-md border border-zinc-200">
+            <div class="p-3 bg-zinc-50 rounded-md border border-zinc-200" style="overflow: auto">
                 <p class="text-sm text-zinc-600"><strong>Prompt:</strong> ${item.prompt}</p>
                 <p class="text-sm text-zinc-600 prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
                 ${item.context ? `
