@@ -27,6 +27,16 @@ export interface EditorContext {
     };
 }
 
+// Define the type for aiModels based on your settings
+export interface AIModels {
+    grok3: boolean;
+    openai: boolean;
+    anthropic: boolean;
+    groq: boolean;
+    ollama: boolean;
+    deepseek: boolean;
+}
+
 export interface EngineSettings {
     activeAIs: string[];
     temperature: number;
@@ -41,6 +51,18 @@ export interface ChatHistoryEntry {
     context: EditorContext | null;
 }
 
+export interface CodeChange {
+    file: string;
+    line: number;
+    position: number;
+    finish_line: number;
+    finish_position: number;
+    action: 'add' | 'replace' | 'remove';
+    reason: string;
+    newCode: string;
+}
+
+
 export interface QCodeSettings {
     grok3AI: { active: boolean; apiKeys: string[] };
     openAI: { active: boolean; apiKeys: string[] };
@@ -52,6 +74,7 @@ export interface QCodeSettings {
     websocket: { active: boolean; address: string };
     analyzeAIs: string[];
 }
+
 
 export interface ProjectType {
     type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'unknown';

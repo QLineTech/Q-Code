@@ -2,6 +2,7 @@ import Axios, { AxiosError } from 'axios';
 import * as vscode from 'vscode';
 import { QCodeSettings, getValidSettings, validateSettings } from './settings';
 import { ExtensionContext } from 'vscode';
+import { CodeChange } from './types';
 
 const API_URLS: { [key: string]: string } = {
     grok3AI: 'https://api.x.ai/v1/chat/completions',
@@ -66,7 +67,7 @@ export class QCodeAIProvider {
         });
     }
 
-    private async refreshSettings(): Promise<void> {
+    public async refreshSettings(): Promise<void> {
         const rawSettingsUnknown = this._context.globalState.get('qcode.settings');
         const rawSettings = typeof rawSettingsUnknown === 'object' && rawSettingsUnknown !== null 
             ? rawSettingsUnknown as Partial<QCodeSettings & {
@@ -211,6 +212,8 @@ export class QCodeAIProvider {
         return true;
     }
 
+    
+
     public getCurrentSettings(): typeof this._settings {
         return { ...this._settings };
     }
@@ -224,3 +227,76 @@ export async function queryAI(
     const aiProvider = new QCodeAIProvider(context);
     return aiProvider.queryAI(prompt, provider);
 }
+
+// Function to clean and parse the response
+export const parseAIResponse = (rawResponse: string): CodeChange[] => {
+    // Remove potential markdown and whitespace
+    let cleanedResponse = rawResponse
+        .replace(/```json\s*/g, '')
+        .replace(/```\s*/g, '')
+        .trim();
+
+    // Parse JSON
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(cleanedResponse);
+    } catch (e) {
+        throw new Error('Invalid JSON format in AI response');
+    }
+
+    // Validate array
+    if (!Array.isArray(parsed)) {
+        throw new Error('Response must be a JSON array');
+    }
+
+    // Validate each object in the array
+    const validatedChanges = parsed.map((item: unknown, index: number) => {
+        if (typeof item !== 'object' || item === null) {
+            throw new Error(`Item at index ${index} is not an object`);
+        }
+
+        const obj = item as Record<string, unknown>;
+
+        // Required fields check
+        const requiredFields: (keyof CodeChange)[] = [
+            'file', 'line', 'position', 'finish_line', 
+            'finish_position', 'action', 'reason', 'newCode'
+        ];
+        
+        for (const field of requiredFields) {
+            if (!(field in obj)) {
+                throw new Error(`Missing required field "${field}" at index ${index}`);
+            }
+        }
+
+        // Type checking
+        if (typeof obj.file !== 'string') {
+            throw new Error(`Invalid "file" type at index ${index}: must be string`);
+        }
+        if (typeof obj.line !== 'number') {
+            throw new Error(`Invalid "line" type at index ${index}: must be number`);
+        }
+        if (typeof obj.position !== 'number') {
+            throw new Error(`Invalid "position" type at index ${index}: must be number`);
+        }
+        if (typeof obj.finish_line !== 'number') {
+            throw new Error(`Invalid "finish_line" type at index ${index}: must be number`);
+        }
+        if (typeof obj.finish_position !== 'number') {
+            throw new Error(`Invalid "finish_position" type at index ${index}: must be number`);
+        }
+        if (!['add', 'replace', 'remove'].includes(obj.action as string)) {
+            throw new Error(`Invalid "action" value at index ${index}: must be "add", "replace", or "remove"`);
+        }
+        if (typeof obj.reason !== 'string') {
+            throw new Error(`Invalid "reason" type at index ${index}: must be string`);
+        }
+        if (typeof obj.newCode !== 'string') {
+            throw new Error(`Invalid "newCode" type at index ${index}: must be string`);
+        }
+
+        return obj as unknown as CodeChange;
+    });
+
+    return validatedChanges;
+};

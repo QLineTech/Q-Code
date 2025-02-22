@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export async function readFile(filePath: string): Promise<string> {
+export async function readFile(filePath: string, encoding: string = 'utf8'): Promise<string> {
     try {
         const uri = vscode.Uri.file(filePath);
         const content = await vscode.workspace.fs.readFile(uri);
@@ -11,7 +11,7 @@ export async function readFile(filePath: string): Promise<string> {
     }
 }
 
-export async function writeFile(filePath: string, content: string): Promise<void> {
+export async function writeFile(filePath: string, content: string, encoding: string = 'utf8'): Promise<void> {
     try {
         const uri = vscode.Uri.file(filePath);
         await vscode.workspace.fs.writeFile(uri, Buffer.from(content));

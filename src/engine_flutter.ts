@@ -1,4 +1,5 @@
-import { queryAI } from "./ai";
+import { parseAIResponse, queryAI } from "./ai";
+import { readFile, writeFile } from "./fileOperations";
 import { EditorContext, EngineSettings } from "./types";
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode'; // Add this import
@@ -127,15 +128,97 @@ export class FlutterEngine {
         // Query AI
         try {
             const aiAnalysis = await queryAI(aiPrompt, extContext, selectedAI as 'grok3AI' | 'openAI' | 'ollamaAI' | 'groqAI' | 'anthropicAI');
-            response += '\nResponse:\n```json\n' + aiAnalysis + '\n```';
+            // response += '\nResponse:\n```json\n' + aiAnalysis + '\n```';
+            const codeChanges = parseAIResponse(aiAnalysis);
+            if (states.autoApply) {
+                response += '\n[Auto-apply enabled - changes would be applied automatically]';
+                
+                // Auto-apply implementation
+                for (const change of codeChanges) {
+                    try {
+                        // Read the file content (assuming you have a file system access method)
+                        let fileContent = await readFile(context.filePath, 'utf8');
+                        let lines = fileContent.split('\n');
+    
+                        // Validate line numbers
+                        if (change.line < 1 || change.finish_line > lines.length) {
+                            throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
+                        }
+    
+                        switch (change.action) {
+                            case 'add': {
+                                // Add new code at specified position
+                                let targetLine = lines[change.line - 1];
+                                let newLine = targetLine.slice(0, change.position) + 
+                                            change.newCode + 
+                                            targetLine.slice(change.position);
+                                lines[change.line - 1] = newLine;
+                                break;
+                            }
+                            
+                            case 'replace': {
+                                if (change.line === change.finish_line) {
+                                    // Single line replacement
+                                    let targetLine = lines[change.line - 1];
+                                    let newLine = targetLine.slice(0, change.position) + 
+                                                change.newCode + 
+                                                targetLine.slice(change.finish_position);
+                                    lines[change.line - 1] = newLine;
+                                } else {
+                                    // Multi-line replacement
+                                    let before = lines[change.line - 1].slice(0, change.position);
+                                    let after = lines[change.finish_line - 1].slice(change.finish_position);
+                                    // Replace the range with new code
+                                    lines.splice(
+                                        change.line - 1,
+                                        change.finish_line - change.line + 1,
+                                        before + change.newCode + after
+                                    );
+                                }
+                                break;
+                            }
+                            
+                            case 'remove': {
+                                if (change.line === change.finish_line) {
+                                    // Single line removal
+                                    let targetLine = lines[change.line - 1];
+                                    let newLine = targetLine.slice(0, change.position) + 
+                                                targetLine.slice(change.finish_position);
+                                    lines[change.line - 1] = newLine;
+                                } else {
+                                    // Multi-line removal
+                                    let before = lines[change.line - 1].slice(0, change.position);
+                                    let after = lines[change.finish_line - 1].slice(change.finish_position);
+                                    lines.splice(
+                                        change.line - 1,
+                                        change.finish_line - change.line + 1,
+                                        before + after
+                                    );
+                                }
+                                break;
+                            }
+                        }
+    
+                        // Write the modified content back to the file
+                        let newContent = lines.join('\n');
+                        await writeFile(context.filePath, newContent, 'utf8');
+                        
+                        response += `\n[Applied ${change.action} to ${change.file}:${change.line} - ${change.reason}]`;
+    
+                    } catch (error) {
+                        response += `\n[Failed to apply change to ${change.file}:${change.line} - ${
+                            error instanceof Error ? error.message : 'Unknown error'
+                        }]`;
+                    }
+                }
+            }
+            
+            response += '\nResponse:\n```json\n' + JSON.stringify(codeChanges, null, 2) + '\n```';
         } catch (error) {
             response += `\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }
 
-        if (states.autoApply) {
-            response += '\n[Auto-apply enabled - changes would be applied automatically]';
-            // Implementation for auto-apply would go here
-        }
+       
         
         return response;
     }
