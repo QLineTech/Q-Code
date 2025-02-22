@@ -12,11 +12,18 @@ export interface EditorContext {
         endCharacter: number;
     } | null;
     filePath: string;
-    cursorPosition: { line: number; character: number };
+    cursorPosition: { 
+        line: number; 
+        character: number 
+    };
     isDirty: boolean;
     project: {
         workspaceName: string;
-        directories: { name: string; path: string }[];
+        directories: { 
+            name: string; 
+            path: string 
+        }[];
+        type: ProjectType;  // Added project type detection result
     };
 }
 
@@ -38,4 +45,10 @@ export interface QCodeSettings {
     language: string;
     websocket: { active: boolean; address: string };
     analyzeAIs: string[];
+}
+
+export interface ProjectType {
+    type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'unknown';
+    confidence: number; // 0-1 scale
+    indicators: string[];
 }

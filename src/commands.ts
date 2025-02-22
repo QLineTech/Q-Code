@@ -3,7 +3,91 @@ import * as path from 'path';
 import { QCodePanelProvider } from './webview';
 import { queryAI } from './ai';
 import { readFile, writeFile } from './fileOperations';
-import { EditorContext, ChatHistoryEntry, QCodeSettings } from './types';
+import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType } from './types';
+
+async function detectProjectType(
+    editorContext: EditorContext | null,
+    workspaceFolders: typeof vscode.workspace.workspaceFolders
+): Promise<ProjectType> {
+    const indicators: string[] = [];
+    let projectType: ProjectType = { type: 'unknown', confidence: 0, indicators };
+
+    if (!workspaceFolders?.length) {
+        return projectType;
+    }
+
+    try {
+        // Check editor context first if available
+        if (editorContext) {
+            const fileType = editorContext.fileType.toLowerCase();
+            const fileName = editorContext.fileName.toLowerCase();
+
+            // Language-specific checks
+            if (fileType === 'dart') {
+                projectType = { type: 'flutter', confidence: 0.7, indicators: ['Dart file detected'] };
+            } else if (fileType === 'python') {
+                projectType = { type: 'python', confidence: 0.6, indicators: ['Python file detected'] };
+            } else if (fileType === 'php') {
+                projectType = { type: 'laravel', confidence: 0.5, indicators: ['PHP file detected'] };
+            } else if (['javascript', 'typescript'].includes(fileType)) {
+                projectType = { 
+                    type: fileType as 'javascript' | 'typescript', 
+                    confidence: 0.6, 
+                    indicators: [`${fileType} file detected`] 
+                };
+            }
+        }
+
+        // Analyze workspace files for stronger evidence
+        for (const folder of workspaceFolders) {
+            const folderPath = folder.uri.fsPath;
+            
+            // Helper function to check file existence
+            const fileExists = async (filePath: string): Promise<boolean> => {
+                try {
+                    await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
+                    return true;
+                } catch {
+                    return false;
+                }
+            };
+
+            // Flutter detection
+            if (await fileExists(`${folderPath}/pubspec.yaml`)) {
+                indicators.push('pubspec.yaml found');
+                if (projectType.type === 'flutter' || projectType.type === 'unknown') {
+                    projectType = { type: 'flutter', confidence: 0.95, indicators };
+                }
+            }
+
+            // Laravel detection
+            if (await fileExists(`${folderPath}/composer.json`)) {
+                indicators.push('composer.json found');
+                const artisanExists = await fileExists(`${folderPath}/artisan`);
+                if (artisanExists) {
+                    indicators.push('artisan file found');
+                    projectType = { type: 'laravel', confidence: 0.98, indicators };
+                } else if (projectType.type === 'unknown') {
+                    projectType = { type: 'laravel', confidence: 0.7, indicators };
+                }
+            }
+
+            // Python detection
+            if (await fileExists(`${folderPath}/requirements.txt`) || 
+                await fileExists(`${folderPath}/pyproject.toml`)) {
+                indicators.push('Python project files found');
+                if (projectType.type === 'python' || projectType.type === 'unknown') {
+                    projectType = { type: 'python', confidence: 0.9, indicators };
+                }
+            }
+        }
+
+        return projectType;
+    } catch (error) {
+        console.error('Project type detection error:', error);
+        return { type: 'unknown', confidence: 0, indicators: ['Detection failed'] };
+    }
+}
 
 export async function sendChatMessage(text: string, context: vscode.ExtensionContext, provider: QCodePanelProvider) {
     try {
@@ -29,7 +113,12 @@ export async function sendChatMessage(text: string, context: vscode.ExtensionCon
                 filePath: document.fileName,
                 cursorPosition: { line: selection.active.line + 1, character: selection.active.character },
                 isDirty: document.isDirty,
-                project: { workspaceName: vscode.workspace.name || 'Unnamed Workspace', directories: projectInfo }
+                project: { 
+                    workspaceName: vscode.workspace.name || 'Unnamed Workspace', 
+                    directories: projectInfo,
+                    // Add detected project type
+                    type: await detectProjectType(editorContext, workspaceFolders)
+                }
             };
         }
 
