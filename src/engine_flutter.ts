@@ -1,17 +1,27 @@
 import { queryAI } from "./ai";
-import { EditorContext } from "./types";
+import { EditorContext, EngineSettings } from "./types";
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode'; // Add this import
 
 // engine_flutter.ts
 export class FlutterEngine {
+
+    
     static async processPrompt(prompt: string, context: EditorContext, extContext: ExtensionContext,states: {
         attachRelated: boolean;
         thinking: boolean;
         webAccess: boolean;
         autoApply: boolean;
         folderStructure: boolean;
-    }): Promise<string> { 
+    },
+    settings: EngineSettings): Promise<string> { 
+
+        const { activeAIs, temperature, volumeSensitivity } = settings;
+
+        const selectedAI = activeAIs[0] || 'grok3AI'; 
+
+        console.log(`[FlutterEngine] Using AI: ${selectedAI}, Temperature: ${temperature}, Volume Sensitivity: ${volumeSensitivity}`);
+
         let response = `Flutter project detected. Processing prompt: "${prompt}"\n`;
         
         let aiPrompt = '';
@@ -116,7 +126,7 @@ export class FlutterEngine {
         // Add AI analysis
         // Query AI
         try {
-            const aiAnalysis = await queryAI(aiPrompt, extContext, 'grok3AI');
+            const aiAnalysis = await queryAI(aiPrompt, extContext, selectedAI as 'grok3AI' | 'openAI' | 'ollamaAI' | 'groqAI' | 'anthropicAI');
             response += '\nResponse:\n```json\n' + aiAnalysis + '\n```';
         } catch (error) {
             response += `\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;

@@ -27,6 +27,12 @@ export interface EditorContext {
     };
 }
 
+export interface EngineSettings {
+    activeAIs: string[];
+    temperature: number;
+    volumeSensitivity: number; // 0-100 scale
+}
+
 export interface ChatHistoryEntry {
     id: string;
     prompt: string;
