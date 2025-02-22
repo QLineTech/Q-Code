@@ -27,21 +27,40 @@ interface QCodeSettings {
 }
 
 // Add this interface near the top of extension.ts, after EditorContext
+interface EditorContext {
+    fileName: string;           // e.g., "example.ts"
+    fileType: string;           // e.g., "typescript"
+    content: string;            // Full text content of the file
+    selection: {                // Detailed selection info, null if no selection
+        text: string;           // Selected text
+        startLine: number;      // Starting line number (1-based)
+        endLine: number;        // Ending line number (1-based)
+        startCharacter: number; // Starting character position (0-based)
+        endCharacter: number;   // Ending character position (0-based)
+    } | null;
+    filePath: string;           // Full file path, e.g., "/home/user/projects/my-project/example.ts"
+    cursorPosition: {           // Current cursor position
+        line: number;           // Line number (1-based)
+        character: number;      // Character position (0-based)
+    };
+    isDirty: boolean;           // Whether the file has unsaved changes
+    project: {                  // Workspace/project info
+        workspaceName: string;  // Name of the workspace, e.g., "my-project" or "Unnamed Workspace"
+        directories: {          // Array of open workspace directories
+            name: string;       // Folder name, e.g., "my-project"
+            path: string;       // Full path, e.g., "/home/user/projects/my-project"
+        }[];
+    };
+}
+
 interface ChatHistoryEntry {
+    id: string;
     prompt: string;
     response: string;
     timestamp: string;
     context: EditorContext | null;
 }
 
-// Add this interface near the top of extension.ts
-interface EditorContext {
-    fileName: string;
-    fileType: string;
-    content: string;
-    selection: string | null;
-    filePath: string;
-}
 
 class QCodePanelProvider implements vscode.WebviewViewProvider {
     private _webviewView?: vscode.WebviewView;
@@ -421,6 +440,11 @@ function getValidSettings(partialSettings: Partial<QCodeSettings> | undefined): 
     return { ...defaultSettings, ...partialSettings };
 }
 
+
+async function processPrompt(text: string) {
+
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Extension "qcode" is now active!');
     vscode.commands.executeCommand('setContext', 'qcode.active', true);
@@ -437,15 +461,41 @@ export function activate(context: vscode.ExtensionContext) {
             try {
                 const editor = vscode.window.activeTextEditor;
                 let editorContext: EditorContext | null = null;
+                
+                // Get workspace info
+                const workspaceFolders = vscode.workspace.workspaceFolders;
+                const projectInfo = workspaceFolders
+                    ? workspaceFolders.map(folder => ({
+                        name: folder.name,
+                        path: folder.uri.fsPath
+                    }))
+                    : [];
 
                 if (editor) {
                     const document = editor.document;
+                    const selection = editor.selection;
+
                     editorContext = {
                         fileName: path.basename(document.fileName),
                         fileType: document.languageId,
                         content: document.getText(),
-                        selection: editor.selection.isEmpty ? null : document.getText(editor.selection),
-                        filePath: document.fileName
+                        selection: selection.isEmpty ? null : {
+                            text: document.getText(selection),
+                            startLine: selection.start.line + 1,
+                            endLine: selection.end.line + 1,
+                            startCharacter: selection.start.character,
+                            endCharacter: selection.end.character
+                        },
+                        filePath: document.fileName,
+                        cursorPosition: {
+                            line: selection.active.line + 1,
+                            character: selection.active.character
+                        },
+                        isDirty: document.isDirty,
+                        project: {
+                            workspaceName: vscode.workspace.name || "Unnamed Workspace",
+                            directories: projectInfo
+                        }
                     };
                 }
 
@@ -455,6 +505,9 @@ export function activate(context: vscode.ExtensionContext) {
                     context: editorContext,
                     prompt: text
                 });
+
+                console.log('Editor Context:', editorContext);
+                console.log('Prompt:', text);
 
                 // Process with AI
                 // TODO 
@@ -469,7 +522,9 @@ export function activate(context: vscode.ExtensionContext) {
                 provider.sendMessage({
                     type: 'chatResponse',
                     // text: response,
-                    text: "FAKE RESPONSE",
+                    text: editorContext 
+                        ? `Here is the editor context in JSON format:\n\n\`\`\`json\n${JSON.stringify(editorContext, null, 2)}\n\`\`\``
+                        : "No editor context available.",
                     prompt: text,
                     context: editorContext
                 });
@@ -477,9 +532,11 @@ export function activate(context: vscode.ExtensionContext) {
                 // Update chat history with proper typing
                 const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
                 const newEntry: ChatHistoryEntry = {
+                    id: Date.now().toString(),
                     prompt: text,
-                    // response,
-                    response: "FAKE RESPONSE",
+                    response: editorContext 
+                        ? `Here is the editor context in JSON format:\n\n\`\`\`json\n${JSON.stringify(editorContext, null, 2)}\n\`\`\``
+                        : "No editor context available.",
                     timestamp: new Date().toISOString(),
                     context: editorContext
                 };
