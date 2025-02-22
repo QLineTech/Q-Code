@@ -104,6 +104,15 @@ export async function sendChatMessage(
     }
 ) {
     try {
+        if(states  === undefined) {
+            states = {
+                attachRelated: false,
+                thinking: false,
+                webAccess: false,
+                autoApply: false,
+                folderStructure: false,
+            };
+        }
         const editor = vscode.window.activeTextEditor;
         let editorContext: EditorContext | null = null;
         const workspaceFolders = vscode.workspace.workspaceFolders;

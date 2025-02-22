@@ -17,17 +17,19 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.window.registerWebviewViewProvider('qcode-view', provider));
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('qcode.sendChatMessage', (
-            text: string,
-            models: { [key: string]: boolean },
+        vscode.commands.registerCommand('qcode.sendChatMessage', (params: {
+            text: string;
             states: {
                 attachRelated: boolean;
                 thinking: boolean;
                 webAccess: boolean;
                 autoApply: boolean;
                 folderStructure: boolean;
-            }
-        ) => sendChatMessage(text, context, provider, states)),
+            };
+        }) => {
+            const { text, states } = params;
+            sendChatMessage(text, context, provider, states);
+        }),
         vscode.commands.registerCommand('qcode.getChatHistory', () => getChatHistory(context, provider))
     );
 

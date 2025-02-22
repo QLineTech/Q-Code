@@ -1,5 +1,6 @@
 import { queryAI } from "./ai";
 import { EditorContext } from "./types";
+import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode'; // Add this import
 
 // engine_flutter.ts
@@ -13,6 +14,8 @@ export class FlutterEngine {
     }): Promise<string> { 
         let response = `Flutter project detected. Processing prompt: "${prompt}"\n`;
         
+        let aiPrompt = '';
+
         // Handle web access
         if (states.webAccess) {
             // This is a placeholder - you'd need to implement actual web search
@@ -24,28 +27,83 @@ export class FlutterEngine {
             response += `[Processing thoughts: Analyzing "${prompt}" with context]\n`;
         }
 
-        // Append additional context based on states
-        // if (states.attachRelated && editorContext.relatedFiles) {
-        //     response += `\nRelated Files:\n${editorContext.relatedFiles.join('\n')}`;
-        // }
-        // if (states.folderStructure && editorContext.project.folderStructure) {
-        //     response += `\nFolder Structure:\n${editorContext.project.folderStructure}`;
-        // }
+        // Handle cases based on whether there's a selection
+        if (context.selection) {
+            // Selection-specific handling
+            aiPrompt = 'Please learn all given codes and then start to implement MY_REQUEST which given in best stable and correct logic, double check after result and regenerate if it has bugs and mistakes and give final output.\n\n';
+            aiPrompt += `**Selected code to modify (\`${context.fileName}\`)**:\n\`\`\`${context.fileType}\n${context.selection.text}\n\`\`\`\n\n`;
+            
+            if (states.attachRelated) {
+                // Placeholder for linting analysis
+                const relatedInfo = await this.findRelatedElements(context);
+                aiPrompt += `Related elements:\n\`\`\`dart\n${relatedInfo}\n\`\`\`\n\n`;
+            }
 
-        // Handle auto-apply (placeholder - implementation depends on your needs)
-        if (states.autoApply) {
-            response += '\n[Auto-apply enabled - changes would be applied automatically]';
-            // Add logic here to apply changes to the editor if needed
+            if (states.folderStructure) {
+                const folderStructure = this.getFolderStructure(context);
+                aiPrompt += `Project folder structure (./lib/*):\n\`\`\`\n${folderStructure}\n\`\`\`\n\n`;
+            }
+
+            aiPrompt += `MY REQUEST: \n\`\`\`\n"${prompt}"\n\`\`\`\n`;
+            aiPrompt += 'Return ONLY a JSON array of objects in this exact format, with no additional text before or after:\n' +
+                       '```json\n' +
+                       '[\n' +
+                       '  {\n' +
+                       '    "file": "<file-name>",\n' +
+                       '    "line": <start-line>,\n' +
+                       '    "position": <start-position>,\n' +
+                       '    "finish_line": <finish-line>,\n' +
+                       '    "finish_position": <finish-position>,\n' +
+                       '    "action": "add|replace|remove",\n' +
+                       '    "reason": "<reason>",\n' +
+                       '    "newCode": "<new code>"\n' +
+                       '  }\n' +
+                       ']\n' +
+                       '```\n' +
+                       'Include only the JSON array with the specified structure. Do not add any explanatory text, prefixes, or postfixes.';
+        } else {
+                // Whole file handling
+                aiPrompt = 'Please learn all given codes and then start to implement user request which given in best stable and correct logic, double check after result and regenerate if it has bugs and mistakes and give final output.\n\n';            
+                aiPrompt += `**Full file content to modify (\`${context.fileName}\`)**:\n\`\`\`${context.fileType}\n${context.content}\n\`\`\`\n\n`;
+
+                if (states.attachRelated) {
+                    const relatedInfo = await this.findRelatedElements(context);
+                    aiPrompt += `Related elements:\n\`\`\`dart\n${relatedInfo}\n\`\`\`\n\n`;
+                }
+
+                if (states.folderStructure) {
+                    const folderStructure = this.getFolderStructure(context);
+                    aiPrompt += `Project folder structure (./lib/*):\n\`\`\`\n${folderStructure}\n\`\`\`\n\n`;
+                }
+
+                aiPrompt += `MY REQUEST: \n\`\`\`\n"${prompt}"\n\`\`\`\n`;
+                aiPrompt += 'Return ONLY a JSON array of objects in this exact format, with no additional text before or after:\n' +
+                        '```json\n' +
+                        '[\n' +
+                        '  {\n' +
+                        '    "file": "<file-name>",\n' +
+                        '    "line": <start-line>,\n' +
+                        '    "position": <start-position>,\n' +
+                        '    "finish_line": <finish-line>,\n' +
+                        '    "finish_position": <finish-position>,\n' +
+                        '    "action": "add|replace|remove",\n' +
+                        '    "reason": "<reason>",\n' +
+                        '    "newCode": "<new code>"\n' +
+                        '  }\n' +
+                        ']\n' +
+                        '```\n' +
+                        'Include only the JSON array with the specified structure. Do not add any explanatory text, prefixes, or postfixes.';
         }
 
-        
-        
-        response += `Context: ${context.fileName} (${context.fileType} file)`;
 
-        response += `\r\n\r\n`;
-        const jsonContext = JSON.stringify(context, null, 2); // The '2' adds indentation for readability
-        response += "```json\r\n"+ jsonContext + "\r\n```";
 
+        
+        // Add context information
+        response += `Context: ${context.fileName} (${context.fileType} file)\n\n`;
+        response += '```json\n' + JSON.stringify(context, null, 2) + '\n```\n';
+
+        
+        response += 'Prompt:\n\n```markdown\n' + aiPrompt + '\n```\n';
 
         // Thinking process
         // Get File Structure
@@ -56,21 +114,125 @@ export class FlutterEngine {
         // Rules
         // Output
         // Add AI analysis
+        // Query AI
         try {
-            const aiPrompt = `
-                Analyze this Flutter-related prompt and context:
-                Prompt: "${prompt}"
-                Context: ${JSON.stringify(context)}
-                Provide suggestions or insights about the code structure or potential improvements.
-            `;
-            
-            const aiAnalysis = await queryAI(aiPrompt, extContext, 'grok3AI'); // Pass extContext            response += `\n\nAI Analysis:\n${aiAnalysis}`;
-            
-            response += "\n\nResponse:\n\n```markdown\r\n" + aiAnalysis + "\r\n```";
+            const aiAnalysis = await queryAI(aiPrompt, extContext, 'grok3AI');
+            response += '\nResponse:\n```json\n' + aiAnalysis + '\n```';
         } catch (error) {
-            response += `\n\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            response += `\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        }
+
+        if (states.autoApply) {
+            response += '\n[Auto-apply enabled - changes would be applied automatically]';
+            // Implementation for auto-apply would go here
         }
         
         return response;
     }
+
+    private static async findRelatedElements(context: EditorContext): Promise<string> {
+        let result = 'Related Elements:\n';
+        const codeToAnalyze = context.selection?.text || context.content;
+        
+        try {
+            // 1. Get document symbols using VSCode API
+            const uri = vscode.Uri.file(context.filePath);
+            const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
+                'vscode.executeDocumentSymbolProvider',
+                uri
+            );
+
+            // 2. Extract packages from imports
+            const importRegex = /import\s+['"]([^'"]+)['"]/g;
+            const packages = new Set<string>();
+            let match;
+            while ((match = importRegex.exec(codeToAnalyze)) !== null) {
+                const packagePath = match[1];
+                if (packagePath.startsWith('package:')) {
+                    packages.add(packagePath.split('/')[0]); // Get base package name
+                }
+            }
+
+            // 3. Find related symbols based on selection or whole file
+            const relatedSymbols = new Set<string>();
+            const variableRegex = /\b(var|final|const)?\s*(\w+)\s*=/g;
+            const functionRegex = /(void|Future|[A-Z]\w*)\s+(\w+)\s*\(/g;
+
+            // Analyze variables
+            while ((match = variableRegex.exec(codeToAnalyze)) !== null) {
+                relatedSymbols.add(match[2]);
+            }
+
+            // Analyze functions
+            while ((match = functionRegex.exec(codeToAnalyze)) !== null) {
+                relatedSymbols.add(match[2]);
+            }
+
+            // 4. If there's a selection, find specific references
+            if (context.selection && symbols) {
+                const selectionRange = new vscode.Range(
+                    context.selection.startLine,
+                    context.selection.startCharacter,
+                    context.selection.endLine,
+                    context.selection.endCharacter
+                );
+
+                symbols.forEach(symbol => {
+                    if (selectionRange.intersection(new vscode.Range(
+                        symbol.location.range.start,
+                        symbol.location.range.end
+                    ))) {
+                        relatedSymbols.add(symbol.name);
+                    }
+                });
+            }
+
+            // 5. Format the results
+            if (packages.size > 0) {
+                result += 'Packages:\n';
+                packages.forEach(pkg => {
+                    result += `- ${pkg}\n`;
+                });
+            }
+
+            if (relatedSymbols.size > 0) {
+                result += '\nSymbols (Functions/Variables):\n';
+                relatedSymbols.forEach(symbol => {
+                    result += `- ${symbol}\n`;
+                });
+            }
+
+            // 6. Add file references from project structure
+            if (context.project.directories.length > 0) {
+                result += '\nRelated Files:\n';
+                context.project.directories
+                    .filter(dir => dir.path.includes('/lib/'))
+                    .forEach(dir => {
+                        result += `- ${dir.name} (${dir.path})\n`;
+                    });
+            }
+
+            // If no elements found
+            if (packages.size === 0 && relatedSymbols.size === 0) {
+                result += 'No related elements found in the analyzed code.\n';
+            }
+
+        } catch (error) {
+            result += `Error analyzing related elements: ${error instanceof Error ? error.message : 'Unknown error'}\n`;
+        }
+
+        return result;
+    }
+
+    private static getFolderStructure(context: EditorContext): string {
+        // Build folder structure from context.project.directories
+        let structure = '';
+        const libDirs = context.project.directories
+            .filter(dir => dir.path.includes('/lib/'))
+            .map(dir => dir.path);
+        
+        structure = libDirs.join('\n');
+        return structure || 'No lib directory structure available';
+    }
+
 }
