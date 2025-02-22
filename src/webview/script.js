@@ -34,8 +34,13 @@ function sendChat() {
                 </div>
             </div>`;
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        const activeModels = getActiveModels();
-        vscode.postMessage({ type: 'sendChatMessage', text, activeModels });
+        const chatStates = getChatStates();
+        vscode.postMessage({ 
+            type: 'sendChatMessage', 
+            text, 
+            models: chatStates.models,
+            states: chatStates.states 
+        });
         chatInput.value = '';
     }
 }
@@ -171,21 +176,35 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+
+function getChatStates() {
+    return {
+        models: getActiveModels(),
+        states: {
+            attachRelated: document.getElementById('attach-related-toggle')?.checked || false,
+            thinking: document.getElementById('thinking-toggle')?.checked || false,
+            webAccess: document.getElementById('web-access-toggle')?.checked || false,
+            autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
+            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false
+        }
+    };
+}
+
 function updateHistoryList() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = chatHistory.length ?
         chatHistory.map(item => `
-            <div class="p-3 bg-zinc-50 rounded-md border border-zinc-200" style="overflow: auto">
-                <p class="text-sm text-zinc-600"><strong>Prompt:</strong> ${item.prompt}</p>
-                <p class="text-sm text-zinc-600 prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
+            <div class="p-3 rounded-md border border-zinc-200" style="overflow: auto">
+                <p class="text-sm "><strong>Prompt:</strong> ${item.prompt}</p>
+                <p class="text-sm  prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
                 ${item.context ? `
-                    <p class="text-xs text-zinc-500"><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
-                    ${item.context.selection ? `<p class="text-xs text-zinc-500"><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
+                    <p class="text-xs "><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
+                    ${item.context.selection ? `<p class="text-xs "><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
                 ` : ''}
-                <p class="text-xs text-zinc-500">${new Date(item.timestamp).toLocaleString()}</p>
+                <p class="text-xs ">${new Date(item.timestamp).toLocaleString()}</p>
             </div>
         `).join('') :
-        '<p class="text-sm text-zinc-500">No chat history yet.</p>';
+        '<p class="text-sm">No chat history yet.</p>';
 }
 
 const accountContent = document.getElementById('account-content');
@@ -260,6 +279,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded');
     setupChatToggleListeners();
     setupSettingsToggleListeners();
+
+    // Initialize new state toggles with default values (false)
+    ['attach-related', 'thinking', 'web-access', 'auto-apply', 'folder-structure'].forEach(id => {
+        const toggle = document.getElementById(`${id}-toggle`);
+        if (toggle) {
+            toggle.checked = false; // Default to off
+            toggle.addEventListener('change', () => {
+                console.log(`${id} toggle changed to ${toggle.checked}`);
+                // No need to save to settings as per requirements
+            });
+        }
+    });
     
     // Add change listeners to other settings inputs
     ['websocket-toggle', 'temperature', 'volume-sensitivity', 'language', 'theme'].forEach(id => {

@@ -87,6 +87,38 @@
                             <input type="checkbox" id="chat-deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
                             <label for="chat-deepseek-toggle" class="text-sm text-zinc-600">DeepSeek</label>
                         </div>
+                        <hr />
+                        <!-- New State Toggles -->
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="attach-related-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="attach-related-toggle" class="text-sm text-zinc-600 flex items-center">
+                                <i class="fas fa-link mr-1"></i> Related
+                            </label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="thinking-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="thinking-toggle" class="text-sm text-zinc-600 flex items-center">
+                                <i class="fas fa-brain mr-1"></i> Thinking
+                            </label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="web-access-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="web-access-toggle" class="text-sm text-zinc-600 flex items-center">
+                                <i class="fas fa-globe mr-1"></i> Web
+                            </label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="auto-apply-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="auto-apply-toggle" class="text-sm text-zinc-600 flex items-center">
+                                <i class="fas fa-robot mr-1"></i> Auto
+                            </label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="folder-structure-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                            <label for="folder-structure-toggle" class="text-sm text-zinc-600 flex items-center">
+                                <i class="fas fa-folder mr-1"></i> Folder
+                            </label>
+                        </div>
                     </div>
                     <div class="flex justify-end px-4">
                         <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700">
@@ -176,7 +208,7 @@
                         <button type="button" id="test-groq" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-zinc-600">Ollama API Keys</label>
+                        <label class="block text-sm font-medium text-zinc-600">Ollama API Models</label>
                         <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
                         <button type="button" id="test-ollama" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
                     </div>
