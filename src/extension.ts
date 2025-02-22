@@ -11,6 +11,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('setContext', 'qcode.active', true);
 
     const provider = new QCodePanelProvider(context);
+    const settings = getValidSettings(context.globalState.get('qcode.settings'));
+    context.globalState.update('qcode.settings', settings);
+    
     context.subscriptions.push(vscode.window.registerWebviewViewProvider('qcode-view', provider));
 
     context.subscriptions.push(
@@ -71,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    const settings = getValidSettings(context.globalState.get('qcode.settings'));
+    
     connectWebSocket(settings);
 }
 

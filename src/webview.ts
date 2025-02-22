@@ -34,7 +34,10 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
     
 
     public async updateSettings(newSettings: QCodeSettings) {
-        if (!validateSettings(newSettings)) throw new Error('Invalid settings configuration');
+        if (!validateSettings(newSettings)) 
+        {
+            throw new Error('Invalid settings configuration');
+        }
         this._settings = newSettings;
         await this._context.globalState.update('qcode.settings', newSettings);
         if (this._webviewView) {

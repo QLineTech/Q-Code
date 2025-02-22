@@ -30,6 +30,7 @@
     padding: 0;
     border: 0;
     font-family: 'Courier New', Courier, monospace;
+    overflow: auto;
 }
 
 /* Light theme code block styling */
@@ -37,6 +38,7 @@ body[data-theme="light"] .prose pre,
 body[data-theme="light"] .prose code {
     color: #18181b;
     background-color: transparent;
+    overflow: auto;
 }
 
 /* Dark theme code block styling */
@@ -44,17 +46,20 @@ body[data-theme="dark"] .prose pre,
 body[data-theme="dark"] .prose code {
     color: #f4f4f5;
     background-color: transparent;
+    overflow: auto;
 }
 
 /* Specific styling for the context selection pre */
 body[data-theme="light"] #chat-display pre {
     background-color: #f4f4f5;
     border: 1px solid #e4e4e7;
+    overflow: auto;
 }
 
 body[data-theme="dark"] #chat-display pre {
     background-color: #1f2937;
     border: 1px solid #374151;
+    overflow: auto;
 }
 
 .tab-content-container {
