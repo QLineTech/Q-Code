@@ -5,91 +5,91 @@ import { ExtensionContext } from 'vscode';
 import { CodeChange } from './types';
 
 const API_URLS: { [key: string]: string } = {
-    grok3AI: 'https://api.x.ai/v1/chat/completions',
-    openAI: 'https://api.openai.com/v1/chat/completions',
-    ollamaAI: 'http://localhost:11434/api/chat',
-    groqAI: 'https://api.groq.com/v1/chat/completions',
-    anthropicAI: 'https://api.anthropic.com/v1/complete'
+    grok3: 'https://api.x.ai/v1/chat/completions',
+    openai: 'https://api.openai.com/v1/chat/completions',
+    ollama: 'http://localhost:11434/api/chat',
+    groq: 'https://api.groq.com/v1/chat/completions',
+    anthropic: 'https://api.anthropic.com/v1/complete'
 };
-
 
 const rateLimiter = new Map<string, number>();
 
 export class QCodeAIProvider {
     private _context: ExtensionContext;
-    private _settings: QCodeSettings & {
-        grok3Keys: string;
-        openaiKeys: string;
-        anthropicKeys: string;
-        groqKeys: string;
-        ollamaKeys: string;
-        deepseekKeys: string;
-        temperature: string;
-        volumeSensitivity: string;
-    };
+    private _settings: QCodeSettings;
 
     constructor(context: ExtensionContext) {
         this._context = context;
-        
-        // Load and type the global state settings
-        const rawSettings = this._context.globalState.get('qcode.settings') as Partial<QCodeSettings & {
-            grok3Keys: string;
-            openaiKeys: string;
-            anthropicKeys: string;
-            groqKeys: string;
-            ollamaKeys: string;
-            deepseekKeys: string;
-            temperature: string;
-            volumeSensitivity: string;
-        }> | undefined;
 
-        // Apply the full settings structure
-        this._settings = {
-            ...getValidSettings(rawSettings),
-            grok3Keys: rawSettings?.grok3Keys || '',
-            openaiKeys: rawSettings?.openaiKeys || '',
-            anthropicKeys: rawSettings?.anthropicKeys || '',
-            groqKeys: rawSettings?.groqKeys || '',
-            ollamaKeys: rawSettings?.ollamaKeys || '',
-            deepseekKeys: rawSettings?.deepseekKeys || '',
-            temperature: rawSettings?.temperature || '0.7',
-            volumeSensitivity: rawSettings?.volumeSensitivity || '50'
-        };
+        // Load and type the global state settings
+        const rawSettings = this._context.globalState.get('qcode.settings') as Partial<QCodeSettings> & {
+            grok3Keys?: string;
+            openaiKeys?: string;
+            anthropicKeys?: string;
+            groqKeys?: string;
+            ollamaKeys?: string;
+            deepseekKeys?: string;
+            temperature?: string;
+            volumeSensitivity?: string;
+        } | undefined;
+
+        // Initialize with valid defaults
+        this._settings = getValidSettings(rawSettings);
+
+        // Migrate legacy API keys to new structure if present
+        if (rawSettings?.grok3Keys) this._settings.aiModels.grok3.apiKeys = [rawSettings.grok3Keys];
+        if (rawSettings?.openaiKeys) this._settings.aiModels.openai.apiKeys = [rawSettings.openaiKeys];
+        if (rawSettings?.anthropicKeys) this._settings.aiModels.anthropic.apiKeys = [rawSettings.anthropicKeys];
+        if (rawSettings?.groqKeys) this._settings.aiModels.groq.apiKeys = [rawSettings.groqKeys];
+        if (rawSettings?.ollamaKeys) this._settings.aiModels.ollama.apiKeys = [rawSettings.ollamaKeys];
+        if (rawSettings?.deepseekKeys) this._settings.aiModels.deepseek.apiKeys = [rawSettings.deepseekKeys];
+
+        // Migrate legacy temperature and volumeSensitivity to grok3
+        if (rawSettings?.temperature) {
+            const temp = parseFloat(rawSettings.temperature);
+            if (!isNaN(temp)) this._settings.aiModels.grok3.temperature = temp;
+        }
+        if (rawSettings?.volumeSensitivity) {
+            const sensitivity = parseFloat(rawSettings.volumeSensitivity);
+            if (!isNaN(sensitivity)) this._settings.aiModels.grok3.contextSensitivity = sensitivity;
+        }
 
         console.log('[QCodeAIProvider] Initialized with settings:', this._settings);
 
-        // Listen for settings updates
         vscode.workspace.onDidChangeConfiguration(async () => {
             await this.refreshSettings();
         });
     }
 
     public async refreshSettings(): Promise<void> {
-        const rawSettingsUnknown = this._context.globalState.get('qcode.settings');
-        const rawSettings = typeof rawSettingsUnknown === 'object' && rawSettingsUnknown !== null 
-            ? rawSettingsUnknown as Partial<QCodeSettings & {
-                grok3Keys: string;
-                openaiKeys: string;
-                anthropicKeys: string;
-                groqKeys: string;
-                ollamaKeys: string;
-                deepseekKeys: string;
-                temperature: string;
-                volumeSensitivity: string;
-            }>
-            : undefined;
+        const rawSettings = this._context.globalState.get('qcode.settings') as Partial<QCodeSettings> & {
+            grok3Keys?: string;
+            openaiKeys?: string;
+            anthropicKeys?: string;
+            groqKeys?: string;
+            ollamaKeys?: string;
+            deepseekKeys?: string;
+            temperature?: string;
+            volumeSensitivity?: string;
+        } | undefined;
 
-        const newSettings = {
-            ...getValidSettings(rawSettings),
-            grok3Keys: rawSettings?.grok3Keys || '',
-            openaiKeys: rawSettings?.openaiKeys || '',
-            anthropicKeys: rawSettings?.anthropicKeys || '',
-            groqKeys: rawSettings?.groqKeys || '',
-            ollamaKeys: rawSettings?.ollamaKeys || '',
-            deepseekKeys: rawSettings?.deepseekKeys || '',
-            temperature: rawSettings?.temperature || '0.7',
-            volumeSensitivity: rawSettings?.volumeSensitivity || '50'
-        };
+        const newSettings = getValidSettings(rawSettings);
+
+        // Migrate legacy fields
+        if (rawSettings?.grok3Keys) newSettings.aiModels.grok3.apiKeys = [rawSettings.grok3Keys];
+        if (rawSettings?.openaiKeys) newSettings.aiModels.openai.apiKeys = [rawSettings.openaiKeys];
+        if (rawSettings?.anthropicKeys) newSettings.aiModels.anthropic.apiKeys = [rawSettings.anthropicKeys];
+        if (rawSettings?.groqKeys) newSettings.aiModels.groq.apiKeys = [rawSettings.groqKeys];
+        if (rawSettings?.ollamaKeys) newSettings.aiModels.ollama.apiKeys = [rawSettings.ollamaKeys];
+        if (rawSettings?.deepseekKeys) newSettings.aiModels.deepseek.apiKeys = [rawSettings.deepseekKeys];
+        if (rawSettings?.temperature) {
+            const temp = parseFloat(rawSettings.temperature);
+            if (!isNaN(temp)) newSettings.aiModels.grok3.temperature = temp;
+        }
+        if (rawSettings?.volumeSensitivity) {
+            const sensitivity = parseFloat(rawSettings.volumeSensitivity);
+            if (!isNaN(sensitivity)) newSettings.aiModels.grok3.contextSensitivity = sensitivity;
+        }
 
         if (validateSettings(newSettings)) {
             this._settings = newSettings;
@@ -99,7 +99,7 @@ export class QCodeAIProvider {
         }
     }
 
-    public async updateSettings(newSettings: typeof this._settings): Promise<void> {
+    public async updateSettings(newSettings: QCodeSettings): Promise<void> {
         if (!validateSettings(newSettings)) {
             throw new Error('Invalid settings configuration');
         }
@@ -109,26 +109,13 @@ export class QCodeAIProvider {
         console.log('[QCodeAIProvider] Settings updated:', this._settings);
     }
 
-    private getApiKeyForProvider(provider: keyof QCodeSettings): string {
-        switch (provider) {
-            case 'grok3AI':
-                return this._settings.grok3Keys;
-            case 'openAI':
-                return this._settings.openaiKeys;
-            case 'ollamaAI':
-                return this._settings.ollamaKeys;
-            case 'groqAI':
-                return this._settings.groqKeys;
-            case 'anthropicAI':
-                return this._settings.anthropicKeys;
-            default:
-                return '';
-        }
+    private getApiKeyForProvider(provider: keyof QCodeSettings['aiModels']): string {
+        return this._settings.aiModels[provider]?.apiKeys[0] || '';
     }
 
     public async queryAI(
         prompt: string,
-        provider: keyof QCodeSettings = 'grok3AI'
+        provider: keyof QCodeSettings['aiModels'] = 'grok3'
     ): Promise<string> {
         if (!prompt?.trim()) {
             throw new Error('Empty prompt provided');
@@ -137,15 +124,14 @@ export class QCodeAIProvider {
         console.log(`[queryAI] Accessing config for provider: ${provider}`);
         console.log(`[queryAI] Current settings:`, this._settings);
 
-        if (!(provider in this._settings)) {
-            const errorMsg = `${provider} not found in qcode configuration. Available providers: ${Object.keys(this._settings).join(', ')}`;
+        if (!(provider in this._settings.aiModels)) {
+            const errorMsg = `${provider} not found in qcode configuration. Available providers: ${Object.keys(this._settings.aiModels).join(', ')}`;
             console.error(`[queryAI] ${errorMsg}`);
             vscode.window.showErrorMessage(errorMsg);
             throw new Error(errorMsg);
         }
 
-        const providerConfig = this._settings[provider] as { active: boolean; apiKeys: string[] };
-
+        const providerConfig = this._settings.aiModels[provider];
         console.log(`[queryAI] Provider config:`, providerConfig);
 
         if (!providerConfig.active) {
@@ -173,10 +159,10 @@ export class QCodeAIProvider {
             const response = await Axios.post(
                 API_URLS[provider],
                 {
-                    model: provider === 'grok3AI' ? 'grok-2-1212' : 'default',
+                    model: providerConfig.models[0] || 'default',
                     messages: [{ role: 'user', content: prompt }],
-                    temperature: parseFloat(this._settings.temperature) || 0.7,
-                    max_tokens: 1000
+                    temperature: 0, // providerConfig.temperature,
+                    max_tokens: 4096, // providerConfig.maxTokens
                 },
                 {
                     headers: {
@@ -209,9 +195,7 @@ export class QCodeAIProvider {
         return true;
     }
 
-    
-
-    public getCurrentSettings(): typeof this._settings {
+    public getCurrentSettings(): QCodeSettings {
         return { ...this._settings };
     }
 }
@@ -219,21 +203,19 @@ export class QCodeAIProvider {
 export async function queryAI(
     prompt: string,
     context: ExtensionContext,
-    provider: keyof QCodeSettings = 'grok3AI'
+    provider: keyof QCodeSettings['aiModels'] = 'grok3'
 ): Promise<string> {
     const aiProvider = new QCodeAIProvider(context);
     return aiProvider.queryAI(prompt, provider);
 }
 
-// Function to clean and parse the response
+// Function to clean and parse the response (unchanged)
 export const parseAIResponse = (rawResponse: string): CodeChange[] => {
-    // Remove potential markdown and whitespace
     let cleanedResponse = rawResponse
         .replace(/```json\s*/g, '')
         .replace(/```\s*/g, '')
         .trim();
 
-    // Parse JSON
     let parsed: unknown;
     try {
         parsed = JSON.parse(cleanedResponse);
@@ -241,12 +223,10 @@ export const parseAIResponse = (rawResponse: string): CodeChange[] => {
         throw new Error('Invalid JSON format in AI response');
     }
 
-    // Validate array
     if (!Array.isArray(parsed)) {
         throw new Error('Response must be a JSON array');
     }
 
-    // Validate each object in the array
     const validatedChanges = parsed.map((item: unknown, index: number) => {
         if (typeof item !== 'object' || item === null) {
             throw new Error(`Item at index ${index} is not an object`);
@@ -254,7 +234,6 @@ export const parseAIResponse = (rawResponse: string): CodeChange[] => {
 
         const obj = item as Record<string, unknown>;
 
-        // Required fields check
         const requiredFields: (keyof CodeChange)[] = [
             'file', 'line', 'position', 'finish_line', 
             'finish_position', 'action', 'reason', 'newCode'
@@ -266,7 +245,6 @@ export const parseAIResponse = (rawResponse: string): CodeChange[] => {
             }
         }
 
-        // Type checking
         if (typeof obj.file !== 'string') {
             throw new Error(`Invalid "file" type at index ${index}: must be string`);
         }

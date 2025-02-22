@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import WebSocket from 'ws';
-
 import { QCodePanelProvider } from './webview';
 import { connectWebSocket, getWebSocket } from './websocket';
 import { sendChatMessage, getChatHistory, commandMap } from './commands';
@@ -13,15 +12,31 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new QCodePanelProvider(context);
     const settings = getValidSettings(context.globalState.get('qcode.settings'));
     context.globalState.update('qcode.settings', settings);
-    
+
     context.subscriptions.push(vscode.window.registerWebviewViewProvider('qcode-view', provider));
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('qcode.sendChatMessage', (text: string) => {
+        vscode.commands.registerCommand('qcode.sendChatMessage', (text: string, states: any ) => {
             // const { text, states } = params;
+            // TODO bring back states
             sendChatMessage(text, context, provider);
         }),
-        vscode.commands.registerCommand('qcode.getChatHistory', () => getChatHistory(context, provider))
+        vscode.commands.registerCommand('qcode.getChatHistory', () => getChatHistory(context, provider)),
+        vscode.commands.registerCommand('qcode.getSettings', () => {
+            const settings = getValidSettings(context.globalState.get('qcode.settings'));
+            provider.sendMessage({ type: 'settings', settings });
+        }),
+        vscode.commands.registerCommand('qcode.saveSettings', (settings: any) => {
+            const validatedSettings = getValidSettings(settings);
+            context.globalState.update('qcode.settings', validatedSettings);
+            provider.sendMessage({ type: 'settings', settings: validatedSettings }); // Echo back to webview
+        }),
+        vscode.commands.registerCommand('qcode.testApiKey', async (params: { model: string, keys: string }) => {
+            const { model, keys } = params;
+            // Placeholder for API key testing logic
+            const success = keys.length > 0; // Mock test result
+            provider.sendMessage({ type: 'apiTestResult', model, success });
+        })
     );
 
     let isRecording = false;
@@ -77,7 +92,6 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    
     connectWebSocket(settings);
 }
 

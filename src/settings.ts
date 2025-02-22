@@ -3,26 +3,50 @@ import { QCodeSettings, AIModelConfig } from './types';
 
 export function validateSettings(settings: QCodeSettings): boolean {
     if (!settings || typeof settings !== 'object') return false;
-    const requiredFields = ['grok3AI', 'openAI', 'ollamaAI', 'groqAI', 'anthropicAI', 'theme', 'language', 'websocket', 'analyzeAIs'];
+    const requiredFields = ['language', 'theme', 'websocket', 'aiModels', 'functionCallingAIs', 'thinkingAIs', 'chatStates'];
     for (const field of requiredFields) {
         if (!(field in settings)) return false;
     }
-    return Array.isArray(settings.analyzeAIs);
+    return true;
 }
 
 export function getValidSettings(partialSettings: Partial<QCodeSettings> | undefined): QCodeSettings {
+    const defaultAIModelConfig: AIModelConfig = {
+        active: false,
+        apiKeys: [],
+        models: [],
+        temperature: 0.7,
+        contextSensitivity: 50,
+        maxTokens: 4096
+    };
+
     const defaultSettings: QCodeSettings = {
-        theme: 'system',
         language: 'en',
-        websocket: { active: true, address: 'ws://localhost:9001' },
-        analyzeAIs: ['grok3AI'],
+        theme: 'system',
+        websocket: { active: false, port: 8080 },
         aiModels: {
-            grok3: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 },
-            openai: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 },
-            anthropic: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 },
-            groq: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 },
-            ollama: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 },
-            deepseek: { active: false, apiKeys: [], models: [], temperature: 0, volumeSensitivity: 0 }
+            grok3: { ...defaultAIModelConfig, models: ['grok3'] },
+            openai: { ...defaultAIModelConfig, models: ['gpt-3.5-turbo'] },
+            anthropic: { ...defaultAIModelConfig, models: ['claude-3'] },
+            groq: { ...defaultAIModelConfig, models: ['mixtral-8x7b'] },
+            ollama: { ...defaultAIModelConfig, models: ['llama2'] },
+            deepseek: { ...defaultAIModelConfig, models: ['deepseek-coder'] }
+        },
+        functionCallingAIs: {
+            grok3: false,
+            openai: false,
+            anthropic: false,
+            groq: false,
+            ollama: false,
+            deepseek: false
+        },
+        thinkingAIs: {
+            grok3: false,
+            openai: false,
+            anthropic: false,
+            groq: false,
+            ollama: false,
+            deepseek: false
         },
         chatStates: {
             attachRelated: false,
@@ -30,28 +54,15 @@ export function getValidSettings(partialSettings: Partial<QCodeSettings> | undef
             webAccess: false,
             autoApply: false,
             folderStructure: false,
-            extra: [],
+            fullRewrite: false,
+            extra: []
         },
-        grok3AI: {
-            active: false,
-            apiKeys: []
-        },
-        openAI: {
-            active: false,
-            apiKeys: []
-        },
-        ollamaAI: {
-            active: false,
-            apiKeys: []
-        },
-        groqAI: {
-            active: false,
-            apiKeys: []
-        },
-        anthropicAI: {
-            active: false,
-            apiKeys: []
-        }
+        grok3AI: { active: false, apiKeys: [] }, // Legacy
+        openAI: { active: false, apiKeys: [] }, // Legacy
+        ollamaAI: { active: false, apiKeys: [] }, // Legacy
+        groqAI: { active: false, apiKeys: [] }, // Legacy
+        anthropicAI: { active: false, apiKeys: [] }, // Legacy
+        analyzeAIs: ['grok3']
     };
     return { ...defaultSettings, ...partialSettings };
 }

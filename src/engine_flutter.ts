@@ -19,7 +19,7 @@ export class FlutterEngine {
 
         const { activeAIs, temperature, volumeSensitivity } = settings;
 
-        const selectedAI = activeAIs[0] || 'grok3AI'; 
+        const selectedAI = 'grok3AI'; // activeAIs[0] || 'grok3AI'; 
 
         console.log(`[FlutterEngine] Using AI: ${selectedAI}, Temperature: ${temperature}, Volume Sensitivity: ${volumeSensitivity}`);
 
@@ -127,10 +127,10 @@ export class FlutterEngine {
         // Add AI analysis
         // Query AI
         try {
-            const aiAnalysis = await queryAI(aiPrompt, extContext, selectedAI as 'grok3AI' | 'openAI' | 'ollamaAI' | 'groqAI' | 'anthropicAI');
+            const aiAnalysis = await queryAI(aiPrompt, extContext, 'grok3');
             // response += '\nResponse:\n```json\n' + aiAnalysis + '\n```';
             const codeChanges = parseAIResponse(aiAnalysis);
-            if (states.autoApply) {
+            if (true || states.autoApply) {
                 response += '\n[Auto-apply enabled - changes would be applied automatically]';
                 
                 // Auto-apply implementation

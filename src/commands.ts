@@ -3,7 +3,7 @@ import * as path from 'path';
 import { QCodePanelProvider } from './webview';
 import { queryAI } from './ai';
 import { readFile, writeFile } from './fileOperations';
-import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType } from './types';
+import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType, ChatStates } from './types';
 import { EngineHandler } from './engine';
 import { getValidSettings } from './settings';
 
@@ -19,12 +19,10 @@ async function detectProjectType(
     }
 
     try {
-        // Check editor context first if available
         if (editorContext) {
             const fileType = editorContext.fileType.toLowerCase();
             const fileName = editorContext.fileName.toLowerCase();
 
-            // Language-specific checks
             if (fileType === 'dart') {
                 projectType = { type: 'flutter', confidence: 0.7, indicators: ['Dart file detected'] };
             } else if (fileType === 'python') {
@@ -40,11 +38,8 @@ async function detectProjectType(
             }
         }
 
-        // Analyze workspace files for stronger evidence
         for (const folder of workspaceFolders) {
             const folderPath = folder.uri.fsPath;
-            
-            // Helper function to check file existence
             const fileExists = async (filePath: string): Promise<boolean> => {
                 try {
                     await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
@@ -54,7 +49,6 @@ async function detectProjectType(
                 }
             };
 
-            // Flutter detection
             if (await fileExists(`${folderPath}/pubspec.yaml`)) {
                 indicators.push('pubspec.yaml found');
                 if (projectType.type === 'flutter' || projectType.type === 'unknown') {
@@ -62,7 +56,6 @@ async function detectProjectType(
                 }
             }
 
-            // Laravel detection
             if (await fileExists(`${folderPath}/composer.json`)) {
                 indicators.push('composer.json found');
                 const artisanExists = await fileExists(`${folderPath}/artisan`);
@@ -74,7 +67,6 @@ async function detectProjectType(
                 }
             }
 
-            // Python detection
             if (await fileExists(`${folderPath}/requirements.txt`) || 
                 await fileExists(`${folderPath}/pyproject.toml`)) {
                 indicators.push('Python project files found');
@@ -95,25 +87,17 @@ export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
     provider: QCodePanelProvider,
-    // states: {
-    //     attachRelated: boolean;
-    //     thinking: boolean;
-    //     webAccess: boolean;
-    //     autoApply: boolean;
-    //     folderStructure: boolean;
-    // }
+    states: ChatStates = {
+        attachRelated: false,
+        thinking: false,
+        webAccess: false,
+        autoApply: false,
+        folderStructure: false,
+        fullRewrite: false,
+        extra: []
+    }
 ) {
     try {
-        var states = undefined;
-        if(states  === undefined) {
-            states = {
-                attachRelated: false,
-                thinking: false,
-                webAccess: false,
-                autoApply: false,
-                folderStructure: false,
-            };
-        }
         const editor = vscode.window.activeTextEditor;
         let editorContext: EditorContext | null = null;
         const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -152,9 +136,17 @@ export async function sendChatMessage(
 
         provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
         
-        const response = editorContext
-            ? await EngineHandler.processPrompt(text, editorContext, context, states)
-            : 'No editor context available.';
+        const settings = getValidSettings(context.globalState.get('qcode.settings'));
+        const activeModels = Object.entries(settings.aiModels)
+            .filter(([_, config]) => config.active)
+            .map(([model]) => model);
+        
+        let response = 'No active AI models configured.';
+        if (activeModels.length > 0) {
+            response = editorContext
+                ? await EngineHandler.processPrompt(text, editorContext, context, states)
+                : 'No editor context available.';
+        }
             
         provider.sendMessage({ 
             type: 'chatResponse', 
@@ -180,8 +172,6 @@ export async function sendChatMessage(
     }
 }
 
-
-
 export async function getChatHistory(context: vscode.ExtensionContext, provider: QCodePanelProvider) {
     const chatHistory = context.globalState.get('qcode.chatHistory', []);
     provider.sendMessage({ type: 'chatHistory', history: chatHistory });
@@ -189,34 +179,12 @@ export async function getChatHistory(context: vscode.ExtensionContext, provider:
 
 export const commandMap: { [key: string]: () => Promise<void> } = {
     'hello': async () => {
-            vscode.window.showInformationMessage('Hello World from QCode!');
+        vscode.window.showInformationMessage('Hello World from QCode!');
     },
     'analyze': async () => {
-        // const editor = vscode.window.activeTextEditor;
-        // if (!editor) {
-        //     throw new Error('No active editor found');
-        // }
-        // const content = editor.document.getText();
-        // const prompt = `Analyze this code and suggest improvements:\n\n${content}`;
-        // const settings = getValidSettings(context.globalState.get('qcode.settings')); // Use globalState
-        // if (!settings.analyzeAIs?.length) throw new Error('No AIs selected for analysis');
-
-        // const responses: { [key: string]: string } = {};
-        // for (const ai of settings.analyzeAIs) {
-        //     responses[ai] = await queryAI(prompt, context, ai as keyof QCodeSettings); // Pass context
-        // }
-        // const combinedResponse = Object.entries(responses).map(([ai, resp]) => `${ai}:\n${resp}`).join('\n\n');
-        // const resultPanel = vscode.window.createWebviewPanel('analysisResult', 'Analysis Results', vscode.ViewColumn.Beside, { enableScripts: true });
-        // resultPanel.webview.html = `<html><body><pre>${combinedResponse}</pre></body></html>`;
+        // Placeholder for analysis logic
     },
     'modify': async () => {
-        // const files = await vscode.workspace.findFiles('**/*.{ts,js}');
-        // if (files.length === 0) throw new Error('No TypeScript/JavaScript files found');
-        // const filePath = files[0].fsPath;
-        // const content = await readFile(filePath);
-        // const prompt = `Add a comment at the top of this file:\n\n${content}`;
-        // const modifiedContent = await queryAI(prompt, context, 'grok3AI'); // Pass context
-        // await writeFile(filePath, modifiedContent);
-        // vscode.window.showInformationMessage(`File modified: ${filePath}`);
+        // Placeholder for modification logic
     }
 };

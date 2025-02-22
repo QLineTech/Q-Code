@@ -35,16 +35,14 @@ function sendChat() {
             </div>`;
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
         const chatStates = getChatStates();
-        console.log({ 
-            type: 'sendChatMessage', 
-            text, 
-            // models: chatStates.models,
-            states: chatStates.states 
-        });
         vscode.postMessage({ 
             type: 'sendChatMessage', 
-            text, 
-            // models: chatStates.models,
+            text: text, 
+            states: chatStates.states 
+        });
+        console.log({ 
+            type: 'sendChatMessage', 
+            text: text, 
             states: chatStates.states 
         });
         chatInput.value = '';
@@ -71,9 +69,6 @@ function syncToggles(sourcePrefix, targetPrefix) {
         const targetToggle = document.getElementById(`${targetPrefix}${model}-toggle`);
         if (sourceToggle && targetToggle) {
             targetToggle.checked = sourceToggle.checked;
-            console.log(`Synced ${sourcePrefix}${model}-toggle (${sourceToggle.checked}) to ${targetPrefix}${model}-toggle`);
-        } else {
-            console.warn(`Could not sync ${model}: ${sourcePrefix}${model}-toggle=${!!sourceToggle}, ${targetPrefix}${model}-toggle=${!!targetToggle}`);
         }
     });
 }
@@ -85,13 +80,13 @@ function setupChatToggleListeners() {
         const chatToggle = document.getElementById(`chat-${model}-toggle`);
         if (chatToggle) {
             chatToggle.addEventListener('change', () => {
-                syncToggles('chat-', ''); // Sync chat to settings
-                updateSettings(); // Save the updated settings
-                console.log(`Chat toggle ${model} changed to ${chatToggle.checked}`);
+                syncToggles('chat-', '');
+                updateSettings();
             });
         }
     });
 }
+
 // Add event listeners for settings toggles
 function setupSettingsToggleListeners() {
     const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
@@ -99,39 +94,128 @@ function setupSettingsToggleListeners() {
         const settingsToggle = document.getElementById(`${model}-toggle`);
         if (settingsToggle) {
             settingsToggle.addEventListener('change', () => {
-                syncToggles('', 'chat-'); // Sync settings to chat
-                updateSettings(); // Save the updated settings
-                console.log(`Settings toggle ${model} changed to ${settingsToggle.checked}`);
+                syncToggles('', 'chat-');
+                updateSettings();
             });
         }
     });
 }
 
-// Update settings when toggles or other inputs change
-function updateSettings() {
-    const settings = {
-        websocket: document.getElementById('websocket-toggle')?.checked || false,
-        aiModels: getActiveModels(),
-        grok3Keys: document.getElementById('grok3-keys')?.value || '',
-        openaiKeys: document.getElementById('openai-keys')?.value || '',
-        anthropicKeys: document.getElementById('anthropic-keys')?.value || '',
-        groqKeys: document.getElementById('groq-keys')?.value || '',
-        ollamaKeys: document.getElementById('ollama-keys')?.value || '',
-        deepseekKeys: document.getElementById('deepseek-keys')?.value || '',
-        temperature: document.getElementById('temperature')?.value || '0.7',
-        volumeSensitivity: document.getElementById('volume-sensitivity')?.value || '50',
-        language: document.getElementById('language')?.value || 'en',
-        theme: document.getElementById('theme')?.value || 'system'
+// Get all settings from the form
+function getSettings() {
+    const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
+    const aiModels = {};
+    models.forEach(model => {
+        aiModels[model] = {
+            active: document.getElementById(`${model}-toggle`)?.checked || false,
+            apiKeys: document.getElementById(`${model}-keys`)?.value.split('\n').filter(Boolean) || [],
+            models: [document.getElementById(`${model}-model`)?.value || model],
+            temperature: parseFloat(document.getElementById(`${model}-temperature`)?.value) || 0.7,
+            contextSensitivity: parseInt(document.getElementById(`${model}-sensitivity`)?.value) || 50,
+            maxTokens: parseInt(document.getElementById(`${model}-max-tokens`)?.value) || 4096
+        };
+    });
+
+    const functionCallingAIs = {
+        grok3: document.getElementById('func-grok3-toggle')?.checked || false,
+        openai: document.getElementById('func-openai-toggle')?.checked || false,
+        anthropic: document.getElementById('func-anthropic-toggle')?.checked || false,
+        groq: document.getElementById('func-groq-toggle')?.checked || false,
+        ollama: document.getElementById('func-ollama-toggle')?.checked || false,
+        deepseek: document.getElementById('func-deepseek-toggle')?.checked || false
     };
-    vscode.postMessage({ type: 'saveSettings', settings });
-    console.log('Settings updated and saved:', settings);
+
+    const thinkingAIs = {
+        grok3: document.getElementById('think-grok3-toggle')?.checked || false,
+        openai: document.getElementById('think-openai-toggle')?.checked || false,
+        anthropic: document.getElementById('think-anthropic-toggle')?.checked || false,
+        groq: document.getElementById('think-groq-toggle')?.checked || false,
+        ollama: document.getElementById('think-ollama-toggle')?.checked || false,
+        deepseek: document.getElementById('think-deepseek-toggle')?.checked || false
+    };
+
+    return {
+        language: document.getElementById('language')?.value || 'en',
+        theme: document.getElementById('theme')?.value || 'system',
+        websocket: {
+            active: document.getElementById('websocket-toggle')?.checked || false,
+            port: parseInt(document.getElementById('websocket-port')?.value) || 8080
+        },
+        aiModels,
+        functionCallingAIs,
+        thinkingAIs,
+        chatStates: {
+            attachRelated: document.getElementById('attach-related-toggle')?.checked || false,
+            thinking: document.getElementById('thinking-toggle')?.checked || false,
+            webAccess: document.getElementById('web-access-toggle')?.checked || false,
+            autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
+            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
+            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false,
+            extra: []
+        }
+    };
 }
+
+// Update settings and send to extension
+function updateSettings() {
+    const settings = getSettings();
+    vscode.postMessage({ type: 'saveSettings', settings });
+    applyTheme(settings.theme);
+}
+
+// Apply theme to the UI
+function applyTheme(theme) {
+    const body = document.body;
+    body.setAttribute('data-theme', theme);
+    if (theme === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        body.classList.toggle('dark', prefersDark);
+    } else {
+        body.classList.toggle('dark', theme === 'dark');
+    }
+}
+
+// Load settings into the form
+function loadSettings(settings) {
+    document.getElementById('language').value = settings.language || 'en';
+    document.getElementById('theme').value = settings.theme || 'system';
+    document.getElementById('websocket-toggle').checked = settings.websocket?.active || false;
+    document.getElementById('websocket-port').value = settings.websocket?.port || 8080;
+
+    const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
+    models.forEach(model => {
+        const config = settings.aiModels?.[model] || {};
+        document.getElementById(`${model}-toggle`).checked = config.active || false;
+        document.getElementById(`${model}-keys`).value = config.apiKeys?.join('\n') || '';
+        document.getElementById(`${model}-model`).value = config.models?.[0] || model;
+        document.getElementById(`${model}-temperature`).value = config.temperature || 0.7;
+        document.getElementById(`${model}-temp-value`).textContent = config.temperature || '0.7';
+        document.getElementById(`${model}-sensitivity`).value = config.contextSensitivity || 50;
+        document.getElementById(`${model}-sens-value`).textContent = config.contextSensitivity || '50';
+        document.getElementById(`${model}-max-tokens`).value = config.maxTokens || 4096;
+    });
+
+    models.forEach(model => {
+        document.getElementById(`func-${model}-toggle`).checked = settings.functionCallingAIs?.[model] || false;
+        document.getElementById(`think-${model}-toggle`).checked = settings.thinkingAIs?.[model] || false;
+    });
+
+    const chatStates = settings.chatStates || {};
+    document.getElementById('attach-related-toggle').checked = chatStates.attachRelated || false;
+    document.getElementById('thinking-toggle').checked = chatStates.thinking || false;
+    document.getElementById('web-access-toggle').checked = chatStates.webAccess || false;
+    document.getElementById('auto-apply-toggle').checked = chatStates.autoApply || false;
+    document.getElementById('folder-structure-toggle').checked = chatStates.folderStructure || false;
+    document.getElementById('full-rewrite-toggle').checked = chatStates.fullRewrite || false;
+
+    syncToggles('', 'chat-');
+    applyTheme(settings.theme);
+}
+
 // Settings form submission
 document.getElementById('settings-form').addEventListener('submit', e => {
     e.preventDefault();
     updateSettings();
-    syncToggles('', 'chat-'); // Ensure chat toggles reflect settings after save
-    console.log('Settings form submitted');
 });
 
 // API key test buttons
@@ -153,13 +237,6 @@ function showError(message) {
     setTimeout(() => errorDiv.remove(), 3000);
 }
 
-let currentState = { isLoading: false, theme: 'system', chatHistory: [], settings: null };
-
-function updateState(newState) {
-    currentState = { ...currentState, ...newState };
-    renderUI();
-}
-
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -176,12 +253,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         }
         switch (btn.dataset.tab) {
             case 'history': updateHistoryList(); break;
-            case 'settings': loadSettings(); break;
+            case 'settings': vscode.postMessage({ type: 'getSettings' }); break;
             case 'info': loadInfo(); break;
         }
     });
 });
-
 
 function getChatStates() {
     return {
@@ -191,7 +267,8 @@ function getChatStates() {
             thinking: document.getElementById('thinking-toggle')?.checked || false,
             webAccess: document.getElementById('web-access-toggle')?.checked || false,
             autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
-            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false
+            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
+            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false
         }
     };
 }
@@ -201,150 +278,55 @@ function updateHistoryList() {
     historyList.innerHTML = chatHistory.length ?
         chatHistory.map(item => `
             <div class="p-3 rounded-md border border-zinc-200" style="overflow: auto">
-                <p class="text-sm "><strong>Prompt:</strong> ${item.prompt}</p>
-                <p class="text-sm  prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
+                <p class="text-sm"><strong>Prompt:</strong> ${item.prompt}</p>
+                <p class="text-sm prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
                 ${item.context ? `
-                    <p class="text-xs "><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
-                    ${item.context.selection ? `<p class="text-xs "><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
+                    <p class="text-xs"><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
+                    ${item.context.selection ? `<p class="text-xs"><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
                 ` : ''}
-                <p class="text-xs ">${new Date(item.timestamp).toLocaleString()}</p>
+                <p class="text-xs">${new Date(item.timestamp).toLocaleString()}</p>
             </div>
         `).join('') :
         '<p class="text-sm">No chat history yet.</p>';
 }
 
-const accountContent = document.getElementById('account-content');
-accountContent.innerHTML = `
-    <div id="login-form" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-zinc-600">Email</label>
-            <input type="email" id="email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-zinc-600">Password</label>
-            <input type="password" id="password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-        </div>
-        <button id="login-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Login</button>
-        <p class="text-sm text-zinc-600">No account? <button id="show-register" class="text-teal-600 hover:underline">Register</button></p>
-    </div>
-`;
-document.getElementById('show-register').addEventListener('click', () => {
-    accountContent.innerHTML = `
-        <div id="register-form" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-zinc-600">Email</label>
-                <input type="email" id="reg-email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-zinc-600">Password</label>
-                <input type="password" id="reg-password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-            </div>
-            <button id="register-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Register</button>
-            <p class="text-sm text-zinc-600">Have an account? <button id="show-login" class="text-teal-600 hover:underline">Login</button></p>
-        </div>
-    `;
-    document.getElementById('show-login').addEventListener('click', () => location.reload());
-});
-
-const micIcon = document.getElementById('mic-icon');
-const micStatus = document.getElementById('mic-status');
-const toggleBtn = document.getElementById('toggle-recording');
-toggleBtn.addEventListener('click', () => {
-    isRecording = !isRecording;
-    if (isRecording) {
-        micIcon.classList.add('animate-pulse');
-        micStatus.textContent = 'Listening...';
-        toggleBtn.textContent = 'Stop';
-        vscode.postMessage({ type: 'startRecording' });
-    } else {
-        micIcon.classList.remove('animate-pulse');
-        micStatus.textContent = 'Click to start listening...';
-        toggleBtn.textContent = 'Start';
-        vscode.postMessage({ type: 'stopRecording' });
-    }
-});
-
-function loadSettings() {
-    console.log('Requesting settings from VSCode');
-    vscode.postMessage({ type: 'getSettings' });
-}
-
-document.getElementById('temperature')?.addEventListener('input', e => {
-    document.getElementById('temp-value').textContent = e.target.value;
-});
-document.getElementById('volume-sensitivity')?.addEventListener('input', e => {
-    document.getElementById('vol-value').textContent = e.target.value;
-});
-
-function loadInfo() {
-    vscode.postMessage({ type: 'getInfo' });
-}
-
-// Initialize toggle listeners and load settings when DOM is loaded
+// Initialize UI elements
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded');
     setupChatToggleListeners();
     setupSettingsToggleListeners();
 
-    // Initialize new state toggles with default values (false)
-    ['attach-related', 'thinking', 'web-access', 'auto-apply', 'folder-structure'].forEach(id => {
-        const toggle = document.getElementById(`${id}-toggle`);
-        if (toggle) {
-            toggle.checked = false; // Default to off
-            toggle.addEventListener('change', () => {
-                console.log(`${id} toggle changed to ${toggle.checked}`);
-                // No need to save to settings as per requirements
-            });
-        }
-    });
-    
-    // Add change listeners to other settings inputs
-    ['websocket-toggle', 'temperature', 'volume-sensitivity', 'language', 'theme'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('change', () => {
-                updateSettings();
-                console.log(`${id} changed, settings updated`);
-            });
-        }
+    const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
+    models.forEach(model => {
+        document.getElementById(`${model}-temperature`)?.addEventListener('input', e => {
+            document.getElementById(`${model}-temp-value`).textContent = e.target.value;
+            updateSettings();
+        });
+        document.getElementById(`${model}-sensitivity`)?.addEventListener('input', e => {
+            document.getElementById(`${model}-sens-value`).textContent = e.target.value;
+            updateSettings();
+        });
+        document.getElementById(`${model}-max-tokens`)?.addEventListener('input', updateSettings);
+        document.getElementById(`${model}-model`)?.addEventListener('input', updateSettings);
     });
 
-    loadSettings(); // Request settings immediately on load
-});
-
-document.querySelectorAll('#actions-list button[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelector(`.tab-btn[data-tab="${btn.dataset.tab}"]`).click();
+    ['language', 'theme', 'websocket-toggle', 'websocket-port'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', updateSettings);
     });
-});
-document.getElementById('contact-btn')?.addEventListener('click', () => {
-    document.getElementById('contact-dialog').classList.remove('hidden');
-});
-document.getElementById('partner-btn')?.addEventListener('click', () => {
-    document.getElementById('partner-dialog').classList.remove('hidden');
-});
-document.getElementById('donate-btn')?.addEventListener('click', () => {
-    document.getElementById('donate-dialog').classList.remove('hidden');
-});
-document.getElementById('close-contact')?.addEventListener('click', () => {
-    document.getElementById('contact-dialog').classList.add('hidden');
-});
-document.getElementById('close-partner')?.addEventListener('click', () => {
-    document.getElementById('partner-dialog').classList.add('hidden');
-});
-document.getElementById('close-donate')?.addEventListener('click', () => {
-    document.getElementById('donate-dialog').classList.add('hidden');
-});
-document.getElementById('contact-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    vscode.postMessage({ type: 'contact', data: {
-        name: e.target[0].value,
-        email: e.target[1].value,
-        message: e.target[2].value
-    } });
-    document.getElementById('contact-dialog').classList.add('hidden');
+
+    ['attach-related-toggle', 'thinking-toggle', 'web-access-toggle', 'auto-apply-toggle', 'folder-structure-toggle', 'full-rewrite-toggle'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', updateSettings);
+    });
+
+    models.forEach(model => {
+        document.getElementById(`func-${model}-toggle`)?.addEventListener('change', updateSettings);
+        document.getElementById(`think-${model}-toggle`)?.addEventListener('change', updateSettings);
+    });
+
+    vscode.postMessage({ type: 'getSettings' });
+    vscode.postMessage({ type: 'getChatHistory' });
 });
 
+// Handle messages from the extension
 window.addEventListener('message', event => {
     const message = event.data;
     const chatDisplay = document.getElementById('chat-display');
@@ -384,64 +366,13 @@ window.addEventListener('message', event => {
     } else if (message.type === 'chatHistory') {
         chatHistory = message.history;
         updateHistoryList();
-    } else if (message.type === 'setTheme') {
-        document.body.setAttribute('data-theme', message.theme);
     } else if (message.type === 'settings') {
-        console.log('Received settings:', message.settings);
-        
-        // Update settings toggles
-        const settingsToggles = {
-            'grok3-toggle': message.settings.aiModels?.grok3 || false,
-            'openai-toggle': message.settings.aiModels?.openai || false,
-            'anthropic-toggle': message.settings.aiModels?.anthropic || false,
-            'groq-toggle': message.settings.aiModels?.groq || false,
-            'ollama-toggle': message.settings.aiModels?.ollama || false,
-            'deepseek-toggle': message.settings.aiModels?.deepseek || false
-        };
-        
-        Object.entries(settingsToggles).forEach(([id, value]) => {
-            const toggle = document.getElementById(id);
-            if (toggle) {
-                toggle.checked = value;
-                console.log(`Set ${id} to ${value}`);
-            }
-        });
-        
-        document.getElementById('websocket-toggle').checked = message.settings.websocket || false;
-        
-        // Sync to chat toggles
-        syncToggles('', 'chat-');
-        
-        document.getElementById('grok3-keys').value = message.settings.grok3Keys || '';
-        document.getElementById('openai-keys').value = message.settings.openaiKeys || '';
-        document.getElementById('anthropic-keys').value = message.settings.anthropicKeys || '';
-        document.getElementById('groq-keys').value = message.settings.grokKeys || '';
-        document.getElementById('ollama-keys').value = message.settings.ollamaKeys || '';
-        document.getElementById('deepseek-keys').value = message.settings.deepseekKeys || '';
-        document.getElementById('temperature').value = message.settings.temperature || '0.7';
-        document.getElementById('volume-sensitivity').value = message.settings.volumeSensitivity || '50';
-        document.getElementById('temp-value').textContent = message.settings.temperature || '0.7';
-        document.getElementById('vol-value').textContent = message.settings.volumeSensitivity || '50';
-        document.getElementById('language').value = message.settings.language || 'en';
-        document.getElementById('theme').value = message.settings.theme || 'system';
-    } else if (message.type === 'info') {
-        document.getElementById('tokens').textContent = message.info.tokens || 'N/A';
-        document.getElementById('requests').textContent = message.info.requests || '0';
-        document.getElementById('lines').textContent = message.info.lines || '0';
-        const languagesDiv = document.getElementById('languages');
-        languagesDiv.innerHTML = message.info.languages?.map(lang => `
-            <span class="inline-flex items-center px-2 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
-                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V6h2c1.1 0 2-.9 2-2v1.64c2.39 1.39 4 3.96 4 6.86 0 1.94-.78 3.7-2.1 4.89z"/></svg>
-                ${lang}
-            </span>
-        `).join('') || 'None';
+        loadSettings(message.settings);
     } else if (message.type === 'apiTestResult') {
         showError(`${message.model} API test: ${message.success ? 'Success' : 'Failed'}`);
     }
 });
 
-vscode.postMessage({ type: 'getChatHistory' });
-
-function renderUI() {
-    // Placeholder for UI rendering logic if needed
+function loadInfo() {
+    vscode.postMessage({ type: 'getInfo' });
 }

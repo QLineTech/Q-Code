@@ -29,10 +29,11 @@ export interface EditorContext {
 
 export interface AIModelConfig {
     active: boolean;
-    apiKeys: string[]; 
-    models: string[];
+    apiKeys: string[];
+    models: string[]; // Array of model names (e.g., ["grok3", "custom-grok"])
     temperature: number; // 0 to 1
-    volumeSensitivity: number;
+    contextSensitivity: number; // 0 to 100
+    maxTokens: number; // Max token limit (e.g., 1 to 32768)
 }
 
 export interface ChatStates {
@@ -41,6 +42,7 @@ export interface ChatStates {
     webAccess: boolean;
     autoApply: boolean;
     folderStructure: boolean;
+    fullRewrite: boolean; // Added for "Full Rewrite Code" option
     extra: string[];
 }
 
@@ -84,13 +86,19 @@ export interface CodeChange {
     position: number;
     finish_line: number;
     finish_position: number;
-    action: 'add' | 'replace' | 'remove';
+    action: 'add' | 'replace' | 'remove' | 'create';
     reason: string;
     newCode: string;
 }
 
 
 export interface QCodeSettings {
+    language: string; // e.g., "en", "fr"
+    theme: string; // e.g., "system", "light", "dark"
+    websocket: {
+        active: boolean;
+        port: number; // Updated to port instead of address for simplicity
+    };
     aiModels: {
         grok3: AIModelConfig;
         openai: AIModelConfig;
@@ -99,16 +107,16 @@ export interface QCodeSettings {
         ollama: AIModelConfig;
         deepseek: AIModelConfig;
     };
+    functionCallingAIs: AIModels; // New field for Function Calling AIs
+    thinkingAIs: AIModels; // New field for Thinking AIs
+    chatStates: ChatStates; // Updated to include all chat options
+    // Legacy fields (kept for backward compatibility, but could be deprecated)
     grok3AI: { active: boolean; apiKeys: string[] };
     openAI: { active: boolean; apiKeys: string[] };
     ollamaAI: { active: boolean; apiKeys: string[] };
     groqAI: { active: boolean; apiKeys: string[] };
     anthropicAI: { active: boolean; apiKeys: string[] };
-    theme: string;
-    language: string;
-    websocket: { active: boolean; address: string };
     analyzeAIs: string[];
-    chatStates: ChatStates; 
 }
 
 

@@ -20,7 +20,7 @@ export function connectWebSocket(settings: QCodeSettings) {
         ws.close();
     }
     try {
-        ws = new WebSocket(settings.websocket.address);
+        ws = new WebSocket("ws://localhost:" + settings.websocket.port);
         ws.on('error', error => {
             console.warn('WebSocket error:', error);
             ws?.close();

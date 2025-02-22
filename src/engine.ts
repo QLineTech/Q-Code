@@ -24,9 +24,12 @@ export class EngineHandler {
 
         // Extract relevant settings
         const activeAIs = settings.analyzeAIs; // List of active AI providers
-        const temperature = parseFloat(settings.temperature) || 0.7; // Default to 0.7 if invalid
-        const volumeSensitivity = parseInt(settings.volumeSensitivity) || 50; // Default to 50 if invalid
+        // const temperature = parseFloat(settings.temperature) || 0.7; // Default to 0.7 if invalid
+        // const volumeSensitivity = parseInt(settings.volumeSensitivity) || 50; // Default to 50 if invalid
 
+        // TODO (change later)
+        const temperature = 0;
+        const volumeSensitivity = 0;
         console.log(`[EngineHandler] Loaded settings - Active AIs: ${activeAIs}, Temperature: ${temperature}, Volume Sensitivity: ${volumeSensitivity}`);
 
         switch (projectType) {
