@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCode Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+        /* Updated tab content styling */
+        .tab-content {
+            display: none;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 1.5rem;
+            z-index: 1; /* Add this */
+            opacity: 0; /* Add this */
+            transition: opacity 0.3s ease; /* Optional: adds smooth transition */
+        }
+        
+        .tab-content.active {
+            display: block;
+            position: relative;
+            z-index: 2; /* Add this - higher than inactive tabs */
+            opacity: 1; /* Add this */
+        }
+        
+
+        /* Ensure code blocks have no gray background and match the theme */
+        .prose pre,
+        .prose code {
+            background-color: transparent !important; /* Remove any gray background */
+            padding: 0; /* Remove default padding if unwanted */
+            border: 0; /* Remove any default borders */
+            font-family: 'Courier New', Courier, monospace; /* Ensure monospaced font */
+        }
+
+        /* Light theme code block styling */
+        body[data-theme="light"] .prose pre,
+        body[data-theme="light"] .prose code {
+            color: #18181b; /* Match light theme text color */
+            background-color: transparent; /* Ensure no background */
+        }
+
+        /* Dark theme code block styling */
+        body[data-theme="dark"] .prose pre,
+        body[data-theme="dark"] .prose code {
+            color: #f4f4f5; /* Match dark theme text color */
+            background-color: transparent; /* Ensure no background */
+        }
+
+        /* Specific styling for the context selection pre */
+        body[data-theme="light"] #chat-display pre {
+            background-color: #f4f4f5; /* Light theme background for context pre */
+            border: 1px solid #e4e4e7; /* Light theme border */
+        }
+
+        body[data-theme="dark"] #chat-display pre {
+            background-color: #1f2937; /* Dark theme background for context pre */
+            border: 1px solid #374151; /* Dark theme border */
+        }
+
+        .tab-content-container {
+            position: relative;
+            height: calc(100vh - 3rem);
+            overflow-y: auto;
+        }
+        .active-tab { border-bottom: 2px solid #0d9488; color: #0d9488; }
+        .tab-btn { display: flex; align-items: center; justify-content: center; }
+        .tab-btn i { font-size: 1.25rem; }
+
+        /* Media queries for tabs */
+        @media (max-width: 640px) {
+            .tab-btn span { display: none; }
+            .tab-btn i { display: inline-block; }
+            .tab-btn { padding: 0.75rem; min-width: 0; }
+        }
+        @media (min-width: 641px) {
+            .tab-btn i { display: none; }
+            .tab-btn span { display: inline-block; }
+        }
+
+        /* Theme-specific styles */
+        body[data-theme="light"] {
+            background-color: #f4f4f5;
+            color: #18181b;
+        }
+
+        /* Theme-specific chat styles */
+        body[data-theme="light"] #chat-display .prose {
+            color: #18181b;
+        }
+
+        body[data-theme="dark"] {
+            background-color: #18181b;
+            color: #f4f4f5;
+        }
+
+        body[data-theme="dark"] #chat-display .prose {
+            color: #f4f4f5;
+        }
+
+        /* Markdown code blocks */
+        body[data-theme="light"] .prose pre {
+            background-color: #f4f4f5;
+            color: #18181b;
+            border: 1px solid #e4e4e7;
+        }
+
+        body[data-theme="dark"] .prose pre {
+            background-color: #1f2937;
+            color: #f4f4f5;
+            border: 1px solid #374151;
+        }
+
+        /* Markdown links */
+        body[data-theme="dark"] .prose a {
+            color: #60a5fa;
+        }
+
+        body[data-theme="light"] .prose a {
+            color: #2563eb;
+        }
+
+        body[data-theme="light"] .bg-white {
+            background-color: #ffffff;
+        }
+        body[data-theme="dark"] .bg-white {
+            background-color: #27272a;
+        }
+
+        /* Improved text visibility for inputs and selects */
+        body[data-theme="light"] input,
+        body[data-theme="light"] textarea,
+        body[data-theme="light"] select {
+            color: #18181b;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        body[data-theme="dark"] input,
+        body[data-theme="dark"] textarea,
+        body[data-theme="dark"] select {
+            color: #f4f4f5;
+            background: rgba(39, 39, 42, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glass effect for text fields */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body[data-theme="dark"] .glass-input {
+            background: rgba(39, 39, 42, 0.7);
+        }
+
+        body[data-theme="dark"] .glass-input:focus {
+            background: rgba(39, 39, 42, 0.9);
+        }
+
+        /* Dropdown text visibility */
+        body[data-theme="light"] select option {
+            color: #18181b;
+            background: #ffffff;
+        }
+
+        body[data-theme="dark"] select option {
+            color: #f4f4f5;
+            background: #27272a;
+        }
+
+        /* Quick Action buttons */
+        body[data-theme="light"] .action-btn {
+            background-color: #f4f4f5;
+            color: #18181b;
+        }
+        body[data-theme="light"] .action-btn:hover {
+            background-color: #e4e4e7;
+        }
+        body[data-theme="dark"] .action-btn {
+            background-color: #27272a;
+            color: #f4f4f5;
+        }
+        body[data-theme="dark"] .action-btn:hover {
+            background-color: #3f3f46;
+        }
+
+        /* User message specific styles */
+        body[data-theme="light"] #chat-display .user-message {
+            background-color: #f3f4f6; /* slightly different from response bg */
+        }
+
+        body[data-theme="dark"] #chat-display .user-message {
+            background-color: #4b5563; /* slightly different from response bg */
+        }
+
+        /* Ensure Tailwind text colors adapt */
+        body[data-theme="dark"] .text-zinc-700 {
+            color: #d4d4d8;
+        }
+        body[data-theme="dark"] .text-zinc-600 {
+            color: #a1a1aa;
+        }
+        body[data-theme="dark"] .text-zinc-500 {
+            color: #71717a;
+        }
+
+        /* Full-screen adjustments */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .full-screen-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-navigation {
+            flex-shrink: 0;
+        }
+
+        .tab-content-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Chat tab specific styles */
+        #chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #chat-display {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 0; /* Remove bottom margin to avoid gap */
+        }
+
+        #chat-form {
+            flex-shrink: 0;
+            margin-top: 1rem; /* Add some spacing above the form */
+        }
+
+        /* Remove extra grey border inside the input area */
+        #chat-input {
+            border: none !important; /* Remove the inner border */
+        }
+    </style>
+</head>
+<body class="font-sans antialiased" data-theme="${THEME}">
+    <div class="full-screen-container bg-white rounded-xl overflow-hidden">
+        <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation flex border-b border-zinc-200 overflow-x-auto">
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">
+                <i class="fas fa-comment hidden"></i>
+                <span>Chat</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="history">
+                <i class="fas fa-history hidden"></i>
+                <span>History</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="account">
+                <i class="fas fa-user hidden"></i>
+                <span>Account</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="live">
+                <i class="fas fa-microphone hidden"></i>
+                <span>Live AI</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="settings">
+                <i class="fas fa-cog hidden"></i>
+                <span>Settings</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="info">
+                <i class="fas fa-info-circle hidden"></i>
+                <span>Info</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="actions">
+                <i class="fas fa-bolt hidden"></i>
+                <span>Actions</span>
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content-container">
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content active flex flex-col">
+                <div id="chat-display" class="p-4 rounded-md border border-zinc-200/20 prose prose-sm max-w-none"></div>                
+                <form id="chat-form">
+                    <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                        <div class="px-4 py-2 bg-white rounded-b-lg dark:bg-gray-800">
+                            <label for="chat-input" class="sr-only">Ask anything...</label>
+                            <textarea id="chat-input" rows="3" class="block w-full px-0 text-base text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" placeholder="Ask anything..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" id="chat-send" class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white border border-gray-200/50 bg-transparent rounded-lg focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900 hover:bg-teal-700 mt-2">
+                            <i class="fas fa-paper-plane mr-2"></i> Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Chat History Tab -->
+            <div id="history" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Chat History</h3>
+                <div id="history-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Account Tab -->
+            <div id="account" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Account</h3>
+                <div id="account-content" class="space-y-4"></div>
+            </div>
+
+            <!-- Live AI Assistant Tab -->
+            <div id="live" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Live AI Assistant</h3>
+                <div class="text-center">
+                    <svg id="mic-icon" class="w-16 h-16 mx-auto text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                    <p id="mic-status" class="mt-2 text-sm text-zinc-600">Click to start listening...</p>
+                    <button id="toggle-recording" class="mt-4 bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition-colors">Start</button>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Settings</h3>
+                <form id="settings-form" class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <label class="block text-sm font-medium text-zinc-600">WebSocket</label>
+                        <input type="checkbox" id="websocket-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">AI Models</label>
+                        <div class="mt-2 space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Grok3</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>OpenAI</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Anthropic</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Groq</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>Ollama</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label>DeepSeek</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Grok3 API Keys</label>
+                        <textarea id="grok3-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-grok3" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">OpenAI API Keys</label>
+                        <textarea id="openai-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-openai" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Anthropic API Keys</label>
+                        <textarea id="anthropic-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-anthropic" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Groq API Keys</label>
+                        <textarea id="groq-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-groq" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Ollama API Keys</label>
+                        <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-ollama" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">DeepSeek API Keys</label>
+                        <textarea id="deepseek-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
+                        <button type="button" id="test-deepseek" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Temperature (0-1)</label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                        <span id="temp-value" class="text-sm text-zinc-500">0.7</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Context Volume Sensitivity (0-100)</label>
+                        <input type="range" id="volume-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                        <span id="vol-value" class="text-sm text-zinc-500">50</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Language</label>
+                        <select id="language" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                            <option value="en">English</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Theme</label>
+                        <select id="theme" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                            <option value="system">System</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>
+                </form>
+            </div>
+
+            <!-- Info Tab -->
+            <div id="info" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Info</h3>
+                <div id="info-content" class="space-y-4">
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Remaining Tokens</p>
+                        <p id="tokens" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Requests Made</p>
+                        <p id="requests" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Lines of Code Generated</p>
+                        <p id="lines" class="text-sm text-zinc-500">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-zinc-600">Languages Used</p>
+                        <div id="languages" class="flex flex-wrap gap-2 mt-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Tab -->
+            <div id="actions" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Quick Actions</h3>
+                <div id="actions-list" class="space-y-2">
+                    <button class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors" data-tab="chat">Go to Chat</button>
+                    <button class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors" data-tab="history">View History</button>
+                    <a href="https://github.com/QLineTech" target="_blank" class="action-btn block w-full text-left px-3 py-2 rounded-md transition-colors">Author</a>
+                    <button id="contact-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Contact Us</button>
+                    <button id="partner-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Partnership</button>
+                    <button id="donate-btn" class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors">Donate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialogs for Quick Actions -->
+        <div id="contact-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Contact Us</h4>
+                <form id="contact-form" class="space-y-4">
+                    <input type="text" placeholder="Name" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input">
+                    <input type="email" placeholder="Email" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input">
+                    <textarea placeholder="Message" class="w-full px-3 py-2 border border-zinc-300 rounded-md glass-input" rows="3"></textarea>
+                    <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700">Send</button>
+                </form>
+                <button id="close-contact" class="mt-2 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
+        </div>
+        <div id="partner-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Partnership</h4>
+                <p class="text-sm text-zinc-600">Interested in partnering with QLineTech? Contact us!</p>
+                <button id="close-partner" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
+        </div>
+        <div id="donate-dialog" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+            <div class="bg-white p-6 rounded-lg max-w-md w-full">
+                <h4 class="text-lg font-semibold text-zinc-700 mb-4">Donate</h4>
+                <p class="text-sm text-zinc-600">Support QCode development!</p>
+                <button id="close-donate" class="mt-4 text-sm text-zinc-600 hover:underline">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        let chatHistory = [];
+        let isRecording = false;
+
+       // Chat functionality
+        const chatInput = document.getElementById('chat-input');
+        const chatForm = document.getElementById('chat-form');
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendChat();
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChat();
+            }
+        });
+
+        function sendChat() {
+            const text = chatInput.value.trim();
+            if (text) {
+                const chatDisplay = document.getElementById('chat-display');
+                chatDisplay.innerHTML += `
+                    <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
+                        ${document.body.getAttribute('data-theme') === 'dark' 
+                            ? 'bg-gray-700' 
+                            : 'bg-gray-100'}">
+                        <div class="flex items-center">
+                            <i class="fas fa-user mr-2 
+                                ${document.body.getAttribute('data-theme') === 'dark' 
+                                    ? 'text-green-400' 
+                                    : 'text-green-500'}"></i>
+                            <span class="font-medium 
+                                ${document.body.getAttribute('data-theme') === 'dark' 
+                                    ? 'text-gray-200' 
+                                    : 'text-gray-700'}">You:</span>
+                        </div>
+                        <div class="mt-1 text-sm
+                            ${document.body.getAttribute('data-theme') === 'dark' 
+                                ? 'text-gray-100' 
+                                : 'text-gray-800'}">
+                            ${marked.parse(text)}
+                        </div>
+                    </div>`;              
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                vscode.postMessage({ type: 'sendChatMessage', text });
+                chatInput.value = '';
+            }
+        }
+
+        // Settings form submission
+        document.getElementById('settings-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const settings = {
+                websocket: document.getElementById('websocket-toggle').checked,
+                aiModels: {
+                    grok3: document.getElementById('grok3-toggle').checked,
+                    openai: document.getElementById('openai-toggle').checked,
+                    anthropic: document.getElementById('anthropic-toggle').checked,
+                    groq: document.getElementById('groq-toggle').checked,
+                    ollama: document.getElementById('ollama-toggle').checked,
+                    deepseek: document.getElementById('deepseek-toggle').checked
+                },
+                grok3Keys: document.getElementById('grok3-keys').value,
+                openaiKeys: document.getElementById('openai-keys').value,
+                anthropicKeys: document.getElementById('anthropic-keys').value,
+                groqKeys: document.getElementById('groq-keys').value,
+                ollamaKeys: document.getElementById('ollama-keys').value,
+                deepseekKeys: document.getElementById('deepseek-keys').value,
+                temperature: document.getElementById('temperature').value,
+                volumeSensitivity: document.getElementById('volume-sensitivity').value,
+                language: document.getElementById('language').value,
+                theme: document.getElementById('theme').value
+            };
+            vscode.postMessage({ type: 'saveSettings', settings });
+        });
+
+        // API key test buttons
+        ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'].forEach(model => {
+            document.getElementById(`test-${model}`).addEventListener('click', () => {
+                const keys = document.getElementById(`${model}-keys`).value;
+                vscode.postMessage({ type: 'testApiKey', model, keys });
+            });
+        });
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        let currentState = {
+            isLoading: false,
+            theme: 'system',
+            chatHistory: [],
+            settings: null
+        };
+
+        function updateState(newState) {
+            currentState = { ...currentState, ...newState };
+            renderUI();
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                    content.style.display = 'none'; // Add this line
+                });
+                
+                // Add active class to clicked tab and corresponding content
+                btn.classList.add('active-tab');
+                const tabContent = document.getElementById(btn.dataset.tab);
+                if (tabContent) {
+                    tabContent.classList.add('active');
+                    tabContent.style.display = 'block'; // Add this line
+                }
+        
+                // Your existing tab-specific logic
+                switch (btn.dataset.tab) {
+                    case 'history': updateHistoryList(); break;
+                    case 'settings': loadSettings(); break;
+                    case 'info': loadInfo(); break;
+                }
+            });
+        });
+
+        function updateHistoryList() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = chatHistory.length ? 
+                chatHistory.map(item => `
+                    <div class="p-3 bg-zinc-50 rounded-md border border-zinc-200">
+                        <p class="text-sm text-zinc-600"><strong>Prompt:</strong> ${item.prompt}</p>
+                        <p class="text-sm text-zinc-600 prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
+                        ${item.context ? `
+                            <p class="text-xs text-zinc-500"><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
+                            ${item.context.selection ? `<p class="text-xs text-zinc-500"><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
+                        ` : ''}
+                        <p class="text-xs text-zinc-500">${new Date(item.timestamp).toLocaleString()}</p>
+                    </div>
+                `).join('') : 
+                '<p class="text-sm text-zinc-500">No chat history yet.</p>';
+        }
+
+        const accountContent = document.getElementById('account-content');
+        accountContent.innerHTML = `
+            <div id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-600">Email</label>
+                    <input type="email" id="email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-600">Password</label>
+                    <input type="password" id="password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                </div>
+                <button id="login-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Login</button>
+                <p class="text-sm text-zinc-600">No account? <button id="show-register" class="text-teal-600 hover:underline">Register</button></p>
+            </div>
+        `;
+        document.getElementById('show-register').addEventListener('click', () => {
+            accountContent.innerHTML = `
+                <div id="register-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Email</label>
+                        <input type="email" id="reg-email" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-600">Password</label>
+                        <input type="password" id="reg-password" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                    </div>
+                    <button id="register-btn" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Register</button>
+                    <p class="text-sm text-zinc-600">Have an account? <button id="show-login" class="text-teal-600 hover:underline">Login</button></p>
+                </div>
+            `;
+            document.getElementById('show-login').addEventListener('click', () => location.reload());
+        });
+
+        const micIcon = document.getElementById('mic-icon');
+        const micStatus = document.getElementById('mic-status');
+        const toggleBtn = document.getElementById('toggle-recording');
+        toggleBtn.addEventListener('click', () => {
+            isRecording = !isRecording;
+            if (isRecording) {
+                micIcon.classList.add('animate-pulse');
+                micStatus.textContent = 'Listening...';
+                toggleBtn.textContent = 'Stop';
+                vscode.postMessage({ type: 'startRecording' });
+            } else {
+                micIcon.classList.remove('animate-pulse');
+                micStatus.textContent = 'Click to start listening...';
+                toggleBtn.textContent = 'Start';
+                vscode.postMessage({ type: 'stopRecording' });
+            }
+        });
+
+        function loadSettings() {
+            vscode.postMessage({ type: 'getSettings' });
+        }
+
+        document.getElementById('temperature').addEventListener('input', e => {
+            document.getElementById('temp-value').textContent = e.target.value;
+        });
+        document.getElementById('volume-sensitivity').addEventListener('input', e => {
+            document.getElementById('vol-value').textContent = e.target.value;
+        });
+
+        function loadInfo() {
+            vscode.postMessage({ type: 'getInfo' });
+        }
+
+        document.querySelectorAll('#actions-list button[data-tab]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector(`.tab-btn[data-tab="${btn.dataset.tab}"]`).click();
+            });
+        });
+        document.getElementById('contact-btn').addEventListener('click', () => {
+            document.getElementById('contact-dialog').classList.remove('hidden');
+        });
+        document.getElementById('partner-btn').addEventListener('click', () => {
+            document.getElementById('partner-dialog').classList.remove('hidden');
+        });
+        document.getElementById('donate-btn').addEventListener('click', () => {
+            document.getElementById('donate-dialog').classList.remove('hidden');
+        });
+        document.getElementById('close-contact').addEventListener('click', () => {
+            document.getElementById('contact-dialog').classList.add('hidden');
+        });
+        document.getElementById('close-partner').addEventListener('click', () => {
+            document.getElementById('partner-dialog').classList.add('hidden');
+        });
+        document.getElementById('close-donate').addEventListener('click', () => {
+            document.getElementById('donate-dialog').classList.add('hidden');
+        });
+        document.getElementById('contact-form').addEventListener('submit', e => {
+            e.preventDefault();
+            vscode.postMessage({ type: 'contact', data: {
+                name: e.target[0].value,
+                email: e.target[1].value,
+                message: e.target[2].value
+            } });
+            document.getElementById('contact-dialog').classList.add('hidden');
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            const chatDisplay = document.getElementById('chat-display');
+
+            if (message.type === 'chatResponse') {
+                
+                
+                chatDisplay.innerHTML += `
+                    <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
+                        ${document.body.getAttribute('data-theme') === 'dark' 
+                            ? 'bg-gray-800' 
+                            : 'bg-gray-50'}">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-robot mr-2 
+                                ${document.body.getAttribute('data-theme') === 'dark' 
+                                    ? 'text-blue-400' 
+                                    : 'text-blue-500'}"></i>
+                            <span class="font-medium 
+                                ${document.body.getAttribute('data-theme') === 'dark' 
+                                    ? 'text-gray-200' 
+                                    : 'text-gray-700'}">Grok3:</span>
+                        </div>
+                        <div class="prose prose-sm max-w-none
+                            ${document.body.getAttribute('data-theme') === 'dark' 
+                                ? 'text-gray-100 prose-invert' 
+                                : 'text-gray-800'}">
+                            ${marked.parse(message.text)}
+                        </div>
+                        ${message.context ? `
+                            <div class="mt-3 text-xs border-t pt-2
+                                ${document.body.getAttribute('data-theme') === 'dark' 
+                                    ? 'text-gray-400 border-gray-700' 
+                                    : 'text-gray-500 border-gray-200'}">
+                                <p><strong>Context:</strong> ${message.context.fileName} (${message.context.fileType})</p>
+                                ${message.context.selection ? `
+                                    <pre class="mt-1 p-2 rounded border text-xs overflow-auto
+                                        ${document.body.getAttribute('data-theme') === 'dark' 
+                                            ? 'bg-gray-900 text-gray-200 border-gray-700' 
+                                            : 'bg-white text-gray-700 border-gray-200'}">
+                                        ${message.context.selection}
+                                    </pre>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                chatHistory.push({
+                    prompt: message.prompt,
+                    response: message.text,
+                    timestamp: new Date().toISOString(),
+                    context: message.context
+                });
+            } else if (message.type === 'chatError') {
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-red-50 rounded-md text-red-700">${message.text}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } else if (message.type === 'chatHistory') {
+                chatHistory = message.history;
+                updateHistoryList();            
+            } else if (message.type === 'setTheme') {
+                document.body.setAttribute('data-theme', message.theme);
+            } else if (message.type === 'chatError') {
+                chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-red-50 rounded-md text-red-700">${message.text}</div>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            } else if (message.type === 'chatHistory') {
+                chatHistory = message.history;
+                updateHistoryList();
+            } else if (message.type === 'settings') {
+                document.getElementById('websocket-toggle').checked = message.settings.websocket || false;
+                document.getElementById('grok3-toggle').checked = message.settings.aiModels?.grok3 || false;
+                document.getElementById('openai-toggle').checked = message.settings.aiModels?.openai || false;
+                document.getElementById('anthropic-toggle').checked = message.settings.aiModels?.anthropic || false;
+                document.getElementById('groq-toggle').checked = message.settings.aiModels?.groq || false;
+                document.getElementById('ollama-toggle').checked = message.settings.aiModels?.ollama || false;
+                document.getElementById('deepseek-toggle').checked = message.settings.aiModels?.deepseek || false;
+                document.getElementById('grok3-keys').value = message.settings.grok3Keys || '';
+                document.getElementById('openai-keys').value = message.settings.openaiKeys || '';
+                document.getElementById('anthropic-keys').value = message.settings.anthropicKeys || '';
+                document.getElementById('groq-keys').value = message.settings.groqKeys || '';
+                document.getElementById('ollama-keys').value = message.settings.ollamaKeys || '';
+                document.getElementById('deepseek-keys').value = message.settings.deepseekKeys || '';
+                document.getElementById('temperature').value = message.settings.temperature || '0.7';
+                document.getElementById('volume-sensitivity').value = message.settings.volumeSensitivity || '50';
+                document.getElementById('temp-value').textContent = message.settings.temperature || '0.7';
+                document.getElementById('vol-value').textContent = message.settings.volumeSensitivity || '50';
+                document.getElementById('language').value = message.settings.language || 'en';
+                document.getElementById('theme').value = message.settings.theme || 'system';
+            } else if (message.type === 'info') {
+                document.getElementById('tokens').textContent = message.info.tokens || 'N/A';
+                document.getElementById('requests').textContent = message.info.requests || '0';
+                document.getElementById('lines').textContent = message.info.lines || '0';
+                const languagesDiv = document.getElementById('languages');
+                languagesDiv.innerHTML = message.info.languages?.map(lang => `
+                    <span class="inline-flex items-center px-2 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-full">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V6h2c1.1 0 2-.9 2-2v1.64c2.39 1.39 4 3.96 4 6.86 0 1.94-.78 3.7-2.1 4.89z"/></svg>
+                        ${lang}
+                    </span>
+                `).join('') || 'None';
+            } else if (message.type === 'apiTestResult') {
+                showError(`${message.model} API test: ${message.success ? 'Success' : 'Failed'}`);
+            }
+        });
+
+        vscode.postMessage({ type: 'getChatHistory' });
+    </script>
+</body>
+</html>
