@@ -163,98 +163,404 @@
             <div id="settings" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Settings</h3>
                 <form id="settings-form" class="space-y-6">
+
+                        <!-- Language and Theme -->
+                        <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium">Language</label>
+                            <select id="language" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Theme</label>
+                            <select id="theme" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
+                                <option value="system">System</option>
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- WebSocket Toggle and Port -->
                     <div class="flex items-center space-x-4">
                         <label class="block text-sm font-medium text-zinc-600">WebSocket</label>
                         <input type="checkbox" id="websocket-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">AI Models</label>
-                        <div class="mt-2 space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>Grok3</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>OpenAI</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>Anthropic</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>Groq</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>Ollama</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                                <label>DeepSeek</label>
-                            </div>
+                        <div class="flex items-center space-x-2">
+                            <label class="block text-sm font-medium text-zinc-600">Port</label>
+                            <input type="number" id="websocket-port" class="mt-1 w-24 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" placeholder="8080" min="1" max="65535">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Grok3 API Keys</label>
-                        <textarea id="grok3-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-grok3" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
+
+                    
+                    <!-- Model Configuration Boxes -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Grok3 -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">Grok3</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="grok3-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-grok3" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-grok3" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="grok3-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="grok3-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="grok3-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="grok3-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="grok3-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="grok3-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="grok3" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- OpenAI -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">OpenAI</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="openai-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-openai" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-openai" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="openai-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="openai-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="openai-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="openai-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="openai-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="openai-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="gpt-3.5-turbo" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Anthropic -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">Anthropic</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="anthropic-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-anthropic" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-anthropic" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="anthropic-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="anthropic-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="anthropic-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="anthropic-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="anthropic-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="anthropic-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="claude-3" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Groq -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">Groq</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="groq-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-groq" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-groq" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="groq-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="groq-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="groq-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="groq-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="groq-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="groq-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="mixtral-8x7b" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Ollama -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">Ollama</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="ollama-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-ollama" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-ollama" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="ollama-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="ollama-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="ollama-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="ollama-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="ollama-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="ollama-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="llama2" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- DeepSeek -->
+                        <details class="border border-zinc-200 rounded-lg p-4">
+                            <summary class="text-sm font-medium text-zinc-600 capitalize cursor-pointer">DeepSeek</summary>
+                            <div class="mt-3 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-medium text-zinc-600">Active</label>
+                                    <input type="checkbox" id="deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">API Key</label>
+                                    <textarea 
+                                        id="deepseek-keys" 
+                                        class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input resize-both overflow-hidden" 
+                                        rows="2" 
+                                        placeholder="Enter API Key"
+                                    ></textarea>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="test-deepseek" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Key</button>
+                                    <button type="button" id="credits-deepseek" class="flex-1 bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 text-xs">Check Credits</button>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Temperature (0-1)</label>
+                                    <input type="range" id="deepseek-temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
+                                    <span id="deepseek-temp-value" class="text-xs text-zinc-500">0.7</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Context Sensitivity (0-100)</label>
+                                    <input type="range" id="deepseek-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
+                                    <span id="deepseek-sens-value" class="text-xs text-zinc-500">50</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Max Tokens</label>
+                                    <input type="number" id="deepseek-max-tokens" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" min="1" max="32768" value="4096" placeholder="4096">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-zinc-600">Model Name</label>
+                                    <input type="text" id="deepseek-model" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" value="deepseek-coder" placeholder="Enter model name">
+                                </div>
+                            </div>
+                        </details>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">OpenAI API Keys</label>
-                        <textarea id="openai-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-openai" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Anthropic API Keys</label>
-                        <textarea id="anthropic-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-anthropic" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Groq API Keys</label>
-                        <textarea id="groq-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-groq" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Ollama API Models</label>
-                        <textarea id="ollama-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-ollama" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">DeepSeek API Keys</label>
-                        <textarea id="deepseek-keys" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input" rows="3" placeholder="One per line"></textarea>
-                        <button type="button" id="test-deepseek" class="mt-2 bg-teal-600 text-white px-4 py-1 rounded-md hover:bg-teal-700">Test</button>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Temperature (0-1)</label>
-                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" class="mt-1 w-full">
-                        <span id="temp-value" class="text-sm text-zinc-500">0.7</span>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-600">Context Volume Sensitivity (0-100)</label>
-                        <input type="range" id="volume-sensitivity" min="0" max="100" step="1" value="50" class="mt-1 w-full">
-                        <span id="vol-value" class="text-sm text-zinc-500">50</span>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Language</label>
-                        <select id="language" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-                            <option value="en">English</option>
-                            <option value="fr">Français</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium">Theme</label>
-                        <select id="theme" class="mt-1 w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 glass-input">
-                            <option value="system">System</option>
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
+
+                    <!-- Function Calling AIs -->
+                    <details class="border border-zinc-200 rounded-lg p-4">
+                        <summary class="block text-sm font-medium text-zinc-600 mb-3 cursor-pointer">Function Calling AIs</summary>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-grok3-toggle" class="text-sm capitalize">Grok3</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-openai-toggle" class="text-sm capitalize">OpenAI</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-anthropic-toggle" class="text-sm capitalize">Anthropic</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-groq-toggle" class="text-sm capitalize">Groq</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-ollama-toggle" class="text-sm capitalize">Ollama</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="func-deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="func-deepseek-toggle" class="text-sm capitalize">DeepSeek</label>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Thinking AIs -->
+                    <details class="border border-zinc-200 rounded-lg p-4">
+                        <summary class="block text-sm font-medium text-zinc-600 mb-3 cursor-pointer">Thinking AIs</summary>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-grok3-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-grok3-toggle" class="text-sm capitalize">Grok3</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-openai-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-openai-toggle" class="text-sm capitalize">OpenAI</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-anthropic-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-anthropic-toggle" class="text-sm capitalize">Anthropic</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-groq-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-groq-toggle" class="text-sm capitalize">Groq</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-ollama-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-ollama-toggle" class="text-sm capitalize">Ollama</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="think-deepseek-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="think-deepseek-toggle" class="text-sm capitalize">DeepSeek</label>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Chat Options -->
+                    <details class="border border-zinc-200 rounded-lg p-4">
+                        <summary class="block text-sm font-medium text-zinc-600 mb-3 cursor-pointer">Chat Options</summary>
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="attach-related-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="attach-related-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-link mr-1"></i>Attach Related
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="thinking-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="thinking-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-brain mr-1"></i>Thinking
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="web-access-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="web-access-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-globe mr-1"></i>Web Access
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="auto-apply-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="auto-apply-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-robot mr-1"></i>Auto Apply
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="folder-structure-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="folder-structure-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-folder mr-1"></i>Folder Structure
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="full-rewrite-toggle" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                <label for="full-rewrite-toggle" class="text-sm flex items-center">
+                                    <i class="fas fa-code mr-1"></i>Full Rewrite Code
+                                </label>
+                            </div>
+                        </div>
+                    </details>
+
+                    
+
+               
+
                     <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-md hover:bg-teal-700 transition-colors">Save Settings</button>
                 </form>
             </div>
-
             <!-- Info Tab -->
             <div id="info" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Info</h3>
