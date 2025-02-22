@@ -65,6 +65,12 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
                     this._webviewView.webview.postMessage({ type: 'settings', settings: this._settings });
                 }
                 break;
+            case 'startRecording':
+                await vscode.commands.executeCommand('qcode.startRecording');
+                break;
+            case 'stopRecording':
+                await vscode.commands.executeCommand('qcode.stopRecording');
+                break;
             default:
                 console.warn('Unknown message type:', message.type);
         }
