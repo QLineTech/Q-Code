@@ -293,16 +293,31 @@ function updateHistoryList() {
     historyList.innerHTML = chatHistory.length ?
         chatHistory.map(item => `
             <div class="p-3 rounded-md border border-zinc-200" style="overflow: auto">
-                <p class="text-sm"><strong>Prompt:</strong> ${item.prompt}</p>
+                <div class="flex justify-between items-center">
+                    <p class="text-sm"><strong>Prompt:</strong> ${item.prompt}</p>
+                    <button class="remove-entry-btn px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs" data-id="${item.id}">Remove</button>
+                </div>
                 <p class="text-sm prose prose-sm max-w-none"><strong>Response:</strong> ${marked.parse(item.response)}</p>
+                ${item.rawResponse?.usage ? `
+                    <p class="text-xs"><strong>Usage:</strong></p>
+                    <pre class="text-xs bg-gray-100 p-2 rounded">${JSON.stringify(item.rawResponse.usage, null, 2)}</pre>
+                ` : ''}
                 ${item.context ? `
                     <p class="text-xs"><strong>File:</strong> ${item.context.fileName} (${item.context.fileType})</p>
-                    ${item.context.selection ? `<p class="text-xs"><strong>Selection:</strong> <pre>${item.context.selection}</pre></p>` : ''}
+                    ${item.context.selection ? `<p class="text-xs"><strong>Selection:</strong> <pre>${item.context.selection.text}</pre></p>` : ''} <!-- Fixed selection display -->
                 ` : ''}
                 <p class="text-xs">${new Date(item.timestamp).toLocaleString()}</p>
             </div>
         `).join('') :
         '<p class="text-sm">No chat history yet.</p>';
+
+    // Add event listeners to Remove buttons
+    document.querySelectorAll('.remove-entry-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            vscode.postMessage({ type: 'removeChatEntry', id });
+        });
+    });
 }
 
 // Initialize UI elements
@@ -351,6 +366,15 @@ document.addEventListener('DOMContentLoaded', () => {
             vscode.postMessage({ type: 'stopRecording' });
             stopRecordingUI();
         }
+    });
+
+    // Add event listeners for Clear and Export buttons
+    document.getElementById('clear-history').addEventListener('click', () => {
+        vscode.postMessage({ type: 'clearChatHistory' });
+    });
+
+    document.getElementById('export-history').addEventListener('click', () => {
+        vscode.postMessage({ type: 'exportChatHistory' });
     });
 
 });
