@@ -27,6 +27,17 @@ export interface EditorContext {
     };
 }
 
+export interface RateLimits {
+    requestsPerMinute: number;
+    inputTokensPerMinute: number;
+    outputTokensPerMinute: number;
+}
+
+export interface Pricing {
+    inputCostPerMillion: number;
+    outputCostPerMillion: number;
+}
+
 export interface AIPrompt {
     systemPrompt: string;
     attachments: {
