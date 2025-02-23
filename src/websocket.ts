@@ -60,10 +60,10 @@ export function connectWebSocket(settings: QCodeSettings, provider: QCodePanelPr
                             // Handle nested transcription status
                             switch (parsedData.transcription.status) {
                                 case 'success':
-                                    vscode.window.showInformationMessage(
-                                        `Transcription: ${parsedData.transcription.transcription}`
-                                    );
-                                    console.log('Server message:', parsedData.message);
+                                    // vscode.window.showInformationMessage(
+                                    //     `Transcription: ${parsedData.transcription.transcription}`
+                                    // );
+                                    // console.log('Server message:', parsedData.message);
                                     // Send the transcription to the webview
                                     provider.sendMessage({
                                         type: 'transcription',

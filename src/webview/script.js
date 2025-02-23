@@ -472,6 +472,7 @@ window.addEventListener('message', event => {
         const inputField = document.getElementById('chat-input'); // Adjust ID as needed
         if (inputField) {
             inputField.value = message.transcription;
+            inputField.focus(); // Add focus to the text field
         }
     } else if (message.type === 'websocketStatus') {
         updateWebSocketStatus(message.connected);
