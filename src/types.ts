@@ -95,14 +95,15 @@ export interface ServerMessage {
 }
 
 export interface CodeChange {
-    file: string;
-    line: number;
-    position: number;
-    finish_line: number;
-    finish_position: number;
-    action: 'add' | 'replace' | 'remove' | 'create';
-    reason: string;
-    newCode: string;
+    file: string; // Kept for backward compatibility
+    relativePath: string | null; // Relative path from project root, e.g., "./lib/main.dart"
+    line: number | null; // Nullable for 'create' and 'remove_file'
+    position: number | null; // Nullable
+    finish_line: number | null; // Nullable
+    finish_position: number | null; // Nullable
+    action: 'add' | 'replace' | 'remove' | 'create' | 'remove_file'; // Added 'remove_file'
+    reason: string; // Explanation for the change
+    newCode: string; // Code to apply (ignored for 'remove' and 'remove_file')
 }
 
 

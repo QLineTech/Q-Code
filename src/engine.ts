@@ -10,6 +10,8 @@ import { queryAI, parseAIResponse } from './ai';
 import { readFile, writeFile } from './fileOperations';
 import { getValidSettings } from './settings';
 import * as vscode from 'vscode';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export class EngineHandler {
     static async processPrompt(
@@ -83,68 +85,141 @@ export class EngineHandler {
             // Handle auto-apply if enabled
             if (states.autoApply) {
                 response += '\n[Auto-apply enabled - changes applied automatically]\n';
+                
+                
+                const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(editorContext.filePath));
+                if (!workspaceFolder) {
+                    throw new Error('No workspace folder found for the current file');
+                }
+                const rootPath = workspaceFolder.uri.fsPath;
+
+
                 for (const change of codeChanges) {
                     try {
-                        let fileContent = await readFile(editorContext.filePath, 'utf8');
-                        let lines = fileContent.split('\n');
 
-                        if (change.line < 1 || change.finish_line > lines.length) {
-                            throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
+                        // Validate relativePath for 'create' and 'remove_file'
+                        if ((change.action === 'create' || change.action === 'remove_file') && !change.relativePath) {
+                            throw new Error(`Action '${change.action}' requires relativePath`);
                         }
+                        
+                        // Determine target file path
 
+                        let targetPath: string;
+                        if (change.relativePath) {
+                            const relPath = change.relativePath.startsWith('./') ? change.relativePath.slice(2) : change.relativePath;
+                            targetPath = path.resolve(rootPath, relPath);
+                            if (!targetPath.startsWith(rootPath)) {
+                                throw new Error(`Target path ${targetPath} is outside the workspace root`);
+                            }
+                        } else {
+                            targetPath = editorContext.filePath;
+                        }
+            
                         switch (change.action) {
-                            case 'add': {
-                                let targetLine = lines[change.line - 1];
-                                let newLine = targetLine.slice(0, change.position) +
-                                            change.newCode +
-                                            targetLine.slice(change.position);
-                                lines[change.line - 1] = newLine;
+                            case 'create':
+                                if (change.line !== null || change.position !== null || change.finish_line !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'create' should not have line or position fields`);
+                                }
+                                await fs.writeFile(targetPath, change.newCode, 'utf8');
+                                response += `\n[Created file ${change.relativePath || path.basename(targetPath)}]`;
                                 break;
-                            }
-                            case 'replace': {
-                                if (change.line === change.finish_line) {
-                                    let targetLine = lines[change.line - 1];
-                                    let newLine = targetLine.slice(0, change.position) +
-                                                change.newCode +
-                                                targetLine.slice(change.finish_position);
-                                    lines[change.line - 1] = newLine;
-                                } else {
-                                    let before = lines[change.line - 1].slice(0, change.position);
-                                    let after = lines[change.finish_line - 1].slice(change.finish_position);
-                                    lines.splice(
-                                        change.line - 1,
-                                        change.finish_line - change.line + 1,
-                                        before + change.newCode + after
-                                    );
+            
+                            case 'remove_file':
+                                if (change.line !== null || change.position !== null || change.finish_line !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'remove_file' should not have line or position fields`);
+                                }
+                                try {
+                                    await fs.unlink(targetPath);
+                                    response += `\n[Removed file ${change.relativePath || path.basename(targetPath)}]`;
+                                } catch (err) {
+                                    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
+                                        response += `\n[File ${change.relativePath || path.basename(targetPath)} does not exist, skipping removal]`;
+                                    } else {
+                                        throw err; // Re-throw other errors to be caught by the outer catch
+                                    }
                                 }
                                 break;
-                            }
-                            case 'remove': {
-                                if (change.line === change.finish_line) {
-                                    let targetLine = lines[change.line - 1];
-                                    let newLine = targetLine.slice(0, change.position) +
-                                                targetLine.slice(change.finish_position);
-                                    lines[change.line - 1] = newLine;
-                                } else {
-                                    let before = lines[change.line - 1].slice(0, change.position);
-                                    let after = lines[change.finish_line - 1].slice(change.finish_position);
-                                    lines.splice(
-                                        change.line - 1,
-                                        change.finish_line - change.line + 1,
-                                        before + after
-                                    );
+            
+                            case 'add':
+                                if (change.line === null || change.position === null) {
+                                    throw new Error(`Action 'add' requires line and position`);
                                 }
+                                let contentAdd = await fs.readFile(targetPath, 'utf8');
+                                let linesAdd = contentAdd.split('\n');
+                                if (change.line < 1 || change.line > linesAdd.length + 1) {
+                                    throw new Error(`Invalid line number: ${change.line}`);
+                                }
+                                if (change.line > linesAdd.length) {
+                                    while (linesAdd.length < change.line - 1) {
+                                        linesAdd.push('');
+                                    }
+                                    linesAdd.push(change.newCode);
+                                } else {
+                                    let targetLine = linesAdd[change.line - 1];
+                                    if (change.position < 0 || change.position > targetLine.length) {
+                                        throw new Error(`Invalid position: ${change.position}`);
+                                    }
+                                    linesAdd[change.line - 1] = targetLine.slice(0, change.position) + change.newCode + targetLine.slice(change.position);
+                                }
+                                await fs.writeFile(targetPath, linesAdd.join('\n'), 'utf8');
+                                response += `\n[Applied add to ${change.relativePath || path.basename(targetPath)}:${change.line} - ${change.reason}]`;
                                 break;
-                            }
+            
+                            case 'replace':
+                                if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
+                                    throw new Error(`Action 'replace' requires line, position, finish_line, finish_position`);
+                                }
+                                let contentReplace = await fs.readFile(targetPath, 'utf8');
+                                let linesReplace = contentReplace.split('\n');
+                                if (change.line < 1 || change.finish_line > linesReplace.length || change.line > change.finish_line) {
+                                    throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
+                                }
+                                if (change.line === change.finish_line) {
+                                    let line = linesReplace[change.line - 1];
+                                    if (change.position < 0 || change.finish_position > line.length || change.position > change.finish_position) {
+                                        throw new Error(`Invalid position range: ${change.position}-${change.finish_position}`);
+                                    }
+                                    linesReplace[change.line - 1] = line.slice(0, change.position) + change.newCode + line.slice(change.finish_position);
+                                } else {
+                                    let before = linesReplace[change.line - 1].slice(0, change.position);
+                                    let after = linesReplace[change.finish_line - 1].slice(change.finish_position);
+                                    let middle = change.newCode.split('\n');
+                                    linesReplace.splice(change.line - 1, change.finish_line - change.line + 1, ...[before + middle[0], ...middle.slice(1), after]);
+                                }
+                                await fs.writeFile(targetPath, linesReplace.join('\n'), 'utf8');
+                                response += `\n[Applied replace to ${change.relativePath || path.basename(targetPath)}:${change.line}-${change.finish_line} - ${change.reason}]`;
+                                break;
+            
+                            case 'remove':
+                                if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
+                                    throw new Error(`Action 'remove' requires line, position, finish_line, finish_position`);
+                                }
+                                let contentRemove = await fs.readFile(targetPath, 'utf8');
+                                let linesRemove = contentRemove.split('\n');
+                                if (change.line < 1 || change.finish_line > linesRemove.length || change.line > change.finish_line) {
+                                    throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
+                                }
+                                if (change.line === change.finish_line) {
+                                    let line = linesRemove[change.line - 1];
+                                    if (change.position < 0 || change.finish_position > line.length || change.position > change.finish_position) {
+                                        throw new Error(`Invalid position range: ${change.position}-${change.finish_position}`);
+                                    }
+                                    linesRemove[change.line - 1] = line.slice(0, change.position) + line.slice(change.finish_position);
+                                } else {
+                                    let before = linesRemove[change.line - 1].slice(0, change.position);
+                                    let after = linesRemove[change.finish_line - 1].slice(change.finish_position);
+                                    linesRemove.splice(change.line - 1, change.finish_line - change.line + 1, before + after);
+                                }
+                                await fs.writeFile(targetPath, linesRemove.join('\n'), 'utf8');
+                                response += `\n[Applied remove to ${change.relativePath || path.basename(targetPath)}:${change.line}-${change.finish_line} - ${change.reason}]`;
+                                break;
+            
+                            default:
+                                throw new Error(`Unknown action: ${change.action}`);
                         }
-
-                        let newContent = lines.join('\n');
-                        await writeFile(editorContext.filePath, newContent, 'utf8');
-                        response += `\n[Applied ${change.action} to ${change.file}:${change.line} - ${change.reason}]`;
                     } catch (error) {
-                        response += `\n[Failed to apply change to ${change.file}:${change.line} - ${
-                            error instanceof Error ? error.message : 'Unknown error'
-                        }]`;
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        response += `\n[Failed to apply change: ${errorMessage}]`;
                     }
                 }
             }

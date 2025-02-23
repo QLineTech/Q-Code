@@ -93,22 +93,23 @@ export class FlutterEngine {
 
         // Response format instructions
         const responseFormat = 'Return ONLY a JSON array of objects in this exact format, with no additional text before or after:\n' +
-            '```json\n' +
-            '[\n' +
-            '  {\n' +
-            '    "file": "<file-name>",\n' +
-            '    "line": <start-line>,\n' +
-            '    "position": <start-position>,\n' +
-            '    "finish_line": <finish-line>,\n' +
-            '    "finish_position": <finish-position>,\n' +
-            '    "action": "add|replace|remove",\n' +
-            '    "reason": "<reason>",\n' +
-            '    "newCode": "<new code>"\n' +
-            '  }\n' +
-            ']\n' +
-            '```\n' +
-            'Include only the JSON array with the specified structure. Do not add any explanatory text, prefixes, or postfixes.';
-
+        '```json\n' +
+        '[\n' +
+        '  {\n' +
+        '    "file": "<file-name>",\n' +
+        '    "relativePath": "<relative-path>",\n' +
+        '    "line": <start-line>,\n' +
+        '    "position": <start-position>,\n' +
+        '    "finish_line": <finish-line>,\n' +
+        '    "finish_position": <finish-position>,\n' +
+        '    "action": "add|replace|remove|create|remove_file",\n' +
+        '    "reason": "<reason>",\n' +
+        '    "newCode": "<new code>"\n' +
+        '  }\n' +
+        ']\n' +
+        '```\n' +
+        'Include only the JSON array with the specified structure. Do not add any explanatory text, prefixes, or postfixes.';
+        
         // Construct and return the AIPrompt object
         return {
             systemPrompt,
