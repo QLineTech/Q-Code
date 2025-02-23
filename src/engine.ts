@@ -43,6 +43,9 @@ export class EngineHandler {
         aiPrompt.attachments.forEach(attachment => {
             if (attachment.type === 'code' && attachment.language) {
                 const markdownLang = getMarkdownLanguage(attachment.language);
+                if(attachment.title) {
+                    fullPrompt += `${attachment.title}:\n`;
+                }
                 fullPrompt += `\`\`\`${markdownLang}\n${attachment.content}\n\`\`\`\n\n`;
             } else {
                 fullPrompt += `${attachment.content}\n\n`;
