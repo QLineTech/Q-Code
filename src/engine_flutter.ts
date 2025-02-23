@@ -5,6 +5,7 @@ import { EditorContext, AIPrompt } from "./types";
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import ignore from 'ignore';
+import { getMarkdownLanguage } from './utils';
 
 export class FlutterEngine {
 
@@ -134,9 +135,9 @@ export class FlutterEngine {
         const codeToAnalyze = context.selection?.text || context.content;
     
         try {
-            // Collect local imports
+            // Collect local imports and their content
             const importRegex = /import\s+['"]([^'"]+)['"]/g;
-            const localImports = new Set<string>();
+            const localImports = new Map<string, string>(); // Map to store path -> content
             let match;
             while ((match = importRegex.exec(codeToAnalyze)) !== null) {
                 const importPath = match[1];
@@ -144,13 +145,24 @@ export class FlutterEngine {
                     // Relative import
                     const absolutePath = path.resolve(path.dirname(context.filePath), importPath);
                     const relativePath = path.relative(rootPath, absolutePath).replace(/\\/g, '/');
-                    localImports.add(relativePath);
+                    try {
+                        const fileContent = await fs.readFile(absolutePath, 'utf8');
+                        const fileExt = path.extname(relativePath).slice(1); // e.g., 'dart', 'ts'
+                        localImports.set(relativePath, fileContent);
+                    } catch (error) {
+                        localImports.set(relativePath, `Error reading file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    }
                 }
             }
     
             if (localImports.size > 0) {
                 result += 'Locally Imported Files:\n';
-                localImports.forEach(imp => result += `- ${imp}\n`);
+                for (const [relativePath, content] of localImports) {
+                    const fileExt = path.extname(relativePath).slice(1) || 'text';
+                    const markdownLang = getMarkdownLanguage(fileExt);
+                    
+                    result += `\nfile_relative_path: ${relativePath}\n\`\`\`${markdownLang}\n${content}\n\`\`\`\n`;
+                }
             }
     
             // Collect packages (unchanged)
@@ -180,7 +192,6 @@ export class FlutterEngine {
                 relatedSymbols.add(match[2]);
             }
     
-            // Handle selected symbols using VSCode symbol provider
             const uri = vscode.Uri.file(context.filePath);
             const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
                 'vscode.executeDocumentSymbolProvider',

@@ -12,6 +12,7 @@ import { getValidSettings } from './settings';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { getMarkdownLanguage } from './utils';
 
 export class EngineHandler {
     static async processPrompt(
@@ -41,7 +42,8 @@ export class EngineHandler {
         let fullPrompt = aiPrompt.systemPrompt + '\n';
         aiPrompt.attachments.forEach(attachment => {
             if (attachment.type === 'code' && attachment.language) {
-                fullPrompt += `\`\`\`${attachment.language}\n${attachment.content}\n\`\`\`\n\n`;
+                const markdownLang = getMarkdownLanguage(attachment.language);
+                fullPrompt += `\`\`\`${markdownLang}\n${attachment.content}\n\`\`\`\n\n`;
             } else {
                 fullPrompt += `${attachment.content}\n\n`;
             }
@@ -225,4 +227,6 @@ export class EngineHandler {
 
         return response;
     }
+
 }
+
