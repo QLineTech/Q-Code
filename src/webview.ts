@@ -124,9 +124,9 @@ export async function getWebviewContentFromFile(
             cssPath = path.join(context.extensionPath, 'dist', 'webview', 'styles.css');
             jsPath = path.join(context.extensionPath, 'dist', 'webview', 'script.js');
 
-            console.log('Primary HTML path:', htmlPath);
-            console.log('Primary CSS path:', cssPath);
-            console.log('Primary JS path:', jsPath);
+            // console.log('Primary HTML path:', htmlPath);
+            // console.log('Primary CSS path:', cssPath);
+            // console.log('Primary JS path:', jsPath);
 
             const [htmlBuffer, cssBuffer, jsBuffer] = await Promise.all([
                 vscode.workspace.fs.readFile(vscode.Uri.file(htmlPath)),
@@ -144,9 +144,9 @@ export async function getWebviewContentFromFile(
             cssPath = context.asAbsolutePath('dist/webview/styles.css');
             jsPath = context.asAbsolutePath('dist/webview/script.js');
 
-            console.log('Fallback HTML path:', htmlPath);
-            console.log('Fallback CSS path:', cssPath);
-            console.log('Fallback JS path:', jsPath);
+            // console.log('Fallback HTML path:', htmlPath);
+            // console.log('Fallback CSS path:', cssPath);
+            // console.log('Fallback JS path:', jsPath);
 
             const [htmlBuffer, cssBuffer, jsBuffer] = await Promise.all([
                 vscode.workspace.fs.readFile(vscode.Uri.file(htmlPath)),
@@ -160,9 +160,9 @@ export async function getWebviewContentFromFile(
         }
 
         // Log contents to verify
-        console.log('Loaded HTML (first 100 chars):', htmlContent.substring(0, 100));
-        console.log('Loaded CSS (first 100 chars):', cssContent.substring(0, 100));
-        console.log('Loaded JS (first 100 chars):', jsContent.substring(0, 100));
+        // console.log('Loaded HTML (first 100 chars):', htmlContent.substring(0, 100));
+        // console.log('Loaded CSS (first 100 chars):', cssContent.substring(0, 100));
+        // console.log('Loaded JS (first 100 chars):', jsContent.substring(0, 100));
 
         // Replace placeholders
         const replacedHtml = htmlContent
@@ -171,7 +171,7 @@ export async function getWebviewContentFromFile(
             .replace('${SETTINGS}', settingsJson || '{}')
             .replace('${THEME}', theme);
 
-        console.log('HTML after replacement (first 100 chars):', replacedHtml.substring(0, 100));
+        // console.log('HTML after replacement (first 100 chars):', replacedHtml.substring(0, 100));
 
         return replacedHtml;
     } catch (error) {

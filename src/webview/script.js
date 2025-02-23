@@ -8,7 +8,7 @@ let recordingStartTime = null;
 
 // Add this function to update recording time display
 function updateRecordingTime() {
-    if (!recordingStartTime) return;
+    if (!recordingStartTime) { return; }
     
     const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
     const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
@@ -120,14 +120,19 @@ function getSettings() {
     const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
     const aiModels = {};
     models.forEach(model => {
+        console.log(model);
+        console.log(document.getElementById(`${model}-temperature`));
+        console.log(parseFloat(document.getElementById(`${model}-temperature`)?.value));
+
         aiModels[model] = {
             active: document.getElementById(`${model}-toggle`)?.checked || false,
             apiKeys: document.getElementById(`${model}-keys`)?.value.split('\n').filter(Boolean) || [],
             models: [document.getElementById(`${model}-model`)?.value || model],
-            temperature: parseFloat(document.getElementById(`${model}-temperature`)?.value) || 0.7,
-            contextSensitivity: parseInt(document.getElementById(`${model}-sensitivity`)?.value) || 50,
+            temperature: parseFloat(document.getElementById(`${model}-temperature`)?.value),
+            contextSensitivity: parseInt(document.getElementById(`${model}-sensitivity`)?.value),
             maxTokens: parseInt(document.getElementById(`${model}-max-tokens`)?.value) || 4096
         };
+        console.log(aiModels[model]);
     });
 
     const functionCallingAIs = {
@@ -147,7 +152,26 @@ function getSettings() {
         ollama: document.getElementById('think-ollama-toggle')?.checked || false,
         deepseek: document.getElementById('think-deepseek-toggle')?.checked || false
     };
-
+    console.log({
+        language: document.getElementById('language')?.value || 'en',
+        theme: document.getElementById('theme')?.value || 'system',
+        websocket: {
+            active: document.getElementById('websocket-toggle')?.checked || false,
+            port: parseInt(document.getElementById('websocket-port')?.value) || 8080
+        },
+        aiModels,
+        functionCallingAIs,
+        thinkingAIs,
+        chatStates: {
+            attachRelated: document.getElementById('attach-related-toggle')?.checked || false,
+            thinking: document.getElementById('thinking-toggle')?.checked || false,
+            webAccess: document.getElementById('web-access-toggle')?.checked || false,
+            autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
+            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
+            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false,
+            extra: []
+        }
+    });
     return {
         language: document.getElementById('language')?.value || 'en',
         theme: document.getElementById('theme')?.value || 'system',
@@ -202,10 +226,10 @@ function loadSettings(settings) {
         document.getElementById(`${model}-toggle`).checked = config.active || false;
         document.getElementById(`${model}-keys`).value = config.apiKeys?.join('\n') || '';
         document.getElementById(`${model}-model`).value = config.models?.[0] || model;
-        document.getElementById(`${model}-temperature`).value = config.temperature || 0.7;
-        document.getElementById(`${model}-temp-value`).textContent = config.temperature || '0.7';
-        document.getElementById(`${model}-sensitivity`).value = config.contextSensitivity || 50;
-        document.getElementById(`${model}-sens-value`).textContent = config.contextSensitivity || '50';
+        document.getElementById(`${model}-temperature`).value = config.temperature || 0;
+        document.getElementById(`${model}-temp-value`).textContent = config.temperature || '0';
+        document.getElementById(`${model}-sensitivity`).value = config.contextSensitivity || 0;
+        document.getElementById(`${model}-sens-value`).textContent = config.contextSensitivity || '0';
         document.getElementById(`${model}-max-tokens`).value = config.maxTokens || 4096;
     });
 
@@ -361,33 +385,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function startRecordingUI() {
-        isRecording = true;
-        recordingStartTime = Date.now();
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        micIcon.classList.add('text-red-600');
-        micIcon.classList.remove('text-teal-600');
-        recordingIndicator.classList.remove('hidden');
-        micStatus.textContent = 'Listening...';
-        recordingTime.classList.remove('hidden');
-        recordingTimer = setInterval(updateRecordingTime, 1000);
-    }
-
-    function stopRecordingUI() {
-        isRecording = false;
-        recordingStartTime = null;
-        startButton.disabled = false;
-        stopButton.disabled = true;
-        micIcon.classList.remove('text-red-600');
-        micIcon.classList.add('text-teal-600');
-        recordingIndicator.classList.add('hidden');
-        micStatus.textContent = 'Click to start listening...';
-        recordingTime.classList.add('hidden');
-        clearInterval(recordingTimer);
-    }
-
 });
+
+function startRecordingUI() {
+    isRecording = true;
+    recordingStartTime = Date.now();
+    startButton.disabled = true;
+    stopButton.disabled = false;
+    micIcon.classList.add('text-red-600');
+    micIcon.classList.remove('text-teal-600');
+    recordingIndicator.classList.remove('hidden');
+    micStatus.textContent = 'Listening...';
+    recordingTime.classList.remove('hidden');
+    recordingTimer = setInterval(updateRecordingTime, 1000);
+}
+
+function stopRecordingUI() {
+    isRecording = false;
+    recordingStartTime = null;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    micIcon.classList.remove('text-red-600');
+    micIcon.classList.add('text-teal-600');
+    recordingIndicator.classList.add('hidden');
+    micStatus.textContent = 'Click to start listening...';
+    recordingTime.classList.add('hidden');
+    clearInterval(recordingTimer);
+}
 
 // Handle messages from the extension
 window.addEventListener('message', event => {

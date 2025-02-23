@@ -15,8 +15,8 @@ export function getValidSettings(partialSettings: Partial<QCodeSettings> | undef
         active: false,
         apiKeys: [],
         models: [],
-        temperature: 0.7,
-        contextSensitivity: 50,
+        temperature: 0,
+        contextSensitivity: 0,
         maxTokens: 4096
     };
 

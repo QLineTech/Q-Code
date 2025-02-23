@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
                 isRecording = false;
                 startTime = null;
                 vscode.commands.executeCommand('setContext', 'qcode.recording', false);
-                if (cancelTimeout) clearTimeout(cancelTimeout);
+                if (cancelTimeout) {clearTimeout(cancelTimeout);}
                 ws.send(JSON.stringify({ action: 'stop_recording' }));
                 provider.sendMessage({ type: 'recordingStopped' }); // Notify webview
             }
@@ -88,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
                 isRecording = false;
                 startTime = null;
                 vscode.commands.executeCommand('setContext', 'qcode.recording', false);
-                if (cancelTimeout) clearTimeout(cancelTimeout);
+                if (cancelTimeout) { clearTimeout(cancelTimeout); }
                 ws.send(JSON.stringify({ action: 'cancel_recording' }));
             }
         })
