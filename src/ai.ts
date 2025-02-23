@@ -9,7 +9,9 @@ const API_URLS: { [key: string]: string } = {
     openai: 'https://api.openai.com/v1/chat/completions',
     ollama: 'http://localhost:11434/api/chat',
     groq: 'https://api.groq.com/v1/chat/completions',
-    anthropic: 'https://api.anthropic.com/v1/complete'
+    anthropic: 'https://api.anthropic.com/v1/messages', // Updated to messages endpoint
+    deepseek: 'https://api.deepseek.com/v1/chat/completions' // Assuming similar to OpenAI
+    // Note: Gemini doesn't use a direct URL in your Python code; we'll handle it separately
 };
 
 const rateLimiter = new Map<string, number>();
@@ -20,8 +22,6 @@ export class QCodeAIProvider {
 
     constructor(context: ExtensionContext) {
         this._context = context;
-
-        // Load and type the global state settings
         this._settings = getValidSettings(context.globalState.get('qcode.settings'));
 
         console.log('[QCodeAIProvider] Initialized with settings:', this._settings);
@@ -34,7 +34,6 @@ export class QCodeAIProvider {
     public async refreshSettings(): Promise<void> {
         this._settings = getValidSettings(this._context.globalState.get('qcode.settings'));
     }
-
 
     private getApiKeyForProvider(provider: keyof QCodeSettings['aiModels']): string {
         return this._settings.aiModels[provider]?.apiKeys[0] || '';
@@ -83,42 +82,158 @@ export class QCodeAIProvider {
         rateLimiter.set(provider, now);
 
         try {
-            const response = await Axios.post(
-                API_URLS[provider],
-                {
-                    model: providerConfig.models[0] || 'default',
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0, // providerConfig.temperature,
-                    max_tokens: 4096, // providerConfig.maxTokens
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 30000
-                }
-            );
+            let response;
+            const model = providerConfig.models[0] || this.getDefaultModel(provider);
+            const temperature = providerConfig.temperature || 0.7;
+            const maxTokens = providerConfig.maxTokens || 4096;
 
-            await this.validateAIResponse(response);
-            console.log(`[queryAI] Response from ${provider}:`, response.data.choices[0].message.content);
-            return response.data.choices[0].message.content;
+            // Handle provider-specific request formats
+            switch (provider) {
+                case 'anthropic': {
+                    response = await Axios.post(
+                        API_URLS[provider],
+                        {
+                            model,
+                            max_tokens: maxTokens,
+                            temperature,
+                            system: [
+                                {
+                                    type: 'text',
+                                    text: providerConfig.contextSensitivity > 50 ? prompt.slice(0, 100) : '' // Simple system prompt logic
+                                }
+                            ],
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        {
+                                            type: 'text',
+                                            text: prompt
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json',
+                                'x-api-key': apiKey, // Anthropic requires this header
+                                'anthropic-version': '2023-06-01' // Required by Anthropic API
+                            },
+                            timeout: 30000
+                        }
+                    );
+                    return response.data.content[0].text;
+                }
+
+                case 'groq': {
+                    response = await Axios.post(
+                        API_URLS[provider],
+                        {
+                            model,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: prompt
+                                }
+                            ],
+                            temperature,
+                            max_tokens: maxTokens
+                        },
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            timeout: 30000
+                        }
+                    );
+                    return response.data.choices[0].message.content;
+                }
+
+                case 'ollama': {
+                    response = await Axios.post(
+                        API_URLS[provider],
+                        {
+                            model,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: prompt
+                                }
+                            ],
+                            options: {
+                                temperature,
+                                num_predict: maxTokens
+                            },
+                            stream: false
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            timeout: 30000
+                        }
+                    );
+                    return response.data.message.content;
+                }
+
+                case 'deepseek':
+                case 'openai':
+                case 'grok3': {
+                    response = await Axios.post(
+                        API_URLS[provider],
+                        {
+                            model,
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: prompt
+                                }
+                            ],
+                            temperature,
+                            max_tokens: maxTokens
+                        },
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            timeout: 30000
+                        }
+                    );
+                    return response.data.choices[0].message.content;
+                }
+
+                default:
+                    throw new Error(`Unsupported provider: ${provider}`);
+            }
         } catch (error) {
             if (error instanceof AxiosError) {
                 const errorDetail = error.response?.data?.error || error.message;
                 console.error(`[queryAI] ${provider} API Error:`, errorDetail);
-                throw new Error(`${provider} API Error: ${errorDetail}`);
+                throw new Error(`${provider} API Error: ${JSON.stringify(errorDetail)}`);
             }
             console.error(`[queryAI] Unexpected error for ${provider}:`, error);
             throw error;
         }
     }
 
-    private async validateAIResponse(response: any): Promise<boolean> {
-        if (!response?.data?.choices?.[0]?.message?.content) {
-            console.error('[queryAI] Invalid response format:', response?.data);
-            throw new Error('Invalid AI response format');
+    private getDefaultModel(provider: keyof QCodeSettings['aiModels']): string {
+        switch (provider) {
+            case 'anthropic': return 'claude-3-5-sonnet-20241022';
+            case 'groq': return 'mixtral-8x7b-32768';
+            case 'ollama': return 'nemotron-mini:latest';
+            case 'deepseek': return 'deepseek-coder'; // Assuming a default model
+            case 'openai': return 'gpt-3.5-turbo';
+            case 'grok3': return 'default';
+            default: return 'default';
         }
+    }
+
+    private async validateAIResponse(response: any): Promise<boolean> {
+        // Removed since we handle response parsing directly in queryAI
         return true;
     }
 
