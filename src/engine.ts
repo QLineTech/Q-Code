@@ -4,16 +4,18 @@ import { PythonEngine } from './engine_python';
 import { LaravelEngine } from './engine_laravel';
 import { JavascriptEngine } from './engine_javascript';
 import { TypescriptEngine } from './engine_typescript';
-import { EditorContext, ProjectType, AIPrompt, CodeChange } from './types';
+import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings } from './types';
 import { ExtensionContext } from 'vscode';
 import { queryAI, parseAIResponse } from './ai';
 import { readFile, writeFile } from './fileOperations';
+import { getValidSettings } from './settings';
+import * as vscode from 'vscode';
 
 export class EngineHandler {
     static async processPrompt(
         prompt: string,
         editorContext: EditorContext,
-        extContext: ExtensionContext,
+        context: ExtensionContext,
         states: {
             attachRelated: boolean;
             thinking: boolean;
@@ -24,12 +26,13 @@ export class EngineHandler {
     ): Promise<string> {
         const projectType = editorContext.project.type.type;
         let response = '';
+        const settings: QCodeSettings = getValidSettings(context.globalState.get('qcode.settings'));
 
         // Process based on project type
         let aiPrompt: AIPrompt;
         switch (projectType) {
             case 'flutter':
-                aiPrompt = await FlutterEngine.processPrompt(prompt, editorContext, extContext, states);
+                aiPrompt = await FlutterEngine.processPrompt(prompt, editorContext, context, states);
                 response += `Flutter project detected. Processing prompt: "${prompt}"\n`;
                 break;
             default:
@@ -55,9 +58,26 @@ export class EngineHandler {
         response += '```json\n' + JSON.stringify(editorContext, null, 2) + '\n```\n';
         response += 'Prompt:\n\n```markdown\n' + fullPrompt + '\n```\n';
 
+        // Determine the first active AI model
+        const aiModels = settings.aiModels;
+        const activeAI = Object.keys(aiModels).find(
+            (provider) => aiModels[provider as keyof QCodeSettings['aiModels']].active
+        ) as keyof QCodeSettings['aiModels'] | undefined;
+
+        if (!activeAI) {
+            const errorMessage = 'No active AI model found. Please configure an active AI model in QCode settings.';
+            await vscode.window.showErrorMessage(errorMessage, 'Open Settings').then(selection => {
+                if (selection === 'Open Settings') {
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'qcode');
+                }
+            });
+            response += `\n${errorMessage}`;
+            return response;
+        }
+
         // Query AI and process response
         try {
-            const aiAnalysis = await queryAI(fullPrompt, extContext, 'grok3');
+            const aiAnalysis = await queryAI(fullPrompt, context, activeAI);
             const codeChanges = parseAIResponse(aiAnalysis);
 
             // Handle auto-apply if enabled
