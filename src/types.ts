@@ -27,6 +27,19 @@ export interface EditorContext {
     };
 }
 
+export interface AIPrompt {
+    systemPrompt: string; // Instructions for the AI
+    attachments: { // Contextual code or info to attach
+        type: 'code' | 'text' | 'structure';
+        language?: string; // e.g., "dart" for code, optional for text/structure
+        content: string; // The actual content
+    }[];
+    userRequest: string; // The user's prompt/request
+    responseFormat: string; // Instructions for formatting the response
+    extra?: any;
+}
+
+
 export interface AIModelConfig {
     active: boolean;
     apiKeys: string[];
