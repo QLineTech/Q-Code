@@ -79,9 +79,11 @@ export interface EngineSettings {
 export interface ChatHistoryEntry {
     id: string;
     prompt: string;
-    response: string;
+    response: string; // The processed response text
+    rawResponse: any; // New field to store the full, raw response from the AI provider
     timestamp: string;
     context: EditorContext | null;
+    provider?: string; // Optional: Store which AI provider was used
 }
 
 export interface TranscriptionData {

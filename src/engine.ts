@@ -78,9 +78,13 @@ export class EngineHandler {
 
         // Query AI and process response
         try {
-            const aiAnalysis = await queryAI(fullPrompt, context, activeAI);
+            const aiResult = await queryAI(fullPrompt, context, activeAI);
+            const aiAnalysis = aiResult.text; // Use the 'text' property from the result
             const codeChanges = parseAIResponse(aiAnalysis);
 
+            // Add usage information to the response
+            response += '\nUsage Information:\n```json\n' + JSON.stringify(aiResult.raw.usage, null, 2) + '\n```\n';
+            
             // Handle auto-apply if enabled
             if (states.autoApply) {
                 response += '\n[Auto-apply enabled - changes applied automatically]\n';

@@ -141,27 +141,44 @@ export async function sendChatMessage(
             .filter(([_, config]) => config.active)
             .map(([model]) => model);
         
-        let response = 'No active AI models configured.';
-        if (activeModels.length > 0) {
-            response = editorContext
-                ? await EngineHandler.processPrompt(text, editorContext, context)
-                : 'No editor context available.';
+        let responseText = 'No active AI models configured.';
+        let rawResponse: any = null;
+        let providerUsed: string | undefined;
+
+        if (activeModels.length > 0 && editorContext) {
+            // response = editorContext
+            //     ? await EngineHandler.processPrompt(text, editorContext, context)
+            //     : 'No editor context available.';
+            const result = await EngineHandler.processPrompt(text, editorContext, context);
+            responseText = result;
+
+            // Since EngineHandler uses queryAI, we need to fetch the raw response separately
+            const activeAI = activeModels[0] as keyof QCodeSettings['aiModels'];
+            const aiResult = await queryAI(text, context, activeAI);
+            responseText = aiResult.text;
+            rawResponse = aiResult.raw;
+            providerUsed = activeAI;
+        } else if (!editorContext) {
+            responseText = 'No editor context available.';
         }
             
         provider.sendMessage({ 
             type: 'chatResponse', 
-            text: response, 
+            text: responseText, 
             prompt: text, 
             context: editorContext 
         });
 
         const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+
         const newEntry: ChatHistoryEntry = {
             id: Date.now().toString(),
             prompt: text,
-            response,
+            response: responseText,
+            rawResponse, // Store the raw response
             timestamp: new Date().toISOString(),
-            context: editorContext
+            context: editorContext,
+            provider: providerUsed // Store the provider used
         };
         chatHistory.push(newEntry);
         await context.globalState.update('qcode.chatHistory', chatHistory);
@@ -169,6 +186,43 @@ export async function sendChatMessage(
         const message = error instanceof Error ? error.message : String(error);
         provider.sendMessage({ type: 'chatError', text: `Error: ${message}` });
         console.error('Chat error:', error);
+    }
+}
+
+export async function removeChatEntry(
+    context: vscode.ExtensionContext,
+    provider: QCodePanelProvider,
+    id: string
+) {
+    let chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+    chatHistory = chatHistory.filter(entry => entry.id !== id);
+    await context.globalState.update('qcode.chatHistory', chatHistory);
+    provider.sendMessage({ type: 'chatHistory', history: chatHistory });
+}
+
+export async function clearChatHistory(
+    context: vscode.ExtensionContext,
+    provider: QCodePanelProvider
+) {
+    await context.globalState.update('qcode.chatHistory', []);
+    provider.sendMessage({ type: 'chatHistory', history: [] });
+}
+
+export async function exportChatHistory(
+    context: vscode.ExtensionContext,
+    provider: QCodePanelProvider
+) {
+    const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+    const jsonContent = JSON.stringify(chatHistory, null, 2);
+    
+    const uri = await vscode.window.showSaveDialog({
+        filters: { 'JSON': ['json'] },
+        defaultUri: vscode.Uri.file('qcode_chat_history.json')
+    });
+
+    if (uri) {
+        await vscode.workspace.fs.writeFile(uri, Buffer.from(jsonContent, 'utf8'));
+        vscode.window.showInformationMessage('Chat history exported successfully!');
     }
 }
 

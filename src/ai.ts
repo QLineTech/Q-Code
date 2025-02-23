@@ -5,7 +5,7 @@ import { ExtensionContext } from 'vscode';
 import { CodeChange } from './types';
 
 const API_URLS: { [key: string]: string } = {
-    grok3: 'https://api.x.ai/v1/chat/completions',
+    grok3: 'https://api.x.ai/v1/messages',
     openai: 'https://api.openai.com/v1/chat/completions',
     ollama: 'http://localhost:11434/api/chat',
     groq: 'https://api.groq.com/v1/chat/completions',
@@ -41,7 +41,7 @@ export class QCodeAIProvider {
     public async queryAI(
         prompt: string,
         provider: keyof QCodeSettings['aiModels'] = 'grok3'
-    ): Promise<string> {
+    ): Promise<{ text: string; raw: any }> {
         if (!prompt?.trim()) {
             throw new Error('Empty prompt provided');
         }
@@ -125,12 +125,12 @@ export class QCodeAIProvider {
                                 'Authorization': `Bearer ${apiKey}`,
                                 'Content-Type': 'application/json',
                                 'x-api-key': apiKey,
-                                'anthropic-version': '2023-06-01'
+                                // 'anthropic-version': '2023-06-01'
                             },
                             timeout: 30000
                         }
                     );
-                    return response.data.content[0].text;
+                    return { text: response.data.content[0].text, raw: response.data };
                 }
 
                 case 'groq': {
@@ -155,7 +155,7 @@ export class QCodeAIProvider {
                             timeout: 30000
                         }
                     );
-                    return response.data.choices[0].message.content;
+                    return { text: response.data.content[0].text, raw: response.data };
                 }
 
                 case 'ollama': {
@@ -182,12 +182,11 @@ export class QCodeAIProvider {
                             timeout: 30000
                         }
                     );
-                    return response.data.message.content;
+                    return { text: response.data.message.content, raw: response.data };
                 }
 
                 case 'deepseek':
-                case 'openai':
-                case 'grok3': {
+                case 'openai': {
                     response = await Axios.post(
                         API_URLS[provider],
                         {
@@ -209,7 +208,51 @@ export class QCodeAIProvider {
                             timeout: 30000
                         }
                     );
-                    return response.data.choices[0].message.content;
+                    return { text: response.data.choices[0].message.content, raw: response.data };
+                }
+                case 'grok3': {
+                    const systemContent = providerConfig.contextSensitivity > 50 ? prompt.slice(0, 100) : null;
+                    const payload: any = {
+                        model,
+                        max_tokens: maxTokens,
+                        temperature,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: prompt
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                    // Only include system if we have non-empty content
+                    if (systemContent) {
+                        payload.system = [
+                            {
+                                type: 'text',
+                                text: systemContent
+                            }
+                        ];
+                    }
+
+                    response = await Axios.post(
+                        API_URLS[provider],
+                        payload,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json',
+                                // 'x-api-key': apiKey,
+                                // 'anthropic-version': '2023-06-01'
+                            },
+                            timeout: 30000
+                        }
+                    );
+                    return { text: response.data.content[0].text, raw: response.data };
                 }
 
                 default:
@@ -247,7 +290,7 @@ export async function queryAI(
     prompt: string,
     context: ExtensionContext,
     provider: keyof QCodeSettings['aiModels'] = 'grok3'
-): Promise<string> {
+): Promise<{ text: string; raw: any }> {
     const aiProvider = new QCodeAIProvider(context);
     return aiProvider.queryAI(prompt, provider);
 }

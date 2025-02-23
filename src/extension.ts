@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import WebSocket from 'ws';
 import { QCodePanelProvider } from './webview';
 import { connectWebSocket, getWebSocket } from './websocket';
-import { sendChatMessage, getChatHistory, commandMap } from './commands';
+import { sendChatMessage, getChatHistory, commandMap, removeChatEntry, clearChatHistory, exportChatHistory } from './commands';
 import { getValidSettings } from './settings';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -17,11 +17,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('qcode-view.focus');
     context.subscriptions.push(
         vscode.commands.registerCommand('qcode.sendChatMessage', (text: string, states: any ) => {
-            // const { text, states } = params;
-            // TODO bring back states
             sendChatMessage(text, context, provider);
         }),
         vscode.commands.registerCommand('qcode.getChatHistory', () => getChatHistory(context, provider)),
+        vscode.commands.registerCommand('qcode.removeChatEntry', (id: string) => removeChatEntry(context, provider, id)),
+        vscode.commands.registerCommand('qcode.clearChatHistory', () => clearChatHistory(context, provider)),
+        vscode.commands.registerCommand('qcode.exportChatHistory', () => exportChatHistory(context, provider)),
         vscode.commands.registerCommand('qcode.getSettings', () => {
             const settings = getValidSettings(context.globalState.get('qcode.settings'));
             provider.sendMessage({ type: 'settings', settings });

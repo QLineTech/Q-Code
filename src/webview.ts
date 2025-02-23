@@ -59,6 +59,15 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
             case 'getChatHistory':
                 await vscode.commands.executeCommand('qcode.getChatHistory');
                 break;
+            case 'removeChatEntry':
+                await vscode.commands.executeCommand('qcode.removeChatEntry', message.id);
+                break;
+            case 'clearChatHistory':
+                await vscode.commands.executeCommand('qcode.clearChatHistory');
+                break;
+            case 'exportChatHistory':
+                await vscode.commands.executeCommand('qcode.exportChatHistory');
+                break;
             case 'saveSettings':
                 const settings = getValidSettings(message.settings);
                 await this.updateSettings(settings);
