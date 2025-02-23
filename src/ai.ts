@@ -22,37 +22,7 @@ export class QCodeAIProvider {
         this._context = context;
 
         // Load and type the global state settings
-        const rawSettings = this._context.globalState.get('qcode.settings') as Partial<QCodeSettings> & {
-            grok3Keys?: string;
-            openaiKeys?: string;
-            anthropicKeys?: string;
-            groqKeys?: string;
-            ollamaKeys?: string;
-            deepseekKeys?: string;
-            temperature?: string;
-            volumeSensitivity?: string;
-        } | undefined;
-
-        // Initialize with valid defaults
-        this._settings = getValidSettings(rawSettings);
-
-        // Migrate legacy API keys to new structure if present
-        if (rawSettings?.grok3Keys) this._settings.aiModels.grok3.apiKeys = [rawSettings.grok3Keys];
-        if (rawSettings?.openaiKeys) this._settings.aiModels.openai.apiKeys = [rawSettings.openaiKeys];
-        if (rawSettings?.anthropicKeys) this._settings.aiModels.anthropic.apiKeys = [rawSettings.anthropicKeys];
-        if (rawSettings?.groqKeys) this._settings.aiModels.groq.apiKeys = [rawSettings.groqKeys];
-        if (rawSettings?.ollamaKeys) this._settings.aiModels.ollama.apiKeys = [rawSettings.ollamaKeys];
-        if (rawSettings?.deepseekKeys) this._settings.aiModels.deepseek.apiKeys = [rawSettings.deepseekKeys];
-
-        // Migrate legacy temperature and volumeSensitivity to grok3
-        if (rawSettings?.temperature) {
-            const temp = parseFloat(rawSettings.temperature);
-            if (!isNaN(temp)) this._settings.aiModels.grok3.temperature = temp;
-        }
-        if (rawSettings?.volumeSensitivity) {
-            const sensitivity = parseFloat(rawSettings.volumeSensitivity);
-            if (!isNaN(sensitivity)) this._settings.aiModels.grok3.contextSensitivity = sensitivity;
-        }
+        this._settings = getValidSettings(context.globalState.get('qcode.settings'));
 
         console.log('[QCodeAIProvider] Initialized with settings:', this._settings);
 
@@ -62,52 +32,9 @@ export class QCodeAIProvider {
     }
 
     public async refreshSettings(): Promise<void> {
-        const rawSettings = this._context.globalState.get('qcode.settings') as Partial<QCodeSettings> & {
-            grok3Keys?: string;
-            openaiKeys?: string;
-            anthropicKeys?: string;
-            groqKeys?: string;
-            ollamaKeys?: string;
-            deepseekKeys?: string;
-            temperature?: string;
-            volumeSensitivity?: string;
-        } | undefined;
-
-        const newSettings = getValidSettings(rawSettings);
-
-        // Migrate legacy fields
-        if (rawSettings?.grok3Keys) newSettings.aiModels.grok3.apiKeys = [rawSettings.grok3Keys];
-        if (rawSettings?.openaiKeys) newSettings.aiModels.openai.apiKeys = [rawSettings.openaiKeys];
-        if (rawSettings?.anthropicKeys) newSettings.aiModels.anthropic.apiKeys = [rawSettings.anthropicKeys];
-        if (rawSettings?.groqKeys) newSettings.aiModels.groq.apiKeys = [rawSettings.groqKeys];
-        if (rawSettings?.ollamaKeys) newSettings.aiModels.ollama.apiKeys = [rawSettings.ollamaKeys];
-        if (rawSettings?.deepseekKeys) newSettings.aiModels.deepseek.apiKeys = [rawSettings.deepseekKeys];
-        if (rawSettings?.temperature) {
-            const temp = parseFloat(rawSettings.temperature);
-            if (!isNaN(temp)) newSettings.aiModels.grok3.temperature = temp;
-        }
-        if (rawSettings?.volumeSensitivity) {
-            const sensitivity = parseFloat(rawSettings.volumeSensitivity);
-            if (!isNaN(sensitivity)) newSettings.aiModels.grok3.contextSensitivity = sensitivity;
-        }
-
-        if (validateSettings(newSettings)) {
-            this._settings = newSettings;
-            console.log('[QCodeAIProvider] Settings refreshed:', this._settings);
-        } else {
-            console.warn('[QCodeAIProvider] Invalid settings detected, keeping previous settings');
-        }
+        this._settings = getValidSettings(this._context.globalState.get('qcode.settings'));
     }
 
-    public async updateSettings(newSettings: QCodeSettings): Promise<void> {
-        if (!validateSettings(newSettings)) {
-            throw new Error('Invalid settings configuration');
-        }
-        
-        this._settings = newSettings;
-        await this._context.globalState.update('qcode.settings', newSettings);
-        console.log('[QCodeAIProvider] Settings updated:', this._settings);
-    }
 
     private getApiKeyForProvider(provider: keyof QCodeSettings['aiModels']): string {
         return this._settings.aiModels[provider]?.apiKeys[0] || '';

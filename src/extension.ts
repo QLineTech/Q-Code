@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.globalState.update('qcode.settings', settings);
 
     context.subscriptions.push(vscode.window.registerWebviewViewProvider('qcode-view', provider));
-
+    vscode.commands.executeCommand('qcode-view.focus');
     context.subscriptions.push(
         vscode.commands.registerCommand('qcode.sendChatMessage', (text: string, states: any ) => {
             // const { text, states } = params;

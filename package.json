@@ -35,22 +35,21 @@
     "menus": {
       "commandPalette": []
     },
-    "views": {
-      "qcodeView": [
-        {
-          "type": "webview",
-          "id": "qcode-view",
-          "name": "QCode",
-          "when": "qcode.active"
-        }
-      ]
-    },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "qcodeView",
+          "id": "qcode-container",
           "title": "QCode",
           "icon": "assets/ico2.png"
+        }
+      ]
+    },
+    "views": {
+      "qcode-container": [
+        {
+          "type": "webview",
+          "id": "qcode-view",
+          "name": "QCode"
         }
       ]
     },

@@ -14,14 +14,7 @@ export class FlutterEngine {
         webAccess: boolean;
         autoApply: boolean;
         folderStructure: boolean;
-    },
-    settings: EngineSettings): Promise<string> { 
-
-        const { activeAIs, temperature, volumeSensitivity } = settings;
-
-        const selectedAI = 'grok3AI'; // activeAIs[0] || 'grok3AI'; 
-
-        console.log(`[FlutterEngine] Using AI: ${selectedAI}, Temperature: ${temperature}, Volume Sensitivity: ${volumeSensitivity}`);
+    }): Promise<string> { 
 
         let response = `Flutter project detected. Processing prompt: "${prompt}"\n`;
         

@@ -120,10 +120,7 @@ function getSettings() {
     const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
     const aiModels = {};
     models.forEach(model => {
-        console.log(model);
-        console.log(document.getElementById(`${model}-temperature`));
-        console.log(parseFloat(document.getElementById(`${model}-temperature`)?.value));
-
+        
         aiModels[model] = {
             active: document.getElementById(`${model}-toggle`)?.checked || false,
             apiKeys: document.getElementById(`${model}-keys`)?.value.split('\n').filter(Boolean) || [],
@@ -132,7 +129,6 @@ function getSettings() {
             contextSensitivity: parseInt(document.getElementById(`${model}-sensitivity`)?.value),
             maxTokens: parseInt(document.getElementById(`${model}-max-tokens`)?.value) || 4096
         };
-        console.log(aiModels[model]);
     });
 
     const functionCallingAIs = {
@@ -152,26 +148,7 @@ function getSettings() {
         ollama: document.getElementById('think-ollama-toggle')?.checked || false,
         deepseek: document.getElementById('think-deepseek-toggle')?.checked || false
     };
-    console.log({
-        language: document.getElementById('language')?.value || 'en',
-        theme: document.getElementById('theme')?.value || 'system',
-        websocket: {
-            active: document.getElementById('websocket-toggle')?.checked || false,
-            port: parseInt(document.getElementById('websocket-port')?.value) || 8080
-        },
-        aiModels,
-        functionCallingAIs,
-        thinkingAIs,
-        chatStates: {
-            attachRelated: document.getElementById('attach-related-toggle')?.checked || false,
-            thinking: document.getElementById('thinking-toggle')?.checked || false,
-            webAccess: document.getElementById('web-access-toggle')?.checked || false,
-            autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
-            folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
-            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false,
-            extra: []
-        }
-    });
+    
     return {
         language: document.getElementById('language')?.value || 'en',
         theme: document.getElementById('theme')?.value || 'system',

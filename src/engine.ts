@@ -6,7 +6,6 @@ import { JavascriptEngine } from './engine_javascript';
 import { TypescriptEngine } from './engine_typescript';
 import { EditorContext, ProjectType } from './types';
 import { ExtensionContext } from 'vscode';
-import { QCodeAIProvider } from './ai';  // Import QCodeAIProvider
 
 export class EngineHandler {
     static async processPrompt(prompt: string, editorContext: EditorContext, extContext: ExtensionContext,
@@ -19,22 +18,11 @@ export class EngineHandler {
         },
     ): Promise<string> {        
         const projectType = editorContext.project.type.type;
-        const aiProvider = new QCodeAIProvider(extContext);
-        const settings = aiProvider.getCurrentSettings();
-
-        // Extract relevant settings
-        const activeAIs = settings.analyzeAIs; // List of active AI providers
-        // const temperature = parseFloat(settings.temperature) || 0.7; // Default to 0.7 if invalid
-        // const volumeSensitivity = parseInt(settings.volumeSensitivity) || 50; // Default to 50 if invalid
-
-        // TODO (change later)
-        const temperature = 0;
-        const volumeSensitivity = 0;
-        console.log(`[EngineHandler] Loaded settings - Active AIs: ${activeAIs}, Temperature: ${temperature}, Volume Sensitivity: ${volumeSensitivity}`);
+        
 
         switch (projectType) {
             case 'flutter':
-                return await FlutterEngine.processPrompt(prompt, editorContext, extContext, states,{ activeAIs, temperature, volumeSensitivity });
+                return await FlutterEngine.processPrompt(prompt, editorContext, extContext, states);
             // case 'python':
             //     return await PythonEngine.processPrompt(prompt, context);
             // case 'laravel':
