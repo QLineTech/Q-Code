@@ -28,14 +28,15 @@ export interface EditorContext {
 }
 
 export interface AIPrompt {
-    systemPrompt: string; // Instructions for the AI
-    attachments: { // Contextual code or info to attach
+    systemPrompt: string;
+    attachments: {
         type: 'code' | 'text' | 'structure';
         language?: string; // e.g., "dart" for code, optional for text/structure
-        content: string; // The actual content
+        content: string;
+        relativePath?: string; // Added: relative path for 'code' type, e.g., "lib/main.dart"
     }[];
-    userRequest: string; // The user's prompt/request
-    responseFormat: string; // Instructions for formatting the response
+    userRequest: string;
+    responseFormat: string;
     extra?: any;
 }
 

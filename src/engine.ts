@@ -22,7 +22,7 @@ export class EngineHandler {
         const projectType = editorContext.project.type.type;
         let response = '';
         const settings: QCodeSettings = getValidSettings(context.globalState.get('qcode.settings'));
-        let states = settings.chatStates;
+        const states = settings.chatStates;
 
         // Process based on project type
         let aiPrompt: AIPrompt;
