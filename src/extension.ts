@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
             const validatedSettings = getValidSettings(settings);
             context.globalState.update('qcode.settings', validatedSettings);
             provider.sendMessage({ type: 'settings', settings: validatedSettings }); // Echo back to webview
+            connectWebSocket(validatedSettings, provider); // Reconnect with new settings
         }),
         vscode.commands.registerCommand('qcode.testApiKey', async (params: { model: string, keys: string }) => {
             const { model, keys } = params;
@@ -94,7 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    connectWebSocket(settings);
+    connectWebSocket(settings, provider);
 }
 
 export function deactivate() {

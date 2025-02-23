@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import * as vscode from 'vscode';
 import { QCodeSettings, ServerMessage } from './types';
+import { QCodePanelProvider } from './webview'; 
 
 let ws: WebSocket | undefined;
 let wsReconnectAttempts = 0;
@@ -8,11 +9,15 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 
 
 
-export function connectWebSocket(settings: QCodeSettings) {
-    if (!settings.websocket.active) {return;}
+export function connectWebSocket(settings: QCodeSettings, provider: QCodePanelProvider) {
+    if (!settings.websocket.active) {
+        provider.sendMessage({ type: 'websocketStatus', connected: false });
+        return;
+    }
     if (wsReconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
         vscode.window.showWarningMessage('Max WebSocket reconnect attempts reached.');
         wsReconnectAttempts = 0;
+        provider.sendMessage({ type: 'websocketStatus', connected: false });
         return;
     }
     if (ws) {
@@ -23,14 +28,16 @@ export function connectWebSocket(settings: QCodeSettings) {
         ws = new WebSocket("ws://localhost:" + settings.websocket.port);
         ws.on('error', error => {
             console.warn('WebSocket error:', error);
+            provider.sendMessage({ type: 'websocketStatus', connected: false });
             ws?.close();
             ws = undefined;
         });
         ws.on('close', () => {
+            provider.sendMessage({ type: 'websocketStatus', connected: false });
             if (wsReconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
                 setTimeout(() => {
                     wsReconnectAttempts++;
-                    connectWebSocket(settings);
+                    connectWebSocket(settings, provider);
                 }, 1000 * Math.pow(2, wsReconnectAttempts));
             }
         });
@@ -38,6 +45,7 @@ export function connectWebSocket(settings: QCodeSettings) {
             wsReconnectAttempts = 0;
             console.log('Connected to speech server');
             vscode.window.showInformationMessage('Voice command server connected');
+            provider.sendMessage({ type: 'websocketStatus', connected: true });
         });
 
         ws.on('message', (data: WebSocket.Data) => {
@@ -56,11 +64,11 @@ export function connectWebSocket(settings: QCodeSettings) {
                                 );
                                 console.log('Server message:', parsedData.message);
                                 // Example: Handle specific transcriptions
-                                if (parsedData.transcription.transcription === 'ご視聴ありがとうございました') {
-                                    vscode.window.showInformationMessage(
-                                        'Thank you for watching!'
-                                    );
-                                }
+                                // if (parsedData.transcription.transcription === 'ご視聴ありがとうございました') {
+                                //     vscode.window.showInformationMessage(
+                                //         'Thank you for watching!'
+                                //     );
+                                // }
                                 // send to ai
                                 
                                 break;
@@ -70,8 +78,9 @@ export function connectWebSocket(settings: QCodeSettings) {
                                 );
                                 break;
                             default:
-                                console.warn('Unknown transcription status:', 
-                                    parsedData.transcription.status);
+                                console.warn('Unknown status:', parsedData.status);
+                                console.log('Message:', parsedData.message);
+                                console.log('Transcription:', parsedData.transcription);
                         }
                         break;
                     
@@ -92,6 +101,7 @@ export function connectWebSocket(settings: QCodeSettings) {
                 vscode.window.showErrorMessage(
                     'Failed to process voice server response'
                 );
+                provider.sendMessage({ type: 'websocketStatus', connected: false });
             }
         });
         
