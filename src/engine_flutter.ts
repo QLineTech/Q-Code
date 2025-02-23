@@ -79,7 +79,7 @@ export class FlutterEngine {
             attachments.push({
                 type: 'code',
                 language: context.fileType,
-                title: `**Full file content to modify (\`${context.fileName}\`)**`,
+                title: `**Full file content to modify (\`${currentRelativePath}\`)**`,
                 content: `${context.content}`,
                 relativePath: currentRelativePath 
             });
