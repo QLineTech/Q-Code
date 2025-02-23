@@ -9,9 +9,8 @@ const API_URLS: { [key: string]: string } = {
     openai: 'https://api.openai.com/v1/chat/completions',
     ollama: 'http://localhost:11434/api/chat',
     groq: 'https://api.groq.com/v1/chat/completions',
-    anthropic: 'https://api.anthropic.com/v1/messages', // Updated to messages endpoint
-    deepseek: 'https://api.deepseek.com/v1/chat/completions' // Assuming similar to OpenAI
-    // Note: Gemini doesn't use a direct URL in your Python code; we'll handle it separately
+    anthropic: 'https://api.anthropic.com/v1/messages',
+    deepseek: 'https://api.deepseek.com/v1/chat/completions'
 };
 
 const rateLimiter = new Map<string, number>();
@@ -90,36 +89,43 @@ export class QCodeAIProvider {
             // Handle provider-specific request formats
             switch (provider) {
                 case 'anthropic': {
+                    const systemContent = providerConfig.contextSensitivity > 50 ? prompt.slice(0, 100) : null;
+                    const payload: any = {
+                        model,
+                        max_tokens: maxTokens,
+                        temperature,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: prompt
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                    // Only include system if we have non-empty content
+                    if (systemContent) {
+                        payload.system = [
+                            {
+                                type: 'text',
+                                text: systemContent
+                            }
+                        ];
+                    }
+
                     response = await Axios.post(
                         API_URLS[provider],
-                        {
-                            model,
-                            max_tokens: maxTokens,
-                            temperature,
-                            system: [
-                                {
-                                    type: 'text',
-                                    text: providerConfig.contextSensitivity > 50 ? prompt.slice(0, 100) : '' // Simple system prompt logic
-                                }
-                            ],
-                            messages: [
-                                {
-                                    role: 'user',
-                                    content: [
-                                        {
-                                            type: 'text',
-                                            text: prompt
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
+                        payload,
                         {
                             headers: {
                                 'Authorization': `Bearer ${apiKey}`,
                                 'Content-Type': 'application/json',
-                                'x-api-key': apiKey, // Anthropic requires this header
-                                'anthropic-version': '2023-06-01' // Required by Anthropic API
+                                'x-api-key': apiKey,
+                                'anthropic-version': '2023-06-01'
                             },
                             timeout: 30000
                         }
@@ -225,16 +231,11 @@ export class QCodeAIProvider {
             case 'anthropic': return 'claude-3-5-sonnet-20241022';
             case 'groq': return 'mixtral-8x7b-32768';
             case 'ollama': return 'nemotron-mini:latest';
-            case 'deepseek': return 'deepseek-coder'; // Assuming a default model
+            case 'deepseek': return 'deepseek-coder';
             case 'openai': return 'gpt-3.5-turbo';
             case 'grok3': return 'default';
             default: return 'default';
         }
-    }
-
-    private async validateAIResponse(response: any): Promise<boolean> {
-        // Removed since we handle response parsing directly in queryAI
-        return true;
     }
 
     public getCurrentSettings(): QCodeSettings {
