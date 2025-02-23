@@ -56,31 +56,37 @@ export function connectWebSocket(settings: QCodeSettings, provider: QCodePanelPr
                 // Handle top-level status
                 switch (parsedData.status) {
                     case 'success':
-                        // Handle nested transcription status
-                        switch (parsedData.transcription.status) {
-                            case 'success':
-                                vscode.window.showInformationMessage(
-                                    `Transcription: ${parsedData.transcription.transcription}`
-                                );
-                                console.log('Server message:', parsedData.message);
-                                // Example: Handle specific transcriptions
-                                // if (parsedData.transcription.transcription === 'ご視聴ありがとうございました') {
-                                //     vscode.window.showInformationMessage(
-                                //         'Thank you for watching!'
-                                //     );
-                                // }
-                                // send to ai
-                                
-                                break;
-                            case 'error':
-                                vscode.window.showErrorMessage(
-                                    `Transcription failed: ${parsedData.message}`
-                                );
-                                break;
-                            default:
-                                console.warn('Unknown status:', parsedData.status);
-                                console.log('Message:', parsedData.message);
-                                console.log('Transcription:', parsedData.transcription);
+                        if (parsedData.transcription) {
+                            // Handle nested transcription status
+                            switch (parsedData.transcription.status) {
+                                case 'success':
+                                    vscode.window.showInformationMessage(
+                                        `Transcription: ${parsedData.transcription.transcription}`
+                                    );
+                                    console.log('Server message:', parsedData.message);
+                                    // Example: Handle specific transcriptions
+                                    // if (parsedData.transcription.transcription === 'ご視聴ありがとうございました') {
+                                    //     vscode.window.showInformationMessage(
+                                    //         'Thank you for watching!'
+                                    //     );
+                                    // }
+                                    // send to ai
+                                    if (parsedData.message) {
+                                        console.log('Sending to AI:', parsedData.message);
+                                        // Add your AI sending logic here, e.g.:
+                                        // aiService.send(parsedData.data);
+                                    }
+                                    break;
+                                case 'error':
+                                    vscode.window.showErrorMessage(
+                                        `Transcription failed: ${parsedData.message}`
+                                    );
+                                    break;
+                                default:
+                                    console.warn('Unknown status:', parsedData.status);
+                                    console.log('Message:', parsedData.message);
+                                    console.log('Transcription:', parsedData.transcription);
+                            }
                         }
                         break;
                     

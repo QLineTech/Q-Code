@@ -77,7 +77,8 @@ export interface TranscriptionData {
 export interface ServerMessage {
     status: string;
     message: string;
-    transcription: TranscriptionData;
+    transcription?: TranscriptionData;
+    data?: any;
 }
 
 export interface CodeChange {
