@@ -61,6 +61,8 @@ export function connectWebSocket(settings: QCodeSettings) {
                                         'Thank you for watching!'
                                     );
                                 }
+                                // send to ai
+                                
                                 break;
                             case 'error':
                                 vscode.window.showErrorMessage(

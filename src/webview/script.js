@@ -393,8 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('message', event => {
     const message = event.data;
     const chatDisplay = document.getElementById('chat-display');
-    console.log("ws Message reciever");
-    console.log(message);
+    
     if (message.type === 'chatResponse') {
         chatDisplay.innerHTML += `
             <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
