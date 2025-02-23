@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import { QCodeSettings, AIModelConfig } from './types';
 
 export function validateSettings(settings: QCodeSettings): boolean {
-    if (!settings || typeof settings !== 'object') return false;
+    if (!settings || typeof settings !== 'object') { return false; }
     const requiredFields = ['language', 'theme', 'websocket', 'aiModels', 'functionCallingAIs', 'thinkingAIs', 'chatStates'];
     for (const field of requiredFields) {
-        if (!(field in settings)) return false;
+        if (!(field in settings)) { return false; }
     }
     return true;
 }
@@ -23,7 +23,7 @@ export function getValidSettings(partialSettings: Partial<QCodeSettings> | undef
     const defaultSettings: QCodeSettings = {
         language: 'en',
         theme: 'system',
-        websocket: { active: false, port: 8080 },
+        websocket: { active: false, port: 9001 },
         aiModels: {
             grok3: { ...defaultAIModelConfig, models: ['grok3'] },
             openai: { ...defaultAIModelConfig, models: ['gpt-3.5-turbo'] },

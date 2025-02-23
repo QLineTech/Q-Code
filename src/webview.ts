@@ -23,15 +23,18 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
     }
 
     private getEffectiveTheme(): string {
-        if (this._settings.theme !== 'system') return this._settings.theme;
+        if (this._settings.theme !== 'system') {
+            return this._settings.theme;
+        }
         const themeKind = vscode.window.activeColorTheme.kind;
         return themeKind === vscode.ColorThemeKind.Light ? 'light' : 'dark';
     }
 
     public sendMessage(message: any) {
-        if (this._webviewView) this._webviewView.webview.postMessage(message);
+        if (this._webviewView) { 
+            this._webviewView.webview.postMessage(message);
+        }
     }
-    
 
     public async updateSettings(newSettings: QCodeSettings) {
         if (!validateSettings(newSettings)) 

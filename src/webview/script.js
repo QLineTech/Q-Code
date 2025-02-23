@@ -4,7 +4,7 @@ let isRecording = false;
 // Add these variables at the top with other globals
 let recordingTimer = null;
 let recordingStartTime = null;
-
+let websocketConnected = false; // Track WebSocket connection status
 
 // Add this function to update recording time display
 function updateRecordingTime() {
@@ -363,23 +363,14 @@ document.addEventListener('DOMContentLoaded', () => {
     vscode.postMessage({ type: 'getSettings' });
     vscode.postMessage({ type: 'getChatHistory' });
 
-    // Recording controls
-    const startButton = document.getElementById('start-recording');
-    const stopButton = document.getElementById('stop-recording');
-    const micIcon = document.getElementById('mic-icon');
-    const recordingIndicator = document.getElementById('recording-indicator');
-    const micStatus = document.getElementById('mic-status');
-    const recordingTime = document.getElementById('recording-time');
-
-    startButton.addEventListener('click', () => {
-        if (!startButton.disabled) {
+    document.getElementById('toggle-recording').addEventListener('click', () => {
+        if (document.getElementById('toggle-recording').disabled) {
+            return;
+        }
+        if (!isRecording) {
             vscode.postMessage({ type: 'startRecording' });
             startRecordingUI();
-        }
-    });
-
-    stopButton.addEventListener('click', () => {
-        if (!stopButton.disabled) {
+        } else {
             vscode.postMessage({ type: 'stopRecording' });
             stopRecordingUI();
         }
@@ -387,30 +378,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+function updateWebSocketStatus(connected) {
+    const statusDiv = document.getElementById('websocket-status');
+    const recordingButton = document.getElementById('toggle-recording');
+    websocketConnected = connected;
+
+    if (connected) {
+        statusDiv.classList.remove('bg-red-500');
+        statusDiv.classList.add('bg-green-500');
+        statusDiv.title = 'WebSocket Connected';
+        recordingButton.disabled = false;
+    } else {
+        statusDiv.classList.remove('bg-green-500');
+        statusDiv.classList.add('bg-red-500');
+        statusDiv.title = 'WebSocket Disconnected';
+        recordingButton.disabled = true;
+        if (isRecording) {
+            stopRecordingUI();
+        }
+    }
+}
+
 function startRecordingUI() {
     isRecording = true;
-    recordingStartTime = Date.now();
-    startButton.disabled = true;
-    stopButton.disabled = false;
+    const micIcon = document.getElementById('mic-icon');
     micIcon.classList.add('text-red-600');
     micIcon.classList.remove('text-teal-600');
-    recordingIndicator.classList.remove('hidden');
-    micStatus.textContent = 'Listening...';
-    recordingTime.classList.remove('hidden');
-    recordingTimer = setInterval(updateRecordingTime, 1000);
 }
 
 function stopRecordingUI() {
     isRecording = false;
-    recordingStartTime = null;
-    startButton.disabled = false;
-    stopButton.disabled = true;
+    const micIcon = document.getElementById('mic-icon');
     micIcon.classList.remove('text-red-600');
     micIcon.classList.add('text-teal-600');
-    recordingIndicator.classList.add('hidden');
-    micStatus.textContent = 'Click to start listening...';
-    recordingTime.classList.add('hidden');
-    clearInterval(recordingTimer);
 }
 
 // Handle messages from the extension
@@ -475,6 +475,8 @@ window.addEventListener('message', event => {
             // Optional: Show notification
             showNotification(`Transcription received: "${transcription}"`);
         }
+    } else if (message.type === 'websocketStatus') {
+        updateWebSocketStatus(message.connected);
     }
 });
 
