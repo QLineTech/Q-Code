@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { QCodeSettings, getValidSettings, validateSettings } from './settings';
 import { EditorContext, ChatHistoryEntry } from './types';
+import { getWebSocket } from './websocket'; // Import getWebSocket
 
 export class QCodePanelProvider implements vscode.WebviewViewProvider {
     private _webviewView?: vscode.WebviewView;
@@ -76,6 +77,11 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
                 break;
             case 'stopRecording':
                 await vscode.commands.executeCommand('qcode.stopRecording');
+                break;
+            case 'getWebSocketStatus':
+                const ws = getWebSocket();
+                const connected = ws?.readyState === 1; // WebSocket.OPEN is 1
+                this.sendMessage({ type: 'websocketStatus', connected });
                 break;
             default:
                 console.warn('Unknown message type:', message.type);
