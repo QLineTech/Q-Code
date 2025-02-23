@@ -71,7 +71,7 @@ export class FlutterEngine {
                 const folderStructure = this.getFolderStructure(context);
                 attachments.push({
                     type: 'structure',
-                    content: `Project folder structure (./lib/*):\n${folderStructure}`
+                    content: `Project folder structure:\n\`\`\`xml\n${folderStructure}\n\`\`\``
                 });
             }
         } else {
