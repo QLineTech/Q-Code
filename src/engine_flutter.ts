@@ -54,7 +54,7 @@ export class FlutterEngine {
             attachments.push({
                 type: 'code',
                 language: context.fileType,
-                title: `**Selected code to modify (\`${context.fileName}\`)**`,
+                title: `**Selected code to modify (\`${currentRelativePath}\`)**`,
                 content: `${context.selection.text}`,
                 relativePath: currentRelativePath 
             });
@@ -93,7 +93,7 @@ export class FlutterEngine {
             }
 
             if (states.folderStructure) {
-                const folderStructure = this.getFolderStructure(context);
+                const folderStructure = await this.getFolderStructure(context);
                 attachments.push({
                     type: 'structure',
                     content: `Project folder structure (./lib/*):\n${folderStructure}`
