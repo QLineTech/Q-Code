@@ -236,7 +236,7 @@ export class FlutterEngine {
     private static async getFolderStructure(context: EditorContext): Promise<string> {
         const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(context.filePath));
         if (!workspaceFolder) {
-            return 'No workspace folder found';
+            return '<root>No workspace folder found</root>';
         }
         const rootPath = workspaceFolder.uri.fsPath;
     
@@ -245,38 +245,58 @@ export class FlutterEngine {
         let ignorePatterns: string[] = [];
         try {
             const gitignoreContent = await fs.readFile(gitignorePath, 'utf8');
-            ignorePatterns = gitignoreContent.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+            ignorePatterns = gitignoreContent.split('\n')
+                .filter(line => line.trim() && !line.startsWith('#'));
         } catch (error) {
             // .gitignore not found or error reading, proceed without ignoring
         }
     
-        const ig = ignore().add(ignorePatterns);
+        // Add additional patterns to skip
+        const foldersToSkip = ['.git', '.dart_tool', '.idea', 'build', '.gradle'];
+        const ig = ignore().add([...ignorePatterns, ...foldersToSkip]);
     
-        const getDirStructure = async (currentPath: string, indent: string = ''): Promise<string> => {
-            let result = '';
+        const getDirStructure = async (currentPath: string, level: number = 0): Promise<string> => {
             const relativeCurrent = path.relative(rootPath, currentPath).replace(/\\/g, '/');
             if (relativeCurrent && ig.ignores(relativeCurrent)) {
                 return '';
             }
+    
             const entries = await fs.readdir(currentPath, { withFileTypes: true });
+            let xml = '';
+            const dirName = path.basename(currentPath);
+    
+            // Skip if this is the root folder (to avoid duplicating root name)
+            const isRoot = currentPath === rootPath;
+            if (!isRoot) {
+                xml += `${'  '.repeat(level)}<folder name="${dirName}">\n`;
+            }
+    
             for (const entry of entries) {
                 const entryPath = path.join(currentPath, entry.name);
                 const relativeEntry = path.relative(rootPath, entryPath).replace(/\\/g, '/');
                 if (ig.ignores(relativeEntry)) {
                     continue;
                 }
+    
                 if (entry.isDirectory()) {
-                    result += `${indent}- ${entry.name}/\n`;
-                    result += await getDirStructure(entryPath, indent + '  ');
+                    const subDirXml = await getDirStructure(entryPath, level + 1);
+                    if (subDirXml) {  // Only include if subdirectory has content
+                        xml += subDirXml;
+                    }
                 } else {
-                    result += `${indent}- ${entry.name}\n`;
+                    xml += `${'  '.repeat(level + 1)}<file name="${entry.name}"/>\n`;
                 }
             }
-            return result;
+    
+            if (!isRoot && xml) {  // Only close tag if we opened one and have content
+                xml += `${'  '.repeat(level)}</folder>\n`;
+            }
+    
+            return xml;
         };
     
         const structure = await getDirStructure(rootPath);
-        return structure || 'No folder structure available';
+        return structure ? `<root>\n${structure}</root>` : '<root>No folder structure available</root>';
     }
 
 }
