@@ -64,18 +64,17 @@ export function connectWebSocket(settings: QCodeSettings, provider: QCodePanelPr
                                         `Transcription: ${parsedData.transcription.transcription}`
                                     );
                                     console.log('Server message:', parsedData.message);
-                                    // Example: Handle specific transcriptions
-                                    // if (parsedData.transcription.transcription === 'ご視聴ありがとうございました') {
-                                    //     vscode.window.showInformationMessage(
-                                    //         'Thank you for watching!'
-                                    //     );
-                                    // }
+                                    // Send the transcription to the webview
+                                    provider.sendMessage({
+                                        type: 'transcription',
+                                        transcription: parsedData.transcription.transcription
+                                    });
                                     // send to ai
-                                    if (parsedData.message) {
-                                        console.log('Sending to AI:', parsedData.message);
-                                        // Add your AI sending logic here, e.g.:
-                                        // aiService.send(parsedData.data);
-                                    }
+                                    // if (parsedData.message) {
+                                    //     console.log('Sending to AI:', parsedData.message);
+                                    //     // Add your AI sending logic here, e.g.:
+                                    //     // aiService.send(parsedData.data);
+                                    // }
                                     break;
                                 case 'error':
                                     vscode.window.showErrorMessage(

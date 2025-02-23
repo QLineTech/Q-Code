@@ -462,18 +462,16 @@ window.addEventListener('message', event => {
     } else if (message.type === 'recordingStopped') {
         stopRecordingUI();
     } else if (message.type === 'transcription') {
-        // Switch to chat tab
+        // Switch to chat tab if not already active
         const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
-        if (chatTabBtn) {
-            chatTabBtn.click(); // Trigger tab switch
-            
-            // Set transcription as chat input and send
-            const transcription = message.transcription;
-            chatInput.value = transcription;
-            sendChat();
-            
-            // Optional: Show notification
-            showNotification(`Transcription received: "${transcription}"`);
+        const currentActiveTab = document.querySelector('.tab-btn.active-tab');
+        if (chatTabBtn && currentActiveTab !== chatTabBtn) {
+            chatTabBtn.click(); // Trigger the tab switch
+        }
+        
+        const inputField = document.getElementById('chat-input'); // Adjust ID as needed
+        if (inputField) {
+            inputField.value = message.transcription;
         }
     } else if (message.type === 'websocketStatus') {
         updateWebSocketStatus(message.connected);
