@@ -31,6 +31,7 @@ export interface AIPrompt {
     systemPrompt: string;
     attachments: {
         type: 'code' | 'text' | 'structure';
+        title?: string;
         language?: string; // e.g., "dart" for code, optional for text/structure
         content: string;
         relativePath?: string; // Added: relative path for 'code' type, e.g., "lib/main.dart"

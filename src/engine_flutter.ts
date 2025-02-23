@@ -54,7 +54,8 @@ export class FlutterEngine {
             attachments.push({
                 type: 'code',
                 language: context.fileType,
-                content: `**Selected code to modify (\`${context.fileName}\`)**:\n${context.selection.text}`,
+                title: `**Selected code to modify (\`${context.fileName}\`)**`,
+                content: `${context.selection.text}`,
                 relativePath: currentRelativePath 
             });
 
@@ -78,7 +79,8 @@ export class FlutterEngine {
             attachments.push({
                 type: 'code',
                 language: context.fileType,
-                content: `**Full file content to modify (\`${context.fileName}\`)**:\n${context.content}`,
+                title: `**Full file content to modify (\`${context.fileName}\`)**`,
+                content: `${context.content}`,
                 relativePath: currentRelativePath 
             });
 
