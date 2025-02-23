@@ -144,7 +144,7 @@ export async function sendChatMessage(
         let response = 'No active AI models configured.';
         if (activeModels.length > 0) {
             response = editorContext
-                ? await EngineHandler.processPrompt(text, editorContext, context, states)
+                ? await EngineHandler.processPrompt(text, editorContext, context)
                 : 'No editor context available.';
         }
             

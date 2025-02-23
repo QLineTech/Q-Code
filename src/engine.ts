@@ -17,18 +17,12 @@ export class EngineHandler {
     static async processPrompt(
         prompt: string,
         editorContext: EditorContext,
-        context: ExtensionContext,
-        states: {
-            attachRelated: boolean;
-            thinking: boolean;
-            webAccess: boolean;
-            autoApply: boolean;
-            folderStructure: boolean;
-        }
+        context: ExtensionContext
     ): Promise<string> {
         const projectType = editorContext.project.type.type;
         let response = '';
         const settings: QCodeSettings = getValidSettings(context.globalState.get('qcode.settings'));
+        let states = settings.chatStates;
 
         // Process based on project type
         let aiPrompt: AIPrompt;

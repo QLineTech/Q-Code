@@ -57,11 +57,6 @@ export function getValidSettings(partialSettings: Partial<QCodeSettings> | undef
             fullRewrite: false,
             extra: []
         },
-        grok3AI: { active: false, apiKeys: [] }, // Legacy
-        openAI: { active: false, apiKeys: [] }, // Legacy
-        ollamaAI: { active: false, apiKeys: [] }, // Legacy
-        groqAI: { active: false, apiKeys: [] }, // Legacy
-        anthropicAI: { active: false, apiKeys: [] }, // Legacy
         analyzeAIs: ['grok3']
     };
     return { ...defaultSettings, ...partialSettings };

@@ -125,12 +125,6 @@ export interface QCodeSettings {
     functionCallingAIs: AIModels; // New field for Function Calling AIs
     thinkingAIs: AIModels; // New field for Thinking AIs
     chatStates: ChatStates; // Updated to include all chat options
-    // Legacy fields (kept for backward compatibility, but could be deprecated)
-    grok3AI: { active: boolean; apiKeys: string[] };
-    openAI: { active: boolean; apiKeys: string[] };
-    ollamaAI: { active: boolean; apiKeys: string[] };
-    groqAI: { active: boolean; apiKeys: string[] };
-    anthropicAI: { active: boolean; apiKeys: string[] };
     analyzeAIs: string[];
 }
 
