@@ -55,8 +55,8 @@ export class FlutterEngine {
             attachments.push({
                 type: 'code',
                 language: context.fileType,
-                title: `**Selected code to modify (\`${contentWithLines}\`)**`,
-                content: `${context.selection.text}`,
+                title: `**Selected code to modify (\`${currentRelativePath}\`)**`,
+                content: `${contentWithLines}`,
                 relativePath: currentRelativePath 
             });
 

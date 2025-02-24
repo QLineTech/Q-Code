@@ -1,5 +1,5 @@
 // engine_react.ts
-import { EditorContext, AIPrompt, ChatStates } from './types';
+import { EditorContext, AIPrompt, ChatStates } from '../types';
 import { ExtensionContext } from 'vscode';
 import { Engine } from './engine_base';
 
