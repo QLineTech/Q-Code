@@ -25,7 +25,7 @@ export interface EditorContext {
             name: string; 
             path: string 
         }[];
-        type: ProjectType; // Imported from project.ts
+        type: ProjectType; 
     };
     openTabs: {
         fileName: string;
