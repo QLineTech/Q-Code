@@ -47,17 +47,33 @@ export interface Cost {
 export interface AIPrompt {
     systemPrompt: string;
     attachments: {
-        type: 'code' | 'text' | 'structure';
+        type: 'code' | 'text' | 'structure' | 'custom';
         title?: string;
-        language?: string; // e.g., "dart" for code, optional for text/structure
+        language?: string;
         content: string;
-        relativePath?: string; // Added: relative path for 'code' type, e.g., "lib/main.dart"
+        relativePath?: string;
+        metadata?: Record<string, any>; // For custom data
     }[];
     userRequest: string;
     responseFormat: string;
     extra?: any;
 }
 
+export interface PromptTemplate {
+    generatePrompt(
+        prompt: string,
+        context: EditorContext,
+        states: ChatStates,
+        frameworkConfig: FrameworkConfig
+    ): Promise<AIPrompt>;
+}
+
+export interface FrameworkConfig {
+    name: string;
+    fileExtensions: string[]; // e.g., ['dart'] for Flutter
+    ignorePatterns: string[]; // Additional ignore patterns
+    detectIndicators: string[]; // e.g., ['pubspec.yaml'] for Flutter
+}
 
 export interface AIModelConfig {
     active: boolean;
@@ -150,8 +166,14 @@ export interface QCodeSettings {
 }
 
 
+// export interface ProjectType {
+//     type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'php' | 'react' | 'vscode-extension' | 'unknown';
+//     confidence: number; // 0-1 scale
+//     indicators: string[];
+// }
+
 export interface ProjectType {
-    type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'php' | 'react' | 'vscode-extension' | 'unknown';
+    type: string; // e.g., "flutter", "react", "custom-framework"
     confidence: number; // 0-1 scale
     indicators: string[];
 }
