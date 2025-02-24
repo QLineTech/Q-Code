@@ -299,7 +299,7 @@ export class QCodeAIProvider {
                                 'x-api-key': apiKey,
                                 'anthropic-version': '2023-06-01'
                             },
-                            timeout: 30000
+                            timeout: 60000
                         }
                     );
 
@@ -334,7 +334,7 @@ export class QCodeAIProvider {
                                 'Authorization': `Bearer ${apiKey}`,
                                 'Content-Type': 'application/json'
                             },
-                            timeout: 30000
+                            timeout: 60000
                         }
                     );
                     const inputTokens = response.data.usage?.prompt_tokens || estimatedInputTokens;
@@ -371,7 +371,7 @@ export class QCodeAIProvider {
                             headers: {
                                 'Content-Type': 'application/json'
                             },
-                            timeout: 30000
+                            timeout: 60000
                         }
                     );
                     const inputTokens = response.data.eval_count ? Math.ceil(response.data.prompt_eval_count / 4) : estimatedInputTokens; // Ollama-specific
@@ -407,7 +407,7 @@ export class QCodeAIProvider {
                                 'Authorization': `Bearer ${apiKey}`,
                                 'Content-Type': 'application/json'
                             },
-                            timeout: 30000
+                            timeout: 60000
                         }
                     );
                     const inputTokens = response.data.usage?.prompt_tokens || estimatedInputTokens;
@@ -461,7 +461,7 @@ export class QCodeAIProvider {
                                 // 'x-api-key': apiKey,
                                 // 'anthropic-version': '2023-06-01'
                             },
-                            timeout: 30000
+                            timeout: 60000
                         }
                     );
                     const inputTokens = response.data.usage?.input_tokens || estimatedInputTokens; // Assuming Grok3 provides usage
@@ -521,9 +521,23 @@ export async function queryAI(
 // Parse and validate the AI's JSON response into an array of CodeChange objects
 export function parseAIResponse(response: string): CodeChange[] {
     // Step 1: Parse the JSON response
+    let cleanedResponse = response.trim();
+    // Remove Markdown code block markers (```json, ```typescript, ```, etc.)
+    cleanedResponse = cleanedResponse.replace(/```(?:json|typescript)?\s*\n?/g, '').replace(/```\s*$/, '');
+
+    // Remove any trailing or leading non-JSON content (basic heuristic)
+    const jsonStart = cleanedResponse.indexOf('[');
+    const jsonEnd = cleanedResponse.lastIndexOf(']') + 1;
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanedResponse = cleanedResponse.slice(jsonStart, jsonEnd);
+    } else {
+        throw new Error('No valid JSON array found in the response');
+    }
+
     let parsed: unknown;
+
     try {
-        parsed = JSON.parse(response);
+        parsed = JSON.parse(cleanedResponse);
     } catch (error) {
         throw new Error(`Failed to parse AI response as JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

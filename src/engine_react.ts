@@ -1,10 +1,10 @@
-// engine_typescript.ts
+// engine_react.ts
 import { EditorContext, AIPrompt, ChatStates } from './types';
 import { ExtensionContext } from 'vscode';
 import { Engine } from './engine_base';
 
-export class TypescriptEngine extends Engine {
-    protected systemPromptBase = 'You are an expert TypeScript developer. Implement the user request with strict typing, modern TS features, and ensure the code is robust and maintainable.';
+export class ReactEngine extends Engine {
+    protected systemPromptBase = 'You are an expert React developer. Implement the user request using functional components, hooks, and modern React patterns. Ensure the code is optimized and type-safe where applicable.';
 
     static async processPrompt(
         prompt: string,
@@ -12,7 +12,7 @@ export class TypescriptEngine extends Engine {
         extContext: ExtensionContext,
         states: ChatStates
     ): Promise<AIPrompt> {
-        const engine = new TypescriptEngine();
+        const engine = new ReactEngine();
         return engine.constructPrompt(prompt, context, extContext, states);
     }
 
@@ -32,6 +32,6 @@ export class TypescriptEngine extends Engine {
     }
 
     protected getFoldersToSkip(): string[] {
-        return ['.git', 'node_modules', 'dist', 'build'];
+        return ['.git', 'node_modules', 'dist', 'build', 'public'];
     }
 }

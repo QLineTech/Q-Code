@@ -1,18 +1,37 @@
-import { EditorContext } from "./types";
-
 // engine_javascript.ts
-export class JavascriptEngine {
-    static async processPrompt(prompt: string, context: EditorContext): Promise<string> {
-        // JavaScript-specific prompt handling
-        let response = `JavaScript project detected. Processing prompt: "${prompt}"\n`;
-        
-        // Add JS-specific logic here
-        if (prompt.toLowerCase().includes('function')) {
-            response += 'This appears to be a function-related query.\n';
-            // Add more JS-specific processing
+import { EditorContext, AIPrompt, ChatStates } from './types';
+import { ExtensionContext } from 'vscode';
+import { Engine } from './engine_base';
+
+export class JavascriptEngine extends Engine {
+    protected systemPromptBase = 'You are an expert JavaScript developer. Implement the user request with modern ES6+ syntax, ensuring the code is clean, efficient, and error-free.';
+
+    static async processPrompt(
+        prompt: string,
+        context: EditorContext,
+        extContext: ExtensionContext,
+        states: ChatStates
+    ): Promise<AIPrompt> {
+        const engine = new JavascriptEngine();
+        return engine.constructPrompt(prompt, context, extContext, states);
+    }
+
+    protected getImportRegex(): RegExp {
+        return /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
+    }
+
+    protected isExternalImport(importPath: string): boolean {
+        return !importPath.startsWith('.') && !importPath.startsWith('/');
+    }
+
+    protected extractPackageName(importPath: string): string | null {
+        if (this.isExternalImport(importPath)) {
+            return importPath.split('/')[0].replace(/^@/, '');
         }
-        
-        response += `Context: ${context.fileName} (JS file)`;
-        return response;
+        return null;
+    }
+
+    protected getFoldersToSkip(): string[] {
+        return ['.git', 'node_modules', 'dist', 'build'];
     }
 }

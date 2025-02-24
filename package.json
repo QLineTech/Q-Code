@@ -2,7 +2,7 @@
     "name":  "qcode",
     "displayName":  "QCode",
     "description":  "QLineTech Coding Assistant",
-    "version":  "2.3.18",
+    "version":  "2.3.20",
     "publisher":  "QLineTech",
     "license":  "SEE LICENSE IN LICENSE.md",
     "engines":  {

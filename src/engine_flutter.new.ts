@@ -1,10 +1,10 @@
-// engine_typescript.ts
+// engine_flutter.ts
 import { EditorContext, AIPrompt, ChatStates } from './types';
 import { ExtensionContext } from 'vscode';
 import { Engine } from './engine_base';
 
-export class TypescriptEngine extends Engine {
-    protected systemPromptBase = 'You are an expert TypeScript developer. Implement the user request with strict typing, modern TS features, and ensure the code is robust and maintainable.';
+export class FlutterEngine extends Engine {
+    protected systemPromptBase = 'You are an expert Flutter/Dart developer. Learn all given code and implement the user request with stable, correct logic. Double-check the result for bugs or mistakes and regenerate if needed to provide a final, error-free output.';
 
     static async processPrompt(
         prompt: string,
@@ -12,26 +12,26 @@ export class TypescriptEngine extends Engine {
         extContext: ExtensionContext,
         states: ChatStates
     ): Promise<AIPrompt> {
-        const engine = new TypescriptEngine();
+        const engine = new FlutterEngine();
         return engine.constructPrompt(prompt, context, extContext, states);
     }
 
     protected getImportRegex(): RegExp {
-        return /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
+        return /import\s+['"]([^'"]+)['"]/g;
     }
 
     protected isExternalImport(importPath: string): boolean {
-        return !importPath.startsWith('.') && !importPath.startsWith('/');
+        return importPath.startsWith('package:');
     }
 
     protected extractPackageName(importPath: string): string | null {
         if (this.isExternalImport(importPath)) {
-            return importPath.split('/')[0].replace(/^@/, '');
+            return importPath.split('/')[0].split(':')[1];
         }
         return null;
     }
 
     protected getFoldersToSkip(): string[] {
-        return ['.git', 'node_modules', 'dist', 'build'];
+        return ['.git', '.dart_tool', '.idea', 'build', '.gradle'];
     }
 }
