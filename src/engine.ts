@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { getMarkdownLanguage, previewChanges } from './utils';
-import { QCodePanelProvider } from './webview';
+import { QCodePanelProvider } from './webview/webview';
 
 export class EngineHandler {
     static async processPrompt(

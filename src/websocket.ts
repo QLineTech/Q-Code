@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import * as vscode from 'vscode';
 import { QCodeSettings, ServerMessage } from './types';
-import { QCodePanelProvider } from './webview'; 
+import { QCodePanelProvider } from './webview/webview'; 
 
 let ws: WebSocket | undefined;
 let wsReconnectAttempts = 0;

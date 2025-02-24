@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import WebSocket from 'ws';
-import { QCodePanelProvider } from './webview';
+import { QCodePanelProvider } from './webview/webview';
 import { connectWebSocket, getWebSocket } from './websocket';
 import { sendChatMessage, getChatHistory, commandMap, removeChatEntry, clearChatHistory, exportChatHistory } from './commands';
 import { getValidSettings } from './settings';

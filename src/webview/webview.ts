@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { QCodeSettings, getValidSettings, validateSettings } from './settings';
-import { EditorContext, ChatHistoryEntry } from './types';
-import { getWebSocket } from './websocket'; // Import getWebSocket
+import { QCodeSettings, getValidSettings, validateSettings } from '../settings';
+import { EditorContext, ChatHistoryEntry } from '../types';
+import { getWebSocket } from '../websocket'; // Import getWebSocket
 
 export class QCodePanelProvider implements vscode.WebviewViewProvider {
     private _webviewView?: vscode.WebviewView;
