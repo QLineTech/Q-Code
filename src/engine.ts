@@ -1,9 +1,5 @@
 // engine_handler.ts
 import { FlutterEngine } from './engine_flutter';
-import { PythonEngine } from './engine_python';
-import { LaravelEngine } from './engine_laravel';
-import { JavascriptEngine } from './engine_javascript';
-import { TypescriptEngine } from './engine_typescript';
 import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings } from './types';
 import { ExtensionContext } from 'vscode';
 import { queryAI, parseAIResponse } from './ai';

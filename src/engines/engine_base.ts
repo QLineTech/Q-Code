@@ -1,11 +1,11 @@
 // engine.ts
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { EditorContext, AIPrompt, ChatStates } from './types';
+import { EditorContext, AIPrompt, ChatStates } from '../types';
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import ignore from 'ignore';
-import { addLineNumbers, getMarkdownLanguage } from './utils';
+import { addLineNumbers, getMarkdownLanguage } from '../utils';
 
 export abstract class Engine {
     protected abstract systemPromptBase: string;

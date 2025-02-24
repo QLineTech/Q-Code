@@ -6,15 +6,15 @@ import { TypescriptEngine } from './engine_typescript';
 import { PhpEngine } from './engine_php';
 import { ReactEngine } from './engine_react';
 import { VsCodeExtensionEngine } from './engine_vscode_extension';
-import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings } from './types';
+import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings } from '../types';
 import { ExtensionContext } from 'vscode';
-import { queryAI, parseAIResponse } from './ai';
-import { getValidSettings } from './settings';
+import { queryAI, parseAIResponse } from '../ai';
+import { getValidSettings } from '../settings';
 import * as vscode from 'vscode';
-import { QCodePanelProvider } from './webview';
-import { getMarkdownLanguage } from './utils';
+import { QCodePanelProvider } from '../webview';
+import { getMarkdownLanguage } from '../utils';
 import path from 'path';
-import { FlutterEngine } from './engine_flutter.new';
+import { FlutterEngine } from './engine_flutter';
 
 export class EngineHandler {
     static async processPrompt(
