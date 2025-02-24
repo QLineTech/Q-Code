@@ -558,18 +558,18 @@ export function parseAIResponse(response: string): CodeChange[] {
 
         // Helper function to coerce a value to number | null
         const coerceToNumberOrNull = (value: unknown, field: string): number | null => {
-            if (value === null || value === undefined) return null;
-            if (typeof value === 'number' && !isNaN(value)) return value;
+            if (value === null || value === undefined) {return null;}
+            if (typeof value === 'number' && !isNaN(value)) {return value;}
             if (typeof value === 'string') {
                 const num = Number(value);
-                if (!isNaN(num)) return num;
+                if (!isNaN(num)) {return num;}
             }
             throw new Error(`Invalid "${field}" type at index ${index}: must be a number or null, got ${typeof value}`);
         };
 
         // Helper function to coerce a value to string
         const coerceToString = (value: unknown, field: string): string => {
-            if (typeof value === 'string') return value;
+            if (typeof value === 'string') {return value;}
             if (value === null || value === undefined) {
                 throw new Error(`"${field}" at index ${index} must be a string, got null/undefined`);
             }
@@ -578,8 +578,8 @@ export function parseAIResponse(response: string): CodeChange[] {
 
         // Helper function to coerce a value to string | null
         const coerceToStringOrNull = (value: unknown, field: string): string | null => {
-            if (value === null || value === undefined) return null;
-            if (typeof value === 'string') return value;
+            if (value === null || value === undefined) {return null;}
+            if (typeof value === 'string') {return value;}
             return String(value); // Fallback coercion
         };
 
