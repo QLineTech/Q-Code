@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { QCodeSettings, AIModelConfig } from './types';
+import { QCodeSettings, AIModelConfig } from '../types/types';
 
 export function validateSettings(settings: QCodeSettings): boolean {
     if (!settings || typeof settings !== 'object') { return false; }

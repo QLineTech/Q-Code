@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import WebSocket from 'ws';
 import { QCodePanelProvider } from './webview/webview';
-import { connectWebSocket, getWebSocket } from './websocket';
-import { sendChatMessage, getChatHistory, commandMap, removeChatEntry, clearChatHistory, exportChatHistory } from './commands';
-import { getValidSettings } from './settings';
+import { sendChatMessage, getChatHistory, commandMap, removeChatEntry, clearChatHistory, exportChatHistory } from './commands/commands';
+import { getValidSettings } from './settings/settings';
 import { logger } from './utils/logger';
+import { connectWebSocket, getWebSocket } from './websocket/websocket';
 
 export function activate(context: vscode.ExtensionContext) {
     logger.info('QCode extension activated');

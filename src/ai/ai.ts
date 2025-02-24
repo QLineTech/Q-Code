@@ -1,9 +1,9 @@
 import Axios, { AxiosError } from 'axios';
 import * as vscode from 'vscode';
-import { QCodeSettings, getValidSettings, validateSettings } from './settings';
+import { QCodeSettings, getValidSettings, validateSettings } from '../settings/settings';
 import { ExtensionContext } from 'vscode';
-import { CodeChange, GitDiffChange, Pricing, RateLimits } from './types';
-import { parseGitDiffResponse } from './utils';
+import { CodeChange, GitDiffChange, Pricing, RateLimits } from '../types/types';
+import { parseGitDiffResponse } from '../utils';
 
 const API_URLS: { [key: string]: string } = {
     grok3: 'https://api.x.ai/v1/messages',

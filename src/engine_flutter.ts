@@ -1,7 +1,7 @@
 // engine_flutter.ts
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { EditorContext, AIPrompt } from "./types";
+import { EditorContext, AIPrompt } from "./types/types";
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import ignore from 'ignore';

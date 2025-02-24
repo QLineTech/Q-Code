@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import path from "path";
-import { GitDiffChange } from "./types";
+import { GitDiffChange } from "./types/types";
 
 export function sanitizeContent(content: string): string {
     return content.replace(/[^\w\s\-\.\/\\\(\)\[\]\{\}]/g, '');

@@ -1,9 +1,9 @@
 // engine_handler.ts
 import { FlutterEngine } from './engine_flutter';
-import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings, GitDiffChange } from './types';
+import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings, GitDiffChange } from './types/types';
 import { ExtensionContext } from 'vscode';
-import { queryAI } from './ai';
-import { getValidSettings } from './settings';
+import { queryAI } from './ai/ai';
+import { getValidSettings } from './settings/settings';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
