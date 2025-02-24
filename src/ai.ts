@@ -601,11 +601,11 @@ export function parseAIResponse(response: string): CodeChange[] {
         // Step 4: Validate fields based on action
         switch (action) {
             case 'add':
-                if (line === null || position === null) {
-                    throw new Error(`"add" at index ${index} requires "line" and "position" to be numbers`);
+                if (line === null) {
+                    throw new Error(`"add" at index ${index} requires "line" to be a number`);
                 }
-                if (finish_line !== null || finish_position !== null) {
-                    throw new Error(`"add" at index ${index} requires "finish_line" and "finish_position" to be null`);
+                if (finish_line !== null) {
+                    throw new Error(`"add" at index ${index} requires "finish_line" to be null`);
                 }
                 if (newCode === null) {
                     throw new Error(`"add" at index ${index} requires "newCode" to be a string`);
@@ -613,8 +613,8 @@ export function parseAIResponse(response: string): CodeChange[] {
                 break;
 
             case 'replace':
-                if (line === null || position === null || finish_line === null || finish_position === null) {
-                    throw new Error(`"replace" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be numbers`);
+                if (line === null || finish_line === null) {
+                    throw new Error(`"replace" at index ${index} requires "line" and "finish_line" to be numbers`);
                 }
                 if (newCode === null) {
                     throw new Error(`"replace" at index ${index} requires "newCode" to be a string`);
@@ -622,8 +622,8 @@ export function parseAIResponse(response: string): CodeChange[] {
                 break;
 
             case 'remove':
-                if (line === null || position === null || finish_line === null || finish_position === null) {
-                    throw new Error(`"remove" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be numbers`);
+                if (line === null || finish_line === null) {
+                    throw new Error(`"remove" at index ${index} requires "line" and "finish_line" to be numbers`);
                 }
                 if (newCode !== null) {
                     throw new Error(`"remove" at index ${index} requires "newCode" to be null`);
@@ -634,8 +634,8 @@ export function parseAIResponse(response: string): CodeChange[] {
                 if (relativePath === null) {
                     throw new Error(`"create" at index ${index} requires "relativePath" to be a string`);
                 }
-                if (line !== null || position !== null || finish_line !== null || finish_position !== null) {
-                    throw new Error(`"create" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be null`);
+                if (line !== null || finish_line !== null) {
+                    throw new Error(`"create" at index ${index} requires "line" and "finish_line" to be null`);
                 }
                 if (newCode === null) {
                     throw new Error(`"create" at index ${index} requires "newCode" to be a string`);
@@ -646,8 +646,8 @@ export function parseAIResponse(response: string): CodeChange[] {
                 if (relativePath === null) {
                     throw new Error(`"remove_file" at index ${index} requires "relativePath" to be a string`);
                 }
-                if (line !== null || position !== null || finish_line !== null || finish_position !== null) {
-                    throw new Error(`"remove_file" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be null`);
+                if (line !== null || finish_line !== null) {
+                    throw new Error(`"remove_file" at index ${index} requires "line" and "finish_line" to be null`);
                 }
                 if (newCode !== null) {
                     throw new Error(`"remove_file" at index ${index} requires "newCode" to be null`);

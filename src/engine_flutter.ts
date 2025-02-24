@@ -51,7 +51,8 @@ export class FlutterEngine {
         // Handle cases based on whether there's a selection
         if (context.selection) {
             // Selection-specific handling
-            const contentWithLines = addLineNumbers(context.selection.text);
+            const contentWithLines = addLineNumbers(context.selection.text, context.selection.startLine);
+           
             attachments.push({
                 type: 'code',
                 language: context.fileType,
@@ -106,6 +107,7 @@ export class FlutterEngine {
         const userRequest = prompt;
 
         // Response format instructions
+        // Response format instructions
         const responseFormat = 'Return ONLY a JSON array of objects, where each object represents a code change in LINE units (no substrings). Each object must follow this structure:\n\n' +
             '- **"action"**: One of "add", "replace", "remove", "create", "remove_file".\n' +
             '- **"relativePath"**: String or null.\n' +
@@ -122,17 +124,21 @@ export class FlutterEngine {
             '- **"newCode"**: String or null.\n' +
             '  - REQUIRED for "add", "replace", "create": full lines to insert.\n' +
             '  - MUST be null for "remove" and "remove_file".\n' +
+            '  - For "replace": Number of lines in "newCode" (split by "\\n") MUST equal the range (finish_line - line + 1).\n' +
+            '  - For "add": Number of lines in "newCode" can be any positive integer (inserted before "line").\n' +
             '- **"reason"**: String explaining the change.\n' +
             '- **"file"**: String, typically matches "relativePath" or filename.\n\n' +
             '**Rules**:\n' +
             '- Changes MUST be full lines only (no substring operations).\n' +
             '- Line numbers start at 1.\n' +
-            '- Match provided code’s line numbers exactly.\n\n' +
+            '- Match provided code’s line numbers exactly.\n' +
+            '- For "replace", ensure "newCode" has exactly the same number of lines as the range being replaced (finish_line - line + 1).\n' +
+            '- Indentation in "newCode" should match the surrounding code’s level for consistency.\n\n' +
             'Example:\n' +
             '```json\n' +
             '[\n' +
             '  {"file": "main.dart", "relativePath": "./lib/main.dart", "line": 5, "finish_line": null, "position": null, "finish_position": null, "action": "add", "reason": "Add entry point", "newCode": "void main() {}"},\n' +
-            '  {"file": "utils.dart", "relativePath": "./lib/utils.dart", "line": 10, "finish_line": 12, "position": null, "finish_position": null, "action": "replace", "reason": "Fix function", "newCode": "int sum(a, b) => a + b;"},\n' +
+            '  {"file": "utils.dart", "relativePath": "./lib/utils.dart", "line": 10, "finish_line": 12, "position": null, "finish_position": null, "action": "replace", "reason": "Fix function", "newCode": "int sum(a, b) {\n  return a + b;\n}"},\n' +
             '  {"file": "old.dart", "relativePath": "./lib/old.dart", "line": null, "finish_line": null, "position": null, "finish_position": null, "action": "remove_file", "reason": "Remove unused file", "newCode": null}\n' +
             ']\n' +
             '```\n' +
