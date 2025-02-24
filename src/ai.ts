@@ -70,6 +70,7 @@ function getPricing(provider: string, model: string): Pricing | null {
             switch (model) {
                 case 'claude-3-5-sonnet-20241022':
                 case 'claude-3-5-sonnet-20240620':
+                case 'claude-3-5-sonnet-latest':
                     return { inputCostPerMillion: 3, outputCostPerMillion: 15 };
                 case 'claude-3-5-haiku':
                     return { inputCostPerMillion: 0.80, outputCostPerMillion: 4 };
@@ -237,7 +238,7 @@ export class QCodeAIProvider {
         try {
             let response;
             const model = providerConfig.models[0] || this.getDefaultModel(provider);
-            const temperature = providerConfig.temperature || 0.7;
+            const temperature = providerConfig.temperature || 0;
             const maxTokens = providerConfig.maxTokens || 4096;
 
             const key = `${provider}-${model}`;
@@ -296,7 +297,7 @@ export class QCodeAIProvider {
                                 'Authorization': `Bearer ${apiKey}`,
                                 'Content-Type': 'application/json',
                                 'x-api-key': apiKey,
-                                // 'anthropic-version': '2023-06-01'
+                                'anthropic-version': '2023-06-01'
                             },
                             timeout: 30000
                         }
@@ -493,7 +494,7 @@ export class QCodeAIProvider {
 
     private getDefaultModel(provider: keyof QCodeSettings['aiModels']): string {
         switch (provider) {
-            case 'anthropic': return 'claude-3-5-sonnet-20241022';
+            case 'anthropic': return 'claude-3-5-sonnet-latest';
             case 'groq': return 'mixtral-8x7b-32768';
             case 'ollama': return 'nemotron-mini:latest';
             case 'deepseek': return 'deepseek-coder';
@@ -517,7 +518,6 @@ export async function queryAI(
     return aiProvider.queryAI(prompt, provider);
 }
 
-// Function to clean and parse the response (unchanged)
 export const parseAIResponse = (rawResponse: string): CodeChange[] => {
     let cleanedResponse = rawResponse
         .replace(/```json\s*/g, '')

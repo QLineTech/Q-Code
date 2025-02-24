@@ -13,12 +13,14 @@ import * as vscode from 'vscode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { getMarkdownLanguage } from './utils';
+import { QCodePanelProvider } from './webview';
 
 export class EngineHandler {
     static async processPrompt(
         prompt: string,
         editorContext: EditorContext,
-        context: ExtensionContext
+        context: ExtensionContext,
+        provider: QCodePanelProvider,
     ): Promise<string> {
         const projectType = editorContext.project.type.type;
         let response = '';
@@ -30,13 +32,14 @@ export class EngineHandler {
         switch (projectType) {
             case 'flutter':
                 aiPrompt = await FlutterEngine.processPrompt(prompt, editorContext, context, states);
-                response += `Flutter project detected. Processing prompt: "${prompt}"\n`;
+                response += `Flutter project detected. \n`;
                 break;
             default:
                 return `No specific engine found for project type "${projectType}".\n` +
                        `Processing prompt generically: "${prompt}"\n` +
                        `Context: ${JSON.stringify(editorContext, null, 2)}`;
         }
+
 
         // Construct the full AI prompt string from AIPrompt object
         let fullPrompt = aiPrompt.systemPrompt + '\n';
@@ -55,9 +58,8 @@ export class EngineHandler {
         fullPrompt += aiPrompt.responseFormat;
 
         // Add context information to response
-        response += `Context: ${editorContext.fileName} (${editorContext.fileType} file)\n\n`;
+        response += `\n\nContext: ${editorContext.fileName} (${editorContext.fileType} file)\n\n`;
         response += '```json\n' + JSON.stringify(editorContext, null, 2) + '\n```\n';
-        response += 'Prompt:\n\n```markdown\n' + fullPrompt + '\n```\n';
 
         // Determine the first active AI model
         const aiModels = settings.aiModels;
@@ -76,15 +78,23 @@ export class EngineHandler {
             return response;
         }
 
+
         // Query AI and process response
         try {
             const aiResult = await queryAI(fullPrompt, context, activeAI);
             const aiAnalysis = aiResult.text; // Use the 'text' property from the result
             const codeChanges = parseAIResponse(aiAnalysis);
 
-            // Add usage information to the response
-            response += '\nUsage Information:\n```json\n' + JSON.stringify(aiResult.raw.usage, null, 2) + '\n```\n';
-            
+            response += '\n--------\n';
+            response += 'Cost Information:\n\n';
+            response += '| Description  | Amount       |\n';
+            response += '|--------------|--------------|\n';
+            response += `| Total Cost   | $${aiResult.cost.sum.toFixed(6)} |\n`;
+            response += `| Input Cost   | $${aiResult.cost.inputCost.toFixed(6)} |\n`;
+            response += `| Output Cost  | $${aiResult.cost.outputCost.toFixed(6)} |\n`;
+            response += '\n--------\n';
+
+
             // Handle auto-apply if enabled
             if (states.autoApply) {
                 response += '\n[Auto-apply enabled - changes applied automatically]\n';
@@ -226,7 +236,7 @@ export class EngineHandler {
                     }
                 }
             }
-
+            response += '\nPrompt:\n```markdown\n' + fullPrompt + "\n```\n";
             response += '\nResponse:\n```json\n' + JSON.stringify(codeChanges, null, 2) + '\n```';
         } catch (error) {
             response += `\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;

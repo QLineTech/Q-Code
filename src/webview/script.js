@@ -420,15 +420,62 @@ window.addEventListener('message', event => {
     const chatDisplay = document.getElementById('chat-display');
     
     if (message.type === 'chatResponse') {
+        c// Parse the Markdown content
+        let renderedContent = marked.parse(message.text);
+
+        // Create a temporary DOM element to manipulate the rendered HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = renderedContent;
+
+        // Process all <pre> elements (code blocks)
+        tempDiv.querySelectorAll('pre').forEach(pre => {
+            const codeContent = pre.innerHTML;
+            const details = document.createElement('details');
+            const summary = document.createElement('summary');
+            const newPre = document.createElement('pre');
+            const copyButton = document.createElement('button');
+
+            // Set up the summary (collapsed by default)
+            summary.textContent = 'Code Block';
+            summary.appendChild(copyButton);
+
+            // Set up the copy button
+            copyButton.textContent = 'Copy';
+            copyButton.className = 'copy-button';
+            copyButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent toggling the details element
+                navigator.clipboard.writeText(pre.textContent).then(() => {
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy';
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                });
+            });
+
+            // Set up the new pre element
+            newPre.innerHTML = codeContent;
+
+            // Assemble the structure
+            details.className = 'code-block-container';
+            details.appendChild(summary);
+            details.appendChild(newPre);
+
+            // Replace the original <pre> with the new structure
+            pre.parentNode.replaceChild(details, pre);
+        });
+
+        // Render the modified content
         chatDisplay.innerHTML += `
             <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
                 ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}">
                 <div class="flex items-center mb-2">
                     <i class="fas fa-robot mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-blue-400' : 'text-blue-500'}"></i>
-                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Grok3:</span>
+                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Q:</span>
                 </div>
                 <div class="prose prose-sm max-w-none ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100 prose-invert' : 'text-gray-800'}">
-                    ${marked.parse(message.text)}
+                    ${tempDiv.innerHTML}
                 </div>
                 ${message.context ? `
                     <div class="mt-3 text-xs border-t pt-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}">

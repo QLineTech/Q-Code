@@ -38,6 +38,12 @@ export interface Pricing {
     outputCostPerMillion: number;
 }
 
+export interface Cost {
+    sum: number;
+    inputCost: number;
+    outputCost: number;
+}
+
 export interface AIPrompt {
     systemPrompt: string;
     attachments: {
