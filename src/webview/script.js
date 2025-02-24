@@ -377,14 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         vscode.postMessage({ type: 'exportChatHistory' });
     });
 
-    marked.setOptions({
-        highlight: function(code, language) {
-            if (language && hljs.getLanguage(language)) {
-                return hljs.highlight(code, { language }).value;
-            }
-            return hljs.highlightAuto(code).value;
-        }
-    });
+    
 });
 
 function updateWebSocketStatus(connected) {
@@ -428,6 +421,17 @@ window.addEventListener('message', event => {
     const chatDisplay = document.getElementById('chat-display');
     
     if (message.type === 'chatResponse') {
+        // Configure marked with highlight.js
+        // marked.setOptions({
+        //     highlight: function(code, lang) {
+        //         if (lang && hljs.getLanguage(lang)) {
+        //             return hljs.highlight(code, { language: lang }).value;
+        //         }
+        //         return hljs.highlightAuto(code).value;
+        //     },
+        //     langPrefix: 'language-' // Ensure consistent class naming
+        // });
+
         // Parse the Markdown content
         let renderedContent = marked.parse(message.text);
 
@@ -435,11 +439,16 @@ window.addEventListener('message', event => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = renderedContent;
 
-        // Process all <pre> elements (code blocks)
-        tempDiv.querySelectorAll('pre').forEach(pre => {
-            const codeElement = pre.firstChild;
+        // Process only top-level <pre> elements
+        const topLevelPreElements = Array.from(tempDiv.querySelectorAll('pre')).filter(pre => {
+            return !pre.closest('pre') || pre.parentElement === tempDiv;
+        });
+
+        topLevelPreElements.forEach(pre => {
+            const codeElement = pre.querySelector('code') || pre.firstChild;
             if (codeElement && codeElement.tagName === 'CODE') {
-                let language = '';
+                // Extract language from class or infer
+                let language = 'Code Block';
                 const classAttr = codeElement.getAttribute('class');
                 if (classAttr) {
                     const matches = classAttr.match(/language-(\w+)/);
@@ -447,32 +456,32 @@ window.addEventListener('message', event => {
                         language = matches[1];
                     }
                 }
-        
-                let details = document.createElement('details');
-                let summary = document.createElement('summary');
-                summary.appendChild(document.createTextNode(language || 'Code Block'));
-                let copyButton = document.createElement('button');
-                copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-                copyButton.title = 'Copy';
-                copyButton.className = 'copy-button';
-                copyButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const codeText = codeElement.textContent;
-                    navigator.clipBoard.writeText(codeText).then(() => {
-                        copyButton.classList.add('copied');
-                        setTimeout(() => {
-                            copyButton.classList.remove('copied');
-                        }, 2000);
-                    });
-                });
-                summary.appendChild(copyButton);
-        
-                let newPre = document.createElement('pre');
-                newPre.appendChild(codeElement);
-        
+
+                // Apply highlighting directly to ensure it sticks
+                // if (language !== 'Code Block' && hljs.getLanguage(language)) {
+                //     codeElement.innerHTML = hljs.highlight(codeElement.textContent, { language }).value;
+                // } else {
+                //     codeElement.innerHTML = hljs.highlightAuto(codeElement.textContent).value;
+                // }
+
+                // Create collapsible details element
+                const details = document.createElement('details');
+                const summary = document.createElement('summary');
+                summary.textContent = language.charAt(0).toUpperCase() + language.slice(1); // Capitalize
+
+                // Create new <pre> with highlighted content
+                const newPre = document.createElement('pre');
+                const newCode = document.createElement('code');
+                newCode.innerHTML = codeElement.innerHTML;
+                if (language !== 'Code Block') {
+                    newCode.className = `language-${language}`; // Reapply language class
+                }
+                newPre.appendChild(newCode);
+
                 details.appendChild(summary);
                 details.appendChild(newPre);
-        
+
+                // Replace the original <pre> with the new structure
                 pre.replaceWith(details);
             }
         });

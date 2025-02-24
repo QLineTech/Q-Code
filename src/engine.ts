@@ -86,8 +86,6 @@ export class EngineHandler {
             const codeChanges = parseAIResponse(aiAnalysis);
 
             response += '\n--------\n';
-            response += '# Cost Information:\n\n';
-            response += '| Description  | Amount       |\n';
             response += '|--------------|--------------|\n';
             response += `| Total Cost   | $${aiResult.cost.sum.toFixed(6)} |\n`;
             response += `| Input Cost   | $${aiResult.cost.inputCost.toFixed(6)} |\n`;
