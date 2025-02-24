@@ -6,6 +6,8 @@ import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import ignore from 'ignore';
 import { addLineNumbers, getMarkdownLanguage } from './utils';
+import { format_git_diff_response, examples_git_diff_response } from './utils';
+
 
 export class FlutterEngine {
 
@@ -29,8 +31,8 @@ export class FlutterEngine {
         const currentRelativePath = path.relative(rootPath, context.filePath).replace(/\\/g, '/'); // Normalize to forward slashes
 
         // Enhanced system prompt with relative path instruction
-        let systemPrompt = 'You are an expert Flutter/Dart developer. Learn all given code and implement the user request with stable, correct logic. Double-check the result for bugs or mistakes and regenerate if needed to provide a final, error-free output.\n\n';
-
+        let systemPrompt = 'You are an expert Flutter/Dart developer. Learn all given code and implement the user request with stable, correct logic. Double-check the result for bugs or mistakes and regenerate if needed to provide a final, error-free output.\n\n' +
+                           'When generating git diffs, ensure maximum accuracy in line numbers. Double and triple check all line numbers against the provided code (including line-numbered attachments) to match the exact positions. Verify that hunk headers (e.g., "@@ -1,3 +1,4 @@") precisely reflect the original and modified line ranges. Any inaccuracy in line numbers is unacceptable—recompute and validate until perfect.\n\n';
         const attachments: AIPrompt['attachments'] = [];
 
         // Handle web access (placeholder for now)
@@ -126,42 +128,14 @@ export class FlutterEngine {
 
         // Response format instructions
         // Response format instructions
-        const responseFormat = 'Return ONLY a JSON array of objects, where each object represents a code change in LINE units (no substrings). Each object must follow this structure:\n\n' +
-            '- **"action"**: One of "add", "replace", "remove", "create", "remove_file".\n' +
-            '- **"relativePath"**: String or null.\n' +
-            '  - REQUIRED for "create" and "remove_file": e.g., "./lib/main.dart".\n' +
-            '  - Optional for "add", "replace", "remove": null means current file.\n' +
-            '- **"line"**: Number (1-based) or null.\n' +
-            '  - REQUIRED for "add": line to insert before.\n' +
-            '  - REQUIRED with "finish_line" for "replace" and "remove": range of lines.\n' +
-            '  - MUST be null for "create" and "remove_file".\n' +
-            '- **"finish_line"**: Number (1-based) or null.\n' +
-            '  - REQUIRED for "replace" and "remove": last line of range (inclusive).\n' +
-            '  - MUST be null for "add", "create", "remove_file".\n' +
-            '- **"position", "finish_position"**: MUST be null (no character-level changes).\n' +
-            '- **"newCode"**: String or null.\n' +
-            '  - REQUIRED for "add", "replace", "create": full lines to insert.\n' +
-            '  - MUST be null for "remove" and "remove_file".\n' +
-            '  - For "replace": Number of lines in "newCode" (split by "\\n") MUST equal the range (finish_line - line + 1).\n' +
-            '  - For "add": Number of lines in "newCode" can be any positive integer (inserted before "line").\n' +
-            '- **"reason"**: String explaining the change.\n' +
-            '- **"file"**: String, typically matches "relativePath" or filename.\n\n' +
-            '**Rules**:\n' +
-            '- Changes MUST be full lines only (no substring operations).\n' +
-            '- Line numbers start at 1.\n' +
-            '- Match provided code’s line numbers exactly.\n' +
-            '- For "replace", ensure "newCode" has exactly the same number of lines as the range being replaced (finish_line - line + 1).\n' +
-            '- Indentation in "newCode" should match the surrounding code’s level for consistency.\n\n' +
-            'Example:\n' +
-            '```json\n' +
-            '[\n' +
-            '  {"file": "main.dart", "relativePath": "./lib/main.dart", "line": 5, "finish_line": null, "position": null, "finish_position": null, "action": "add", "reason": "Add entry point", "newCode": "void main() {}"},\n' +
-            '  {"file": "utils.dart", "relativePath": "./lib/utils.dart", "line": 10, "finish_line": 12, "position": null, "finish_position": null, "action": "replace", "reason": "Fix function", "newCode": "int sum(a, b) {\n  return a + b;\n}"},\n' +
-            '  {"file": "old.dart", "relativePath": "./lib/old.dart", "line": null, "finish_line": null, "position": null, "finish_position": null, "action": "remove_file", "reason": "Remove unused file", "newCode": null}\n' +
-            ']\n' +
-            '```\n' +
-            'Return ONLY the JSON array, with no text before or after.';
-            
+        const responseFormat = `${format_git_diff_response}\n\n` +
+    'Example:\n' +
+    '```json\n' +
+    JSON.stringify(examples_git_diff_response, null, 2) + '\n' +
+    '```\n' +
+    'Return ONLY the JSON array, with no text before or after.';
+
+    
         // Construct and return the AIPrompt object
         return {
             systemPrompt,

@@ -2,7 +2,8 @@ import Axios, { AxiosError } from 'axios';
 import * as vscode from 'vscode';
 import { QCodeSettings, getValidSettings, validateSettings } from './settings';
 import { ExtensionContext } from 'vscode';
-import { CodeChange, Pricing, RateLimits } from './types';
+import { CodeChange, GitDiffChange, Pricing, RateLimits } from './types';
+import { parseGitDiffResponse } from './utils';
 
 const API_URLS: { [key: string]: string } = {
     grok3: 'https://api.x.ai/v1/messages',
@@ -513,162 +514,9 @@ export async function queryAI(
     prompt: string,
     context: ExtensionContext,
     provider: keyof QCodeSettings['aiModels'] = 'grok3'
-): Promise<{ text: string; raw: any; cost: { sum: number; inputCost: number; outputCost: number } }> {
+): Promise<{ changes: GitDiffChange[]; raw: any; cost: { sum: number; inputCost: number; outputCost: number } }> {
     const aiProvider = new QCodeAIProvider(context);
-    return aiProvider.queryAI(prompt, provider);
-}
-
-// Parse and validate the AI's JSON response into an array of CodeChange objects
-export function parseAIResponse(response: string): CodeChange[] {
-    // Step 1: Parse the JSON response
-    let cleanedResponse = response.trim();
-    // Remove Markdown code block markers (```json, ```typescript, ```, etc.)
-    cleanedResponse = cleanedResponse.replace(/```(?:json|typescript)?\s*\n?/g, '').replace(/```\s*$/, '');
-
-    // Remove any trailing or leading non-JSON content (basic heuristic)
-    const jsonStart = cleanedResponse.indexOf('[');
-    const jsonEnd = cleanedResponse.lastIndexOf(']') + 1;
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-        cleanedResponse = cleanedResponse.slice(jsonStart, jsonEnd);
-    } else {
-        throw new Error('No valid JSON array found in the response');
-    }
-
-    let parsed: unknown;
-
-    try {
-        parsed = JSON.parse(cleanedResponse);
-    } catch (error) {
-        throw new Error(`Failed to parse AI response as JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-
-    // Step 2: Ensure the response is an array
-    if (!Array.isArray(parsed)) {
-        throw new Error('AI response must be a JSON array');
-    }
-
-    // Step 3: Validate and coerce each change object
-    return parsed.map((change: unknown, index: number) => {
-        // Ensure the change is an object
-        if (typeof change !== 'object' || change === null) {
-            throw new Error(`Item at index ${index} must be a JSON object`);
-        }
-
-        const obj = change as Record<string, unknown>;
-
-        // Helper function to coerce a value to number | null
-        const coerceToNumberOrNull = (value: unknown, field: string): number | null => {
-            if (value === null || value === undefined) {return null;}
-            if (typeof value === 'number' && !isNaN(value)) {return value;}
-            if (typeof value === 'string') {
-                const num = Number(value);
-                if (!isNaN(num)) {return num;}
-            }
-            throw new Error(`Invalid "${field}" type at index ${index}: must be a number or null, got ${typeof value}`);
-        };
-
-        // Helper function to coerce a value to string
-        const coerceToString = (value: unknown, field: string): string => {
-            if (typeof value === 'string') {return value;}
-            if (value === null || value === undefined) {
-                throw new Error(`"${field}" at index ${index} must be a string, got null/undefined`);
-            }
-            return String(value); // Fallback coercion
-        };
-
-        // Helper function to coerce a value to string | null
-        const coerceToStringOrNull = (value: unknown, field: string): string | null => {
-            if (value === null || value === undefined) {return null;}
-            if (typeof value === 'string') {return value;}
-            return String(value); // Fallback coercion
-        };
-
-        // Extract and validate fields
-        const action = coerceToString(obj.action, 'action') as CodeChange['action'];
-        if (!['add', 'replace', 'remove', 'create', 'remove_file'].includes(action)) {
-            throw new Error(`Invalid "action" at index ${index}: must be one of "add", "replace", "remove", "create", "remove_file", got "${action}"`);
-        }
-
-        const file = coerceToString(obj.file, 'file');
-        const relativePath = coerceToStringOrNull(obj.relativePath, 'relativePath');
-        const line = coerceToNumberOrNull(obj.line, 'line');
-        const position = coerceToNumberOrNull(obj.position, 'position');
-        const finish_line = coerceToNumberOrNull(obj.finish_line, 'finish_line');
-        const finish_position = coerceToNumberOrNull(obj.finish_position, 'finish_position');
-        const reason = coerceToString(obj.reason, 'reason');
-        const newCode = coerceToStringOrNull(obj.newCode, 'newCode');
-
-        // Step 4: Validate fields based on action
-        switch (action) {
-            case 'add':
-                if (line === null) {
-                    throw new Error(`"add" at index ${index} requires "line" to be a number`);
-                }
-                if (finish_line !== null) {
-                    throw new Error(`"add" at index ${index} requires "finish_line" to be null`);
-                }
-                if (newCode === null) {
-                    throw new Error(`"add" at index ${index} requires "newCode" to be a string`);
-                }
-                break;
-
-            case 'replace':
-                if (line === null || finish_line === null) {
-                    throw new Error(`"replace" at index ${index} requires "line" and "finish_line" to be numbers`);
-                }
-                if (newCode === null) {
-                    throw new Error(`"replace" at index ${index} requires "newCode" to be a string`);
-                }
-                break;
-
-            case 'remove':
-                if (line === null || finish_line === null) {
-                    throw new Error(`"remove" at index ${index} requires "line" and "finish_line" to be numbers`);
-                }
-                if (newCode !== null) {
-                    throw new Error(`"remove" at index ${index} requires "newCode" to be null`);
-                }
-                break;
-
-            case 'create':
-                if (relativePath === null) {
-                    throw new Error(`"create" at index ${index} requires "relativePath" to be a string`);
-                }
-                if (line !== null || finish_line !== null) {
-                    throw new Error(`"create" at index ${index} requires "line" and "finish_line" to be null`);
-                }
-                if (newCode === null) {
-                    throw new Error(`"create" at index ${index} requires "newCode" to be a string`);
-                }
-                break;
-
-            case 'remove_file':
-                if (relativePath === null) {
-                    throw new Error(`"remove_file" at index ${index} requires "relativePath" to be a string`);
-                }
-                if (line !== null || finish_line !== null) {
-                    throw new Error(`"remove_file" at index ${index} requires "line" and "finish_line" to be null`);
-                }
-                if (newCode !== null) {
-                    throw new Error(`"remove_file" at index ${index} requires "newCode" to be null`);
-                }
-                break;
-
-            default:
-                throw new Error(`Unexpected action at index ${index}: ${action}`); // Type narrowing should prevent this
-        }
-
-        // Step 5: Construct the validated CodeChange object
-        return {
-            file,
-            relativePath,
-            line,
-            position,
-            finish_line,
-            finish_position,
-            action,
-            reason,
-            newCode,
-        } as CodeChange;
-    });
+    const result = await aiProvider.queryAI(prompt, provider);
+    const changes = parseGitDiffResponse(result.text);
+    return { changes, raw: result.raw, cost: result.cost };
 }

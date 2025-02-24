@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export async function readFile(filePath: string, encoding: string = 'utf8'): Promise<string> {
     try {
@@ -21,9 +22,3 @@ export async function writeFile(filePath: string, content: string, encoding: str
     }
 }
 
-async function getFolderStructure(rootPath: string): Promise<string> {
-    const folderStructure = await vscode.workspace.fs.readDirectory(vscode.Uri.file(rootPath));
-    return folderStructure
-        .map(([name, type]) => `${type === vscode.FileType.Directory ? '📁' : '📄'} ${name}`)
-        .join('\n');
-}
