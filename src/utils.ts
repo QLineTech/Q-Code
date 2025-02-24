@@ -64,3 +64,7 @@ export function getMarkdownLanguage(language: string): string {
     };
     return languageMap[language.toLowerCase()] || language;
 }
+
+export function addLineNumbers(code: string): string {
+    return code.split('\n').map((line, i) => `${i + 1} | ${line}`).join('\n');
+}

@@ -518,68 +518,143 @@ export async function queryAI(
     return aiProvider.queryAI(prompt, provider);
 }
 
-export const parseAIResponse = (rawResponse: string): CodeChange[] => {
-    let cleanedResponse = rawResponse
-        .replace(/```json\s*/g, '')
-        .replace(/```\s*/g, '')
-        .trim();
-
+// Parse and validate the AI's JSON response into an array of CodeChange objects
+export function parseAIResponse(response: string): CodeChange[] {
+    // Step 1: Parse the JSON response
     let parsed: unknown;
     try {
-        parsed = JSON.parse(cleanedResponse);
-    } catch (e) {
-        throw new Error('Invalid JSON format in AI response');
+        parsed = JSON.parse(response);
+    } catch (error) {
+        throw new Error(`Failed to parse AI response as JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
+    // Step 2: Ensure the response is an array
     if (!Array.isArray(parsed)) {
-        throw new Error('Response must be a JSON array');
+        throw new Error('AI response must be a JSON array');
     }
 
-    const validatedChanges = parsed.map((item: unknown, index: number) => {
-        if (typeof item !== 'object' || item === null) {
-            throw new Error(`Item at index ${index} is not an object`);
+    // Step 3: Validate and coerce each change object
+    return parsed.map((change: unknown, index: number) => {
+        // Ensure the change is an object
+        if (typeof change !== 'object' || change === null) {
+            throw new Error(`Item at index ${index} must be a JSON object`);
         }
 
-        const obj = item as Record<string, unknown>;
+        const obj = change as Record<string, unknown>;
 
-        const requiredFields: (keyof CodeChange)[] = [
-            'file', 'line', 'position', 'finish_line', 
-            'finish_position', 'action', 'reason', 'newCode'
-        ];
-        
-        for (const field of requiredFields) {
-            if (!(field in obj)) {
-                throw new Error(`Missing required field "${field}" at index ${index}`);
+        // Helper function to coerce a value to number | null
+        const coerceToNumberOrNull = (value: unknown, field: string): number | null => {
+            if (value === null || value === undefined) return null;
+            if (typeof value === 'number' && !isNaN(value)) return value;
+            if (typeof value === 'string') {
+                const num = Number(value);
+                if (!isNaN(num)) return num;
             }
+            throw new Error(`Invalid "${field}" type at index ${index}: must be a number or null, got ${typeof value}`);
+        };
+
+        // Helper function to coerce a value to string
+        const coerceToString = (value: unknown, field: string): string => {
+            if (typeof value === 'string') return value;
+            if (value === null || value === undefined) {
+                throw new Error(`"${field}" at index ${index} must be a string, got null/undefined`);
+            }
+            return String(value); // Fallback coercion
+        };
+
+        // Helper function to coerce a value to string | null
+        const coerceToStringOrNull = (value: unknown, field: string): string | null => {
+            if (value === null || value === undefined) return null;
+            if (typeof value === 'string') return value;
+            return String(value); // Fallback coercion
+        };
+
+        // Extract and validate fields
+        const action = coerceToString(obj.action, 'action') as CodeChange['action'];
+        if (!['add', 'replace', 'remove', 'create', 'remove_file'].includes(action)) {
+            throw new Error(`Invalid "action" at index ${index}: must be one of "add", "replace", "remove", "create", "remove_file", got "${action}"`);
         }
 
-        if (typeof obj.file !== 'string') {
-            throw new Error(`Invalid "file" type at index ${index}: must be string`);
-        }
-        if (typeof obj.line !== 'number') {
-            throw new Error(`Invalid "line" type at index ${index}: must be number`);
-        }
-        if (typeof obj.position !== 'number') {
-            throw new Error(`Invalid "position" type at index ${index}: must be number`);
-        }
-        if (typeof obj.finish_line !== 'number') {
-            throw new Error(`Invalid "finish_line" type at index ${index}: must be number`);
-        }
-        if (typeof obj.finish_position !== 'number') {
-            throw new Error(`Invalid "finish_position" type at index ${index}: must be number`);
-        }
-        if (!['add', 'replace', 'remove'].includes(obj.action as string)) {
-            throw new Error(`Invalid "action" value at index ${index}: must be "add", "replace", or "remove"`);
-        }
-        if (typeof obj.reason !== 'string') {
-            throw new Error(`Invalid "reason" type at index ${index}: must be string`);
-        }
-        if (typeof obj.newCode !== 'string') {
-            throw new Error(`Invalid "newCode" type at index ${index}: must be string`);
+        const file = coerceToString(obj.file, 'file');
+        const relativePath = coerceToStringOrNull(obj.relativePath, 'relativePath');
+        const line = coerceToNumberOrNull(obj.line, 'line');
+        const position = coerceToNumberOrNull(obj.position, 'position');
+        const finish_line = coerceToNumberOrNull(obj.finish_line, 'finish_line');
+        const finish_position = coerceToNumberOrNull(obj.finish_position, 'finish_position');
+        const reason = coerceToString(obj.reason, 'reason');
+        const newCode = coerceToStringOrNull(obj.newCode, 'newCode');
+
+        // Step 4: Validate fields based on action
+        switch (action) {
+            case 'add':
+                if (line === null || position === null) {
+                    throw new Error(`"add" at index ${index} requires "line" and "position" to be numbers`);
+                }
+                if (finish_line !== null || finish_position !== null) {
+                    throw new Error(`"add" at index ${index} requires "finish_line" and "finish_position" to be null`);
+                }
+                if (newCode === null) {
+                    throw new Error(`"add" at index ${index} requires "newCode" to be a string`);
+                }
+                break;
+
+            case 'replace':
+                if (line === null || position === null || finish_line === null || finish_position === null) {
+                    throw new Error(`"replace" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be numbers`);
+                }
+                if (newCode === null) {
+                    throw new Error(`"replace" at index ${index} requires "newCode" to be a string`);
+                }
+                break;
+
+            case 'remove':
+                if (line === null || position === null || finish_line === null || finish_position === null) {
+                    throw new Error(`"remove" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be numbers`);
+                }
+                if (newCode !== null) {
+                    throw new Error(`"remove" at index ${index} requires "newCode" to be null`);
+                }
+                break;
+
+            case 'create':
+                if (relativePath === null) {
+                    throw new Error(`"create" at index ${index} requires "relativePath" to be a string`);
+                }
+                if (line !== null || position !== null || finish_line !== null || finish_position !== null) {
+                    throw new Error(`"create" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be null`);
+                }
+                if (newCode === null) {
+                    throw new Error(`"create" at index ${index} requires "newCode" to be a string`);
+                }
+                break;
+
+            case 'remove_file':
+                if (relativePath === null) {
+                    throw new Error(`"remove_file" at index ${index} requires "relativePath" to be a string`);
+                }
+                if (line !== null || position !== null || finish_line !== null || finish_position !== null) {
+                    throw new Error(`"remove_file" at index ${index} requires "line", "position", "finish_line", and "finish_position" to be null`);
+                }
+                if (newCode !== null) {
+                    throw new Error(`"remove_file" at index ${index} requires "newCode" to be null`);
+                }
+                break;
+
+            default:
+                throw new Error(`Unexpected action at index ${index}: ${action}`); // Type narrowing should prevent this
         }
 
-        return obj as unknown as CodeChange;
+        // Step 5: Construct the validated CodeChange object
+        return {
+            file,
+            relativePath,
+            line,
+            position,
+            finish_line,
+            finish_position,
+            action,
+            reason,
+            newCode,
+        } as CodeChange;
     });
-
-    return validatedChanges;
-};
+}
