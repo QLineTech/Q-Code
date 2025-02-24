@@ -4,9 +4,14 @@ import { QCodePanelProvider } from './webview';
 import { connectWebSocket, getWebSocket } from './websocket';
 import { sendChatMessage, getChatHistory, commandMap, removeChatEntry, clearChatHistory, exportChatHistory } from './commands';
 import { getValidSettings } from './settings';
+import { logger } from './utils/logger';
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Extension "qcode" is now active!');
+    logger.info('QCode extension activated');
+    context.subscriptions.push({
+        dispose: () => logger.dispose()
+    });
+
     vscode.commands.executeCommand('setContext', 'qcode.active', true);
 
     const provider = new QCodePanelProvider(context);
@@ -110,9 +115,11 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+    
     const ws = getWebSocket();
     if (ws) {
         ws.removeAllListeners();
         ws.close();
     }
+    logger.info('QCode extension deactivated');
 }
