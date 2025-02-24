@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { QCodePanelProvider } from '../webview/webview';
+import { QCodePanelProvider } from '../webview/webview2';
 import { readFile } from '../utils/file';
 import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType, ChatStates } from '../types/types';
 import { EngineHandler } from '../engine';
