@@ -19,6 +19,7 @@ export class FlutterEngine {
             webAccess: boolean;
             autoApply: boolean;
             folderStructure: boolean;
+            includeOpenTabs: boolean;
         }
     ): Promise<AIPrompt> {
 
@@ -47,6 +48,8 @@ export class FlutterEngine {
                 content: `[Processing thoughts: Analyzing "${prompt}" with context]`
             });
         }
+
+
 
         // Handle cases based on whether there's a selection
         if (context.selection) {
@@ -101,6 +104,21 @@ export class FlutterEngine {
                     content: `Project folder structure:\n\`\`\`xml\n${folderStructure}\n\`\`\``
                 });
             }
+        }
+
+        if (states.includeOpenTabs && context.openTabs && context.openTabs.length > 0) {
+            context.openTabs.forEach((tab) => {
+                if (tab.filePath !== context.filePath) {
+                    const tabRelativePath = path.relative(rootPath, tab.filePath).replace(/\\/g, '/');
+                    attachments.push({
+                        type: 'code',
+                        language: tab.fileType,
+                        title: `**Open tab content (\`${tabRelativePath}\`)**`,
+                        content: `${addLineNumbers(tab.content)}`,
+                        relativePath: tabRelativePath
+                    });
+                }
+            });
         }
 
         // User request

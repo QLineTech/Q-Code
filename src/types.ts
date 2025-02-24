@@ -97,8 +97,9 @@ export interface ChatStates {
     webAccess: boolean;
     autoApply: boolean;
     folderStructure: boolean;
-    fullRewrite: boolean; // Added for "Full Rewrite Code" option
+    fullRewrite: boolean;
     extra: string[];
+    includeOpenTabs: boolean;
 }
 
 export interface AIModels {
@@ -148,6 +149,11 @@ export interface CodeChange {
     action: 'add' | 'replace' | 'remove' | 'create' | 'remove_file'; // Added 'remove_file'
     reason: string; // Explanation for the change
     newCode: string; // // Full lines only, ignored for 'remove' and 'remove_file'
+}
+
+export interface GitDiffChange {
+    file: string;
+    diff: string;
 }
 
 

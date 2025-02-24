@@ -163,15 +163,16 @@ export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
     provider: QCodePanelProvider,
-    states: ChatStates = {
-        attachRelated: false,
-        thinking: false,
-        webAccess: false,
-        autoApply: false,
-        folderStructure: false,
-        fullRewrite: false,
-        extra: []
-    }
+    // states: ChatStates = {
+    //     attachRelated: false,
+    //     thinking: false,
+    //     webAccess: false,
+    //     autoApply: false,
+    //     folderStructure: false,
+    //     fullRewrite: false,
+    //     includeOpenTabs: false,
+    //     extra: []
+    // }
 ) {
     try {
         const editor = vscode.window.activeTextEditor;
