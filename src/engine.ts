@@ -96,143 +96,105 @@ export class EngineHandler {
 
             // Handle auto-apply if enabled
             if (states.autoApply) {
-                response += '\n[Auto-apply enabled - changes applied automatically]\n';
-                
-                
-                const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(editorContext.filePath));
-                if (!workspaceFolder) {
-                    throw new Error('No workspace folder found for the current file');
-                }
-                const rootPath = workspaceFolder.uri.fsPath;
+                response += '\n[Auto-apply enabled - changes applied automatically] ✅\n';
+                const edit = new vscode.WorkspaceEdit();
 
+                // Determine the workspace root for relative paths
+                const workspaceFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(editorContext.filePath));
+                const rootPath = workspaceFolder?.uri.fsPath;
+                if (!rootPath) {
+                    response += '\n[Error: No workspace folder found for the current file] ❌';
+                    return response; // Early exit if no workspace context
+                }
 
                 for (const change of codeChanges) {
                     try {
-
-                        // Validate relativePath for 'create' and 'remove_file'
-                        if ((change.action === 'create' || change.action === 'remove_file') && !change.relativePath) {
-                            throw new Error(`Action '${change.action}' requires relativePath`);
-                        }
-                        
-                        // Determine target file path
-
-                        let targetPath: string;
+                        // Resolve the target file URI
+                        let uri: vscode.Uri;
                         if (change.relativePath) {
                             const relPath = change.relativePath.startsWith('./') ? change.relativePath.slice(2) : change.relativePath;
-                            targetPath = path.resolve(rootPath, relPath);
-                            if (!targetPath.startsWith(rootPath)) {
-                                throw new Error(`Target path ${targetPath} is outside the workspace root`);
-                            }
+                            uri = vscode.Uri.joinPath(vscode.Uri.file(rootPath), relPath);
                         } else {
-                            targetPath = editorContext.filePath;
+                            uri = vscode.Uri.file(editorContext.filePath);
                         }
-            
+
+                        // Apply the change based on action
                         switch (change.action) {
                             case 'create':
                                 if (change.line !== null || change.position !== null || change.finish_line !== null || change.finish_position !== null) {
                                     throw new Error(`Action 'create' should not have line or position fields`);
                                 }
-                                await fs.writeFile(targetPath, change.newCode, 'utf8');
-                                response += `\n[Created file ${change.relativePath || path.basename(targetPath)}]`;
+                                if (!change.relativePath) {
+                                    throw new Error(`Action 'create' requires relativePath`);
+                                }
+                                edit.createFile(uri, { overwrite: true }); // Overwrite if exists
+                                edit.replace(uri, new vscode.Range(0, 0, 0, 0), change.newCode);
+                                response += `\n[Created file ${change.relativePath}] ✅`;
                                 break;
-            
+
                             case 'remove_file':
                                 if (change.line !== null || change.position !== null || change.finish_line !== null || change.finish_position !== null) {
                                     throw new Error(`Action 'remove_file' should not have line or position fields`);
                                 }
-                                try {
-                                    await fs.unlink(targetPath);
-                                    response += `\n[Removed file ${change.relativePath || path.basename(targetPath)}]`;
-                                } catch (err) {
-                                    if (err && typeof err === 'object' && 'code' in err && err.code === 'ENOENT') {
-                                        response += `\n[File ${change.relativePath || path.basename(targetPath)} does not exist, skipping removal]`;
-                                    } else {
-                                        throw err; // Re-throw other errors to be caught by the outer catch
-                                    }
+                                if (!change.relativePath) {
+                                    throw new Error(`Action 'remove_file' requires relativePath`);
                                 }
+                                edit.deleteFile(uri, { ignoreIfNotExists: true }); // Don’t fail if file is missing
+                                response += `\n[Removed file ${change.relativePath}] ✅`;
                                 break;
-            
+
                             case 'add':
                                 if (change.line === null || change.position === null) {
                                     throw new Error(`Action 'add' requires line and position`);
                                 }
-                                let contentAdd = await fs.readFile(targetPath, 'utf8');
-                                let linesAdd = contentAdd.split('\n');
-                                if (change.line < 1 || change.line > linesAdd.length + 1) {
-                                    throw new Error(`Invalid line number: ${change.line}`);
+                                if (change.finish_line !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'add' should not have finish_line or finish_position`);
                                 }
-                                if (change.line > linesAdd.length) {
-                                    while (linesAdd.length < change.line - 1) {
-                                        linesAdd.push('');
-                                    }
-                                    linesAdd.push(change.newCode);
-                                } else {
-                                    let targetLine = linesAdd[change.line - 1];
-                                    if (change.position < 0 || change.position > targetLine.length) {
-                                        throw new Error(`Invalid position: ${change.position}`);
-                                    }
-                                    linesAdd[change.line - 1] = targetLine.slice(0, change.position) + change.newCode + targetLine.slice(change.position);
-                                }
-                                await fs.writeFile(targetPath, linesAdd.join('\n'), 'utf8');
-                                response += `\n[Applied add to ${change.relativePath || path.basename(targetPath)}:${change.line} - ${change.reason}]`;
+                                edit.insert(uri, new vscode.Position(change.line - 1, change.position), change.newCode);
+                                response += `\n[Applied add to ${change.relativePath || path.basename(uri.fsPath)}:${change.line} - ${change.reason}] ✅`;
                                 break;
-            
+
                             case 'replace':
                                 if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
                                     throw new Error(`Action 'replace' requires line, position, finish_line, finish_position`);
                                 }
-                                let contentReplace = await fs.readFile(targetPath, 'utf8');
-                                let linesReplace = contentReplace.split('\n');
-                                if (change.line < 1 || change.finish_line > linesReplace.length || change.line > change.finish_line) {
-                                    throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
-                                }
-                                if (change.line === change.finish_line) {
-                                    let line = linesReplace[change.line - 1];
-                                    if (change.position < 0 || change.finish_position > line.length || change.position > change.finish_position) {
-                                        throw new Error(`Invalid position range: ${change.position}-${change.finish_position}`);
-                                    }
-                                    linesReplace[change.line - 1] = line.slice(0, change.position) + change.newCode + line.slice(change.finish_position);
-                                } else {
-                                    let before = linesReplace[change.line - 1].slice(0, change.position);
-                                    let after = linesReplace[change.finish_line - 1].slice(change.finish_position);
-                                    let middle = change.newCode.split('\n');
-                                    linesReplace.splice(change.line - 1, change.finish_line - change.line + 1, ...[before + middle[0], ...middle.slice(1), after]);
-                                }
-                                await fs.writeFile(targetPath, linesReplace.join('\n'), 'utf8');
-                                response += `\n[Applied replace to ${change.relativePath || path.basename(targetPath)}:${change.line}-${change.finish_line} - ${change.reason}]`;
+                                edit.replace(
+                                    uri,
+                                    new vscode.Range(change.line - 1, change.position, change.finish_line - 1, change.finish_position),
+                                    change.newCode
+                                );
+                                response += `\n[Applied replace to ${change.relativePath || path.basename(uri.fsPath)}:${change.line}-${change.finish_line} - ${change.reason}] ✅`;
                                 break;
-            
+
                             case 'remove':
                                 if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
                                     throw new Error(`Action 'remove' requires line, position, finish_line, finish_position`);
                                 }
-                                let contentRemove = await fs.readFile(targetPath, 'utf8');
-                                let linesRemove = contentRemove.split('\n');
-                                if (change.line < 1 || change.finish_line > linesRemove.length || change.line > change.finish_line) {
-                                    throw new Error(`Invalid line range: ${change.line}-${change.finish_line}`);
-                                }
-                                if (change.line === change.finish_line) {
-                                    let line = linesRemove[change.line - 1];
-                                    if (change.position < 0 || change.finish_position > line.length || change.position > change.finish_position) {
-                                        throw new Error(`Invalid position range: ${change.position}-${change.finish_position}`);
-                                    }
-                                    linesRemove[change.line - 1] = line.slice(0, change.position) + line.slice(change.finish_position);
-                                } else {
-                                    let before = linesRemove[change.line - 1].slice(0, change.position);
-                                    let after = linesRemove[change.finish_line - 1].slice(change.finish_position);
-                                    linesRemove.splice(change.line - 1, change.finish_line - change.line + 1, before + after);
-                                }
-                                await fs.writeFile(targetPath, linesRemove.join('\n'), 'utf8');
-                                response += `\n[Applied remove to ${change.relativePath || path.basename(targetPath)}:${change.line}-${change.finish_line} - ${change.reason}]`;
+                                edit.delete(
+                                    uri,
+                                    new vscode.Range(change.line - 1, change.position, change.finish_line - 1, change.finish_position)
+                                );
+                                response += `\n[Applied remove to ${change.relativePath || path.basename(uri.fsPath)}:${change.line}-${change.finish_line} - ${change.reason}] ✅`;
                                 break;
-            
+
                             default:
                                 throw new Error(`Unknown action: ${change.action}`);
                         }
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : String(error);
-                        response += `\n[Failed to apply change: ${errorMessage}]`;
+                        response += `\n[Failed to process change: ${errorMessage}] ❌`;
                     }
+                }
+
+                // Apply all edits in one operation
+                try {
+                    const success = await vscode.workspace.applyEdit(edit);
+                    if (!success) {
+                        response += '\n[Warning: Some changes could not be applied] ⚠️';
+                    }
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    response += `\n[Failed to apply changes: ${errorMessage}] ❌`;
                 }
             }
             response += '\n# Prompt:\n```markdown\n' + fullPrompt + "\n```\n";
