@@ -353,3 +353,29 @@ body[data-theme="dark"] .code-block-container details {
 .copy-button.copied {
     background: #16a34a;
 }
+
+body[data-themed="light"] .prose table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+body[data-themed="light"] .prose th,
+body[data-themed="light"] .prose td {
+    border: 1px solid #d4d4d8;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+body[data-themed="dark"] .prose table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+body[data-themed="dark"] .prose th,
+body[data-themed="dark"] .prose td {
+    border: 1px solid #4b5563;
+    padding: 0.5rem;
+    text-align: left;
+}

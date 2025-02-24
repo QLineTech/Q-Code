@@ -58,7 +58,7 @@ export class EngineHandler {
         fullPrompt += aiPrompt.responseFormat;
 
         // Add context information to response
-        response += `\n\nContext: ${editorContext.fileName} (${editorContext.fileType} file)\n\n`;
+        response += `\n\n# Context: ${editorContext.fileName} (${editorContext.fileType} file)\n\n`;
         response += '```json\n' + JSON.stringify(editorContext, null, 2) + '\n```\n';
 
         // Determine the first active AI model
@@ -86,7 +86,7 @@ export class EngineHandler {
             const codeChanges = parseAIResponse(aiAnalysis);
 
             response += '\n--------\n';
-            response += 'Cost Information:\n\n';
+            response += '# Cost Information:\n\n';
             response += '| Description  | Amount       |\n';
             response += '|--------------|--------------|\n';
             response += `| Total Cost   | $${aiResult.cost.sum.toFixed(6)} |\n`;
@@ -236,8 +236,8 @@ export class EngineHandler {
                     }
                 }
             }
-            response += '\nPrompt:\n```markdown\n' + fullPrompt + "\n```\n";
-            response += '\nResponse:\n```json\n' + JSON.stringify(codeChanges, null, 2) + '\n```';
+            response += '\n# Prompt:\n```markdown\n' + fullPrompt + "\n```\n";
+            response += '\n# Response:\n```json\n' + JSON.stringify(codeChanges, null, 2) + '\n```';
         } catch (error) {
             response += `\nAI Analysis Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
         }

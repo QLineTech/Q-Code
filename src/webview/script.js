@@ -377,6 +377,14 @@ document.addEventListener('DOMContentLoaded', () => {
         vscode.postMessage({ type: 'exportChatHistory' });
     });
 
+    marked.setOptions({
+        highlight: function(code, language) {
+            if (language && hljs.getLanguage(language)) {
+                return hljs.highlight(code, { language }).value;
+            }
+            return hljs.highlightAuto(code).value;
+        }
+    });
 });
 
 function updateWebSocketStatus(connected) {
@@ -429,41 +437,44 @@ window.addEventListener('message', event => {
 
         // Process all <pre> elements (code blocks)
         tempDiv.querySelectorAll('pre').forEach(pre => {
-            const codeContent = pre.innerHTML;
-            const details = document.createElement('details');
-            const summary = document.createElement('summary');
-            const newPre = document.createElement('pre');
-            const copyButton = document.createElement('button');
-
-            // Set up the summary (collapsed by default)
-            summary.textContent = 'Code Block';
-            summary.appendChild(copyButton);
-
-            // Set up the copy button
-            copyButton.textContent = 'Copy';
-            copyButton.className = 'copy-button';
-            copyButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent toggling the details element
-                navigator.clipboard.writeText(pre.textContent).then(() => {
-                    copyButton.textContent = 'Copied!';
-                    copyButton.classList.add('copied');
-                    setTimeout(() => {
-                        copyButton.textContent = 'Copy';
-                        copyButton.classList.remove('copied');
-                    }, 2000);
+            const codeElement = pre.firstChild;
+            if (codeElement && codeElement.tagName === 'CODE') {
+                let language = '';
+                const classAttr = codeElement.getAttribute('class');
+                if (classAttr) {
+                    const matches = classAttr.match(/language-(\w+)/);
+                    if (matches) {
+                        language = matches[1];
+                    }
+                }
+        
+                let details = document.createElement('details');
+                let summary = document.createElement('summary');
+                summary.appendChild(document.createTextNode(language || 'Code Block'));
+                let copyButton = document.createElement('button');
+                copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+                copyButton.title = 'Copy';
+                copyButton.className = 'copy-button';
+                copyButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const codeText = codeElement.textContent;
+                    navigator.clipBoard.writeText(codeText).then(() => {
+                        copyButton.classList.add('copied');
+                        setTimeout(() => {
+                            copyButton.classList.remove('copied');
+                        }, 2000);
+                    });
                 });
-            });
-
-            // Set up the new pre element
-            newPre.innerHTML = codeContent;
-
-            // Assemble the structure
-            details.className = 'code-block-container';
-            details.appendChild(summary);
-            details.appendChild(newPre);
-
-            // Replace the original <pre> with the new structure
-            pre.parentNode.replaceChild(details, pre);
+                summary.appendChild(copyButton);
+        
+                let newPre = document.createElement('pre');
+                newPre.appendChild(codeElement);
+        
+                details.appendChild(summary);
+                details.appendChild(newPre);
+        
+                pre.replaceWith(details);
+            }
         });
 
         // Render the modified content
