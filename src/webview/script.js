@@ -420,7 +420,7 @@ window.addEventListener('message', event => {
     const chatDisplay = document.getElementById('chat-display');
     
     if (message.type === 'chatResponse') {
-        c// Parse the Markdown content
+        // Parse the Markdown content
         let renderedContent = marked.parse(message.text);
 
         // Create a temporary DOM element to manipulate the rendered HTML
