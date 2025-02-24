@@ -185,6 +185,10 @@ export async function sendChatMessage(
         if (editor) {
             const document = editor.document;
             const selection = editor.selection;
+
+         
+            const openEditors = vscode.window.visibleTextEditors;
+
             editorContext = {
                 fileName: path.basename(document.fileName),
                 fileType: document.languageId,
@@ -206,8 +210,20 @@ export async function sendChatMessage(
                     workspaceName: vscode.workspace.name || 'Unnamed Workspace', 
                     directories: projectInfo,
                     type: await detectProjectType(editorContext, workspaceFolders)
-                }
+                }, 
+                openTabs: openEditors.map((editor) => {
+                    const document = editor.document; // Corrected property name
+                    return {
+                        fileName: path.basename(document.fileName),
+                        fileType: document.languageId,
+                        content: document.getText(),
+                        filePath: document.fileName,
+                        isDirty: document.isDirty
+                    };
+                }),
             };
+
+
         }
 
         

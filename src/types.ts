@@ -23,8 +23,15 @@ export interface EditorContext {
             name: string; 
             path: string 
         }[];
-        type: ProjectType;  // Added project type detection result
+        type: ProjectType;
     };
+    openTabs: {
+        fileName: string;
+        fileType: string;
+        content: string;
+        filePath: string;
+        isDirty: boolean;
+    }[];
 }
 
 export interface RateLimits {
