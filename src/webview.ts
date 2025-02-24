@@ -23,6 +23,25 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         this._disposables.push(this._themeListener);
     }
 
+    private getThemeColors(): { [key: string]: string } {
+        // These are common VS Code CSS variables you can use
+        const themeColors: { [key: string]: string } = {
+            '--vscode-foreground': '',
+            '--vscode-editor-background': '',
+            '--vscode-editor-foreground': '',
+            '--vscode-sideBar-background': '',
+            '--vscode-sideBar-foreground': '',
+            '--vscode-button-background': '',
+            '--vscode-button-foreground': '',
+            '--vscode-input-background': '',
+            '--vscode-input-foreground': '',
+            '--vscode-scrollbarSlider-background': ''
+        };
+    
+        // We can't directly query these values in TypeScript, but we’ll inject them into the webview
+        return themeColors;
+    }
+
     private getEffectiveTheme(): string {
         if (this._settings.theme !== 'system') {
             return this._settings.theme;
@@ -55,6 +74,9 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         switch (message.type) {
             case 'sendChatMessage':
                 await vscode.commands.executeCommand('qcode.sendChatMessage', message.text);
+                break;
+            case 'terminalInput':
+                await vscode.commands.executeCommand('qcode.terminalInput', message.data);
                 break;
             case 'getChatHistory':
                 await vscode.commands.executeCommand('qcode.getChatHistory');

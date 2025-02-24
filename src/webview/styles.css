@@ -10,7 +10,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    padding: 1.5rem;
+    /* padding: 1.5rem; */
     z-index: 1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -166,6 +166,28 @@ body[data-theme="dark"] .action-btn:hover { background-color: #3f3f46; }
 body[data-theme="light"] #chat-display .user-message { background-color: #f3f4f6; }
 body[data-theme="dark"] #chat-display .user-message { background-color: #4b5563; }
 
+
+#chat-display {
+    padding: 0.25rem; /* Minimal padding */
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 0;
+    width: 100%;
+}
+
+#chat-form {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem; /* Reduced from 1rem */
+    width: 100%;
+}
+
+/* Ensure chat options also have minimal padding */
+#chat-options {
+    padding: 0.25rem; /* Minimal padding */
+}
+
 /* Ensure Tailwind text colors adapt */
 body[data-theme="dark"] .text-zinc-700 { color: #d4d4d8; }
 body[data-theme="dark"] .text-zinc-600 { color: #a1a1aa; }
@@ -189,8 +211,14 @@ html, body { height: 100%; margin: 0; padding: 0; }
 #chat-display { flex-grow: 1; overflow-y: auto; margin-bottom: 0; }
 #chat-form { flex-shrink: 0; margin-top: 1rem; }
 
-/* Remove extra grey border inside the input area */
-#chat-input { border: none !important; }
+
+
+
+body[data-theme="dark"] #chat-input {
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Dark theme */
+}
+
+
 
 textarea[id$="-keys"] {
     white-space: pre; /* Preserves whitespace and only breaks on explicit newlines (Enter) */
@@ -222,6 +250,19 @@ textarea[id$="-keys"] {
     min-width: 100%;
     max-width: 100%;
     height: 60px;
+}
+
+#chat-input {
+    height: auto;
+    min-height: 2rem; /* 1 row */
+    max-height: 10rem; /* 5 rows, assuming 2rem per row */
+    resize: vertical; /* Only vertical resizing */
+    overflow-y: auto;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: #0d9488;
 }
 
 /* Model box styling */

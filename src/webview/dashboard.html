@@ -7,12 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
     <style>
         ${CSS_CONTENT}
     </style>
 </head>
 <body class="font-sans antialiased" data-theme="${THEME}">
-    <div class="full-screen-container bg-white rounded-xl overflow-hidden">
+    <div class="full-screen-container bg-white overflow-hidden">
         <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
             <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-teal-500"></div>
         </div>
@@ -26,6 +28,10 @@
             <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="history">
                 <i class="fas fa-history hidden"></i>
                 <span>History</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="terminal">
+                <i class="fas fa-terminal hidden"></i>
+                <span>Terminal</span>
             </button>
             <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none" data-tab="account">
                 <i class="fas fa-user hidden"></i>
@@ -47,107 +53,117 @@
                 <i class="fas fa-bolt hidden"></i>
                 <span>Actions</span>
             </button>
+
+            <button id="theme-toggle-btn" class="flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none">
+                <i id="theme-icon" class="fas fa-sun"></i>
+                <!-- <span class="ml-1">Theme</span> -->
+            </button>
         </div>
 
         <!-- Tab Content -->
         <div class="tab-content-container">
             <!-- Chat Tab -->
-            <div id="chat" class="tab-content active flex flex-col">
-                <div id="chat-display" class="p-4 rounded-md border border-zinc-200/20 prose prose-sm max-w-none"></div>
-                <form id="chat-form" class="space-y-3">
-                    <div class="w-full border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+            <div id="chat" class="tab-content active flex flex-col w-full">
+                <div class="flex justify-between items-center py-1 px-2 border-b border-zinc-200/20 w-full">
+                    <img id="q-icon" src="https://q-e.io/wp-content/uploads/2025/01/cropped-q.png" alt="Q Icon" class="h-10 w-10" />
+                    <div class="flex items-center space-x-1">
+                        <button id="chat-options-toggle" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Chat Options">
+                            <i class="fas fa-cog text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                        <button id="toggle-recording" type="button" class="p-1 rounded-full hover:bg-gray-700 dark:hover:bg-gray-700" title="Toggle Recording">
+                            <i id="mic-icon" class="fas fa-microphone text-teal-600"></i>
+                        </button>
+                        <button id="clear-chat-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Clear Chat">
+                            <i class="fas fa-trash text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="progress-bar" class="w-full h-1 bg-gray-200 hidden">
+                    <div id="progress-fill" class="h-full bg-teal-600 transition-all duration-200" style="width: 0%"></div>
+                </div>
+                <div id="chat-display" class="prose prose-sm max-w-none flex-1 overflow-auto w-full"></div>
+                <form id="chat-form" class="space-y-1 w-full px-1">
+                    <div class="w-full bg-white dark:bg-gray-700 rounded-lg">
                         <textarea 
                             id="chat-input" 
-                            rows="3" 
-                            class="block w-full px-4 py-2 text-base text-gray-800 bg-white border-0 rounded-lg focus:ring-0 focus:outline-none dark:bg-gray-800 dark:text-white dark:placeholder-gray-400" 
+                            rows="1" 
+                            class="block w-full px-2 py-1 text-base text-gray-800 bg-transparent border border-gray-200/30 dark:border-gray-600/30 rounded-lg focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 resize-y overflow-auto" 
                             placeholder="Ask anything..." 
                             required
+                            style="min-height: 2rem; max-height: 10rem;"
                         ></textarea>
                     </div>
-                    
-                    <!-- Toggles Container -->
-                    <div class="px-2 grid grid-cols-3 gap-2 text-sm text-zinc-600">
-                        <!-- AI Model Toggles -->
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-grok3-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-grok3-toggle">Grok3</label>
+                    <div id="chat-options" class="border border-zinc-200 p-1 hidden w-full">
+                        <div class="mb-2">
+                            <p class="text-sm font-medium text-zinc-600 mb-1">AI Models</p>
+                            <div class="grid grid-cols-3 gap-1 text-sm text-zinc-600">
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-grok3-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-grok3-toggle">Grok3</label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-openai-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-openai-toggle">OpenAI</label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-anthropic-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-anthropic-toggle">Anthropic</label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-groq-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-groq-toggle">Groq</label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-ollama-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-ollama-toggle">Ollama</label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="chat-deepseek-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="chat-deepseek-toggle">DeepSeek</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-openai-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-openai-toggle">OpenAI</label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-anthropic-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-anthropic-toggle">Anthropic</label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-groq-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-groq-toggle">Groq</label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-ollama-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-ollama-toggle">Ollama</label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="chat-deepseek-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="chat-deepseek-toggle">DeepSeek</label>
-                        </div>
-                        
-                        <!-- State Toggles -->
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="attach-related-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="attach-related-toggle" class="flex items-center">
-                                <i class="fas fa-link mr-1"></i>Related
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="thinking-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="thinking-toggle" class="flex items-center">
-                                <i class="fas fa-brain mr-1"></i>Thinking
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="web-access-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="web-access-toggle" class="flex items-center">
-                                <i class="fas fa-globe mr-1"></i>Web
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="auto-apply-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="auto-apply-toggle" class="flex items-center">
-                                <i class="fas fa-robot mr-1"></i>Auto
-                            </label>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <input type="checkbox" id="folder-structure-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
-                            <label for="folder-structure-toggle" class="flex items-center">
-                                <i class="fas fa-folder mr-1"></i>Folder
-                            </label>
+                        <div class="faded-divider my-2"></div>
+                        <div>
+                            <p class="text-sm font-medium text-zinc-600 mb-1">Chat Options</p>
+                            <div class="grid grid-cols-3 gap-1 text-sm text-zinc-600">
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="attach-related-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="attach-related-toggle" class="flex items-center">
+                                        <i class="fas fa-link mr-1"></i>Related
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="thinking-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="thinking-toggle" class="flex items-center">
+                                        <i class="fas fa-brain mr-1"></i>Thinking
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="web-access-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="web-access-toggle" class="flex items-center">
+                                        <i class="fas fa-globe mr-1"></i>Web
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="auto-apply-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="auto-apply-toggle" class="flex items-center">
+                                        <i class="fas fa-robot mr-1"></i>Auto
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <input type="checkbox" id="folder-structure-toggle" class="h-3 w-3 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded">
+                                    <label for="folder-structure-toggle" class="flex items-center">
+                                        <i class="fas fa-folder mr-1"></i>Folder
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="flex justify-between items-center px-2">
-                        <div class="flex items-center space-x-2">
-                            <!-- WebSocket Status Indicator -->
+                    <div class="flex justify-between items-center px-1 py-1 w-full">
+                        <div class="flex items-center space-x-1">
                             <div id="websocket-status" class="w-3 h-3 rounded-full" title="WebSocket Status"></div>
-                            <!-- Recording Toggle Button -->
-                            <button 
-                                id="toggle-recording" 
-                                type="button"
-                                class="p-2 rounded-full hover:bg-gray-700 dark:hover:bg-gray-700" 
-                                title="Toggle Recording"
-                            >
-                                <i id="mic-icon" class="fas fa-microphone text-teal-600"></i>
-                            </button>
                         </div>
-                        <!-- Send Button -->
-                        <button 
-                            type="submit" 
-                            id="chat-send" 
-                            class="inline-flex items-center px-4 py-1.5 text-sm font-medium text-white border border-gray-200/50 bg-teal-600 rounded-lg hover:bg-teal-700 focus:ring-4 focus:ring-teal-200 dark:focus:ring-teal-900"
-                        >
-                            <i class="fas fa-paper-plane mr-1"></i>Send
-                        </button>
                     </div>
                 </form>
             </div>
@@ -160,7 +176,10 @@
                 </div>
                 <div id="history-list" class="space-y-2"></div>
             </div>
-
+            <div id="terminal" class="tab-content">
+                <h3 class="text-lg font-semibold title-text mb-4">Terminal</h3>
+                <div id="terminal-container" class="w-full h-[calc(100%-2rem)]"></div>
+            </div>
             <!-- Account Tab -->
             <div id="account" class="tab-content">
                 <h3 class="text-lg font-semibold title-text mb-4">Account</h3>

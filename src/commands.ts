@@ -163,16 +163,6 @@ export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
     provider: QCodePanelProvider,
-    // states: ChatStates = {
-    //     attachRelated: false,
-    //     thinking: false,
-    //     webAccess: false,
-    //     autoApply: false,
-    //     folderStructure: false,
-    //     fullRewrite: false,
-    //     includeOpenTabs: false,
-    //     extra: []
-    // }
 ) {
     try {
         const editor = vscode.window.activeTextEditor;
@@ -238,31 +228,25 @@ export async function sendChatMessage(
         let providerUsed: string | undefined;
 
         provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
-        provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: "Provider: " + providerUsed });
 
 
         if (activeModels.length > 0 && editorContext) {
-            // response = editorContext
-            //     ? await EngineHandler.processPrompt(text, editorContext, context)
-            //     : 'No editor context available.';
             const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
             responseText = result;
             console.log(responseText);
-            // Since EngineHandler uses queryAI, we need to fetch the raw response separately
-            // const activeAI = activeModels[0] as keyof QCodeSettings['aiModels'];
-            // const aiResult = await queryAI(text, context, activeAI);
-            // responseText = aiResult.text;
-            // rawResponse = aiResult.raw;
-            // providerUsed = activeAI;
         } else if (!editorContext) {
             responseText = 'No editor context available.';
         }
-            
-        provider.sendMessage({ 
-            type: 'chatResponse', 
-            text: responseText, 
-            prompt: text, 
-            context: editorContext 
+
+        provider.sendMessage({
+            type: 'chatResponse',
+            text: responseText,
+            responseType: 'markdown',
+            progress: 100,
+            complete: true,
+            context: editorContext,
+            prompt: text
+        
         });
 
         const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);

@@ -41,6 +41,16 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
 
+    // Terminal input handler
+    context.subscriptions.push(
+        vscode.commands.registerCommand('qcode.terminalInput', (data: string) => {
+            provider.sendMessage({
+                type: 'terminalOutput',
+                data: `Echo: ${data}\r\n`
+            });
+        })
+    );
+
     let isRecording = false;
     let startTime: number | null = null;
     let cancelTimeout: NodeJS.Timeout | null = null;

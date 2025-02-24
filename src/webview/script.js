@@ -35,6 +35,7 @@ chatInput.addEventListener('keypress', (e) => {
 function sendChat() {
     const text = chatInput.value.trim();
     if (text) {
+        showProgress(10); // Start at 10%
         const chatDisplay = document.getElementById('chat-display');
         chatDisplay.innerHTML += `
             <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
@@ -181,12 +182,17 @@ function updateSettings() {
 // Apply theme to the UI
 function applyTheme(theme) {
     const body = document.body;
+    const themeIcon = document.getElementById('theme-icon');
+    
     body.setAttribute('data-theme', theme);
-    if (theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        body.classList.toggle('dark', prefersDark);
-    } else {
-        body.classList.toggle('dark', theme === 'dark');
+    body.classList.toggle('dark', theme === 'dark');
+    
+    if (themeIcon) {
+        themeIcon.classList.remove('fa-sun', 'fa-moon', 'fa-adjust');
+        themeIcon.classList.add(
+            theme === 'light' ? 'fa-sun' :
+            theme === 'dark' ? 'fa-moon' : 'fa-adjust'
+        );
     }
 }
 
@@ -224,7 +230,7 @@ function loadSettings(settings) {
     document.getElementById('full-rewrite-toggle').checked = chatStates.fullRewrite || false;
 
     syncToggles('', 'chat-');
-    applyTheme(settings.theme);
+    applyTheme(settings.theme); 
 }
 
 // Settings form submission
@@ -324,6 +330,76 @@ function updateHistoryList() {
 document.addEventListener('DOMContentLoaded', () => {
     setupChatToggleListeners();
     setupSettingsToggleListeners();
+    
+    let term = null;
+    function initializeTerminal() {
+        if (!term) {
+            term = new Terminal({
+                cursorBlink: true,
+                theme: document.body.getAttribute('data-theme') === 'dark' ? {
+                    background: '#18181b',
+                    foreground: '#f4f4f5'
+                } : {
+                    background: '#f4f4f5',
+                    foreground: '#18181b'
+                }
+            });
+            term.open(document.getElementById('terminal-container'));
+            term.write('Welcome to QCode Terminal\r\n');
+            term.onData(data => {
+                vscode.postMessage({ type: 'terminalInput', data });
+            });
+        }
+    }
+
+    document.querySelector('.tab-btn[data-tab="terminal"]').addEventListener('click', () => {
+        initializeTerminal();
+    });
+
+    document.getElementById('chat-options-toggle').addEventListener('click', () => {
+        const chatOptions = document.getElementById('chat-options');
+        chatOptions.classList.toggle('hidden');
+    });
+
+    chatInput.addEventListener('input', () => {
+        chatInput.style.height = 'auto'; // Reset height
+        chatInput.style.height = `${Math.min(chatInput.scrollHeight, 10 * 16)}px`; // Cap at 5 rows (assuming 16px per row)
+    });
+
+    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme') || 'system';
+        let newTheme;
+        if (currentTheme === 'light') {
+            newTheme = 'dark';
+        } else if (currentTheme === 'dark') {
+            newTheme = 'system';
+        } else {
+            newTheme = 'light';
+        }
+        
+        // Update the theme in settings and UI
+        document.getElementById('theme').value = newTheme;
+        applyTheme(newTheme);
+        updateSettings();
+    
+        // Update the icon with error handling
+        const themeIcon = document.getElementById('theme-icon');
+        if (themeIcon) {
+            themeIcon.classList.remove('fa-sun', 'fa-moon', 'fa-adjust');
+            themeIcon.classList.add(
+                newTheme === 'light' ? 'fa-sun' :
+                newTheme === 'dark' ? 'fa-moon' : 'fa-adjust'
+            );
+        }
+    });
+    
+    // Add this after your existing event listeners in the DOMContentLoaded section
+    document.getElementById('clear-chat-btn').addEventListener('click', () => {
+        const chatDisplay = document.getElementById('chat-display');
+        chatDisplay.innerHTML = '';
+        // Optionally, you could add a message indicating the chat was cleared
+        chatDisplay.innerHTML = '';
+    });
 
     const models = ['grok3', 'openai', 'anthropic', 'groq', 'ollama', 'deepseek'];
     models.forEach(model => {
@@ -415,106 +491,144 @@ function stopRecordingUI() {
     micIcon.classList.add('text-teal-600');
 }
 
+
+
 // Handle messages from the extension
 window.addEventListener('message', event => {
     const message = event.data;
     const chatDisplay = document.getElementById('chat-display');
     
     if (message.type === 'chatResponse') {
-        // Configure marked with highlight.js
-        // marked.setOptions({
-        //     highlight: function(code, lang) {
-        //         if (lang && hljs.getLanguage(lang)) {
-        //             return hljs.highlight(code, { language: lang }).value;
-        //         }
-        //         return hljs.highlightAuto(code).value;
-        //     },
-        //     langPrefix: 'language-' // Ensure consistent class naming
-        // });
+        
+        let renderedContent = '';
+        let additionalContent = '';
 
         // Parse the Markdown content
-        let renderedContent = marked.parse(message.text);
+        console.log("message recieved");
+        console.log(message);
+        
+        // Handle different response types
+        switch (message.responseType) {
+            case 'markdown':
+                renderedContent = marked.parse(message.text);
+                break;
+            case 'html':
+                renderedContent = message.text; // Assume it's raw HTML
+                break;
+            case 'plain':
+                renderedContent = `<pre class="text-sm">${message.text}</pre>`;
+                break;
+            case 'xterm':
+                renderedContent = `<pre class="text-sm xterm-output">${message.text}</pre>`;
+                additionalContent = `<p class="text-xs text-gray-500 mt-1">Sent to Terminal</p>`;
+                // Send to terminal if active
+                if (term) {
+                    term.write(message.text + '\r\n');
+                }
+                break;
+            default:
+                renderedContent = marked.parse(message.text); // Fallback to Markdown
+        }
 
-        // Create a temporary DOM element to manipulate the rendered HTML
+        // Process progress if included
+        if (message.progress !== undefined) {
+            showProgress(message.progress);
+        }
+        if (message.progress === 100 || message.complete) {
+            hideProgress();
+        }
+        
+        // Create a temporary DOM element for Markdown/HTML processing
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = renderedContent;
 
-        // Process only top-level <pre> elements
-        const topLevelPreElements = Array.from(tempDiv.querySelectorAll('pre')).filter(pre => {
-            return !pre.closest('pre') || pre.parentElement === tempDiv;
-        });
-
-        topLevelPreElements.forEach(pre => {
-            const codeElement = pre.querySelector('code') || pre.firstChild;
-            if (codeElement && codeElement.tagName === 'CODE') {
-                // Extract language from class or infer
-                let language = 'Code Block';
-                const classAttr = codeElement.getAttribute('class');
-                if (classAttr) {
-                    const matches = classAttr.match(/language-(\w+)/);
-                    if (matches) {
-                        language = matches[1];
+        // Process code blocks for Markdown (if applicable)
+        if (message.responseType === 'markdown') {
+            const topLevelPreElements = Array.from(tempDiv.querySelectorAll('pre')).filter(pre => !pre.closest('pre'));
+            topLevelPreElements.forEach(pre => {
+                const codeElement = pre.querySelector('code') || pre.firstChild;
+                if (codeElement && codeElement.tagName === 'CODE') {
+                    let language = 'Code Block';
+                    const classAttr = codeElement.getAttribute('class');
+                    if (classAttr) {
+                        const matches = classAttr.match(/language-(\w+)/);
+                        if (matches) {
+                            language = matches[1];
+                        }
                     }
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    summary.textContent = language.charAt(0).toUpperCase() + language.slice(1);
+                    const newPre = document.createElement('pre');
+                    const newCode = document.createElement('code');
+                    newCode.innerHTML = codeElement.innerHTML;
+                    if (language !== 'Code Block') {
+                        newCode.className = `language-${language}`;
+                    }
+                    newPre.appendChild(newCode);
+                    details.appendChild(summary);
+                    details.appendChild(newPre);
+                    pre.replaceWith(details);
                 }
+            });
+        }
 
-                // Apply highlighting directly to ensure it sticks
-                // if (language !== 'Code Block' && hljs.getLanguage(language)) {
-                //     codeElement.innerHTML = hljs.highlight(codeElement.textContent, { language }).value;
-                // } else {
-                //     codeElement.innerHTML = hljs.highlightAuto(codeElement.textContent).value;
-                // }
-
-                // Create collapsible details element
-                const details = document.createElement('details');
-                const summary = document.createElement('summary');
-                summary.textContent = language.charAt(0).toUpperCase() + language.slice(1); // Capitalize
-
-                // Create new <pre> with highlighted content
-                const newPre = document.createElement('pre');
-                const newCode = document.createElement('code');
-                newCode.innerHTML = codeElement.innerHTML;
-                if (language !== 'Code Block') {
-                    newCode.className = `language-${language}`; // Reapply language class
-                }
-                newPre.appendChild(newCode);
-
-                details.appendChild(summary);
-                details.appendChild(newPre);
-
-                // Replace the original <pre> with the new structure
-                pre.replaceWith(details);
-            }
-        });
-
-        // Render the modified content
+        // Build the chat message HTML
         chatDisplay.innerHTML += `
-            <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
+            <div class="mb-2 p-2 rounded-md shadow-sm transition-colors duration-200
                 ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}">
-                <div class="flex items-center mb-2">
-                    <i class="fas fa-robot mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-blue-400' : 'text-blue-500'}"></i>
-                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Q:</span>
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-blue-400' : 'text-blue-500'}"></i>
+                        <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Q:</span>
+                    </div>
+                    <button class="copy-btn bg-teal-600 text-white px-2 py-1 rounded text-xs hover:bg-teal-700" data-text="${encodeURIComponent(message.text)}">Copy</button>
                 </div>
                 <div class="prose prose-sm max-w-none ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100 prose-invert' : 'text-gray-800'}">
                     ${tempDiv.innerHTML}
                 </div>
+                ${additionalContent}
                 ${message.context ? `
-                    <div class="mt-3 text-xs border-t pt-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}">
+                    <div class="mt-2 text-xs border-t pt-1 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}">
                         <p><strong>Context:</strong> ${message.context.fileName} (${message.context.fileType})</p>
                         ${message.context.selection ? `
-                            <pre class="mt-1 p-2 rounded border text-xs overflow-auto ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-900 text-gray-200 border-gray-700' : 'bg-white text-gray-700 border-gray-200'}">
+                            <pre class="mt-1 p-1 rounded border text-xs overflow-auto ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-900 text-gray-200 border-gray-700' : 'bg-white text-gray-700 border-gray-200'}">
                                 ${message.context.selection}
                             </pre>
                         ` : ''}
                     </div>
                 ` : ''}
             </div>`;
+
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
         chatHistory.push({
             prompt: message.prompt,
             response: message.text,
+            responseType: message.responseType,
             timestamp: new Date().toISOString(),
             context: message.context
         });
+
+        // Reattach copy button listeners
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const text = decodeURIComponent(btn.dataset.text);
+                navigator.clipboard.writeText(text).then(() => {
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 2000);
+                });
+            });
+        });
+
+    } else if (message.type === 'terminalOutput') {
+        if (term) {
+            term.write(message.data);
+        }
+    } else if (message.type === 'setTheme') {
+        // Handle theme update from the extension
+        applyTheme(message.theme);
+    } else if (message.type === 'settings') {
+        loadSettings(message.settings);
     } else if (message.type === 'chatError') {
         chatDisplay.innerHTML += `<div class="mb-4 p-3 bg-red-50 rounded-md text-red-700">${message.text}</div>`;
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
@@ -549,4 +663,15 @@ window.addEventListener('message', event => {
 
 function loadInfo() {
     vscode.postMessage({ type: 'getInfo' });
+}
+
+function showProgress(percent) {
+    const progressBar = document.getElementById('progress-bar');
+    const progressFill = document.getElementById('progress-fill');
+    progressBar.classList.remove('hidden');
+    progressFill.style.width = `${percent}%`;
+}
+
+function hideProgress() {
+    document.getElementById('progress-bar').classList.add('hidden');
 }
