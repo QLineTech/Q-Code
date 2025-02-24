@@ -3,7 +3,6 @@ import { FlutterEngine } from './engine_flutter';
 import { EditorContext, ProjectType, AIPrompt, CodeChange, QCodeSettings, GitDiffChange } from './types';
 import { ExtensionContext } from 'vscode';
 import { queryAI } from './ai';
-import { readFile, writeFile } from './file';
 import { getValidSettings } from './settings';
 import * as vscode from 'vscode';
 import * as fs from 'fs/promises';

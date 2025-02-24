@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { QCodePanelProvider } from './webview';
-import { queryAI } from './ai';
-import { readFile, writeFile } from './file';
+import { readFile } from './utils/file';
 import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType, ChatStates } from './types';
 import { EngineHandler } from './engine';
 import { getValidSettings } from './settings';
