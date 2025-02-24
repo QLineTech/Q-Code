@@ -4,16 +4,28 @@ import { QCodeSettings, getValidSettings, validateSettings } from '../settings/s
 import { EditorContext, ChatHistoryEntry } from '../types/types';
 import { getWebSocket } from '../websocket/websocket';
 
+// -----------------------------------------------
+// Class: QCodePanelProvider
+// -----------------------------------------------
+/**
+ * Provides a webview-based panel for the QCode extension within VS Code.
+ * Manages the panel's lifecycle, theme handling, settings, and communication with the webview.
+ */
 export class QCodePanelProvider implements vscode.WebviewViewProvider {
-    private _webviewView?: vscode.WebviewView;
-    private readonly _context: vscode.ExtensionContext;
-    private _settings: QCodeSettings;
-    private _disposables: vscode.Disposable[] = [];
-    private _themeListener?: vscode.Disposable;
+    private _webviewView?: vscode.WebviewView; // Reference to the webview view instance
+    private readonly _context: vscode.ExtensionContext; // VS Code extension context
+    private _settings: QCodeSettings; // Current settings for the QCode panel
+    private _disposables: vscode.Disposable[] = []; // Array of disposable resources to clean up
+    private _themeListener?: vscode.Disposable; // Listener for theme change events
 
+    /**
+     * Constructs a new QCodePanelProvider instance.
+     * @param context - The VS Code extension context for accessing global state and paths.
+     */
     constructor(context: vscode.ExtensionContext) {
         this._context = context;
-        this._settings = getValidSettings(context.globalState.get('qcode.settings'));
+        this._settings = getValidSettings(context.globalState.get('qcode.settings')); // Initialize settings from global state
+        // Listen for theme changes and update the webview if using system theme
         this._themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
             if (this._settings.theme === 'system' && this._webviewView) {
                 const effectiveTheme = this.getEffectiveTheme();
@@ -23,8 +35,12 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         this._disposables.push(this._themeListener);
     }
 
+    /**
+     * Retrieves a set of theme-related CSS variables for styling the webview.
+     * Note: Actual values are injected at runtime in the webview, not queried here.
+     * @returns An object mapping CSS variable names to empty strings (placeholders).
+     */
     private getThemeColors(): { [key: string]: string } {
-        // These are common VS Code CSS variables you can use
         const themeColors: { [key: string]: string } = {
             '--vscode-foreground': '',
             '--vscode-editor-background': '',
@@ -37,11 +53,13 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
             '--vscode-input-foreground': '',
             '--vscode-scrollbarSlider-background': ''
         };
-    
-        // We can't directly query these values in TypeScript, but we’ll inject them into the webview
         return themeColors;
     }
 
+    /**
+     * Determines the effective theme based on settings or system preference.
+     * @returns The theme string ('light' or 'dark') to apply to the webview.
+     */
     private getEffectiveTheme(): string {
         if (this._settings.theme !== 'system') {
             return this._settings.theme;
@@ -50,19 +68,27 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         return themeKind === vscode.ColorThemeKind.Light ? 'light' : 'dark';
     }
 
+    /**
+     * Sends a message to the webview if it exists.
+     * @param message - The message object to send to the webview.
+     */
     public sendMessage(message: any) {
-        if (this._webviewView) { 
+        if (this._webviewView) {
             this._webviewView.webview.postMessage(message);
         }
     }
 
+    /**
+     * Updates the panel settings and persists them to global state.
+     * @param newSettings - The new settings to apply.
+     * @throws Error if the settings are invalid.
+     */
     public async updateSettings(newSettings: QCodeSettings) {
-        if (!validateSettings(newSettings)) 
-        {
+        if (!validateSettings(newSettings)) {
             throw new Error('Invalid settings configuration');
         }
         this._settings = newSettings;
-        await this._context.globalState.update('qcode.settings', newSettings);
+        await this._context.globalState.update('qcode.settings', newSettings); // Persist settings
         if (this._webviewView) {
             const effectiveTheme = this.getEffectiveTheme();
             this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
@@ -70,6 +96,10 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         }
     }
 
+    /**
+     * Handles incoming messages from the webview and triggers corresponding commands.
+     * @param message - The message received from the webview.
+     */
     private async handleWebviewMessage(message: any) {
         switch (message.type) {
             case 'sendChatMessage':
@@ -119,32 +149,57 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    public resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, token: vscode.CancellationToken): void {
+    /**
+     * Resolves and initializes the webview view for the panel.
+     * @param webviewView - The webview view to configure.
+     * @param context - Context for resolving the webview view.
+     * @param token - Cancellation token to handle operation cancellation.
+     */
+    public resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        token: vscode.CancellationToken
+    ): void {
         this._webviewView = webviewView;
         webviewView.webview.options = {
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.file(this._context.extensionPath)]
+            localResourceRoots: [vscode.Uri.file(this._context.extensionPath)] // Restrict resource access
         };
         const panelTheme = this._settings.theme;
-        getWebviewContentFromFile(JSON.stringify(this._settings), this._context, panelTheme).then(html => {
-            if (this._webviewView && !token.isCancellationRequested) {
-                this._webviewView.webview.html = html;
-                const effectiveTheme = this.getEffectiveTheme();
-                this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
-            }
-        }).catch(error => {
-            console.error('Failed to load webview content:', error);
-            vscode.window.showErrorMessage('Failed to load QCode panel');
-        });
+        getWebviewContentFromFile(JSON.stringify(this._settings), this._context, panelTheme)
+            .then(html => {
+                if (this._webviewView && !token.isCancellationRequested) {
+                    this._webviewView.webview.html = html;
+                    const effectiveTheme = this.getEffectiveTheme();
+                    this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
+                }
+            })
+            .catch(error => {
+                console.error('Failed to load webview content:', error);
+                vscode.window.showErrorMessage('Failed to load QCode panel');
+            });
         webviewView.webview.onDidReceiveMessage(this.handleWebviewMessage.bind(this), undefined, this._disposables);
         webviewView.onDidDispose(() => this._disposables.forEach(d => d.dispose()), null, this._disposables);
     }
 
+    /**
+     * Disposes of all resources held by the provider.
+     */
     dispose() {
         this._disposables.forEach(d => d.dispose());
     }
 }
 
+// -----------------------------------------------
+// Function: getWebviewContentFromFile
+// -----------------------------------------------
+/**
+ * Loads and assembles the webview content (HTML, CSS, JS) from files.
+ * @param settingsJson - JSON string of the current settings.
+ * @param context - The VS Code extension context for file path resolution.
+ * @param theme - The theme to apply to the webview.
+ * @returns A promise resolving to the fully assembled HTML content.
+ */
 export async function getWebviewContentFromFile(
     settingsJson: string,
     context: vscode.ExtensionContext,
@@ -157,16 +212,12 @@ export async function getWebviewContentFromFile(
         let htmlPath: string;
         let cssPath: string;
         let jsPath: string;
-
-        // Try the primary paths first (dist/webview)
+        
+        // Attempt to load from primary paths (dist/webview)
         try {
             htmlPath = path.join(context.extensionPath, 'dist', 'webview', 'dashboard.html');
             cssPath = path.join(context.extensionPath, 'dist', 'webview', 'styles.css');
             jsPath = path.join(context.extensionPath, 'dist', 'webview', 'script.js');
-
-            // console.log('Primary HTML path:', htmlPath);
-            // console.log('Primary CSS path:', cssPath);
-            // console.log('Primary JS path:', jsPath);
 
             const [htmlBuffer, cssBuffer, jsBuffer] = await Promise.all([
                 vscode.workspace.fs.readFile(vscode.Uri.file(htmlPath)),
@@ -178,15 +229,11 @@ export async function getWebviewContentFromFile(
             cssContent = Buffer.from(cssBuffer).toString('utf8');
             jsContent = Buffer.from(jsBuffer).toString('utf8');
         } catch (error) {
-            // Fallback to context.asAbsolutePath if primary paths fail
+            // Fallback to alternative paths if primary fails
             console.warn('Primary path loading failed, attempting fallback:', error);
             htmlPath = context.asAbsolutePath('dist/webview/dashboard.html');
             cssPath = context.asAbsolutePath('dist/webview/styles.css');
             jsPath = context.asAbsolutePath('dist/webview/script.js');
-
-            // console.log('Fallback HTML path:', htmlPath);
-            // console.log('Fallback CSS path:', cssPath);
-            // console.log('Fallback JS path:', jsPath);
 
             const [htmlBuffer, cssBuffer, jsBuffer] = await Promise.all([
                 vscode.workspace.fs.readFile(vscode.Uri.file(htmlPath)),
@@ -199,23 +246,17 @@ export async function getWebviewContentFromFile(
             jsContent = Buffer.from(jsBuffer).toString('utf8');
         }
 
-        // Log contents to verify
-        // console.log('Loaded HTML (first 100 chars):', htmlContent.substring(0, 100));
-        // console.log('Loaded CSS (first 100 chars):', cssContent.substring(0, 100));
-        // console.log('Loaded JS (first 100 chars):', jsContent.substring(0, 100));
-
-        // Replace placeholders
+        // Replace placeholders in the HTML with loaded content
         const replacedHtml = htmlContent
             .replace('${CSS_CONTENT}', cssContent || '/* CSS not loaded */')
             .replace('${JS_CONTENT}', jsContent || '// JS not loaded')
             .replace('${SETTINGS}', settingsJson || '{}')
             .replace('${THEME}', theme);
 
-        // console.log('HTML after replacement (first 100 chars):', replacedHtml.substring(0, 100));
-
         return replacedHtml;
     } catch (error) {
         console.error('Error loading webview content:', error);
+        // Return fallback error HTML if content loading fails
         return `
             <html>
                 <body>
