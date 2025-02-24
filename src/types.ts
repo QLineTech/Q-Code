@@ -151,7 +151,7 @@ export interface QCodeSettings {
 
 
 export interface ProjectType {
-    type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'unknown';
+    type: 'flutter' | 'python' | 'laravel' | 'javascript' | 'typescript' | 'php' | 'react' | 'vscode-extension' | 'unknown';
     confidence: number; // 0-1 scale
     indicators: string[];
 }

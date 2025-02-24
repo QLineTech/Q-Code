@@ -23,6 +23,17 @@
                      "QLineTech"
                  ],
     "main":  "./dist/extension.js",
+    "activationEvents":  [
+                             "onView:qcode-view",
+                             "onCommand:qcode.showPanel",
+                             "onCommand:qcode.openPanel",
+                             "onCommand:qcode.startRecording",
+                             "onCommand:qcode.stopRecording",
+                             "onCommand:qcode.cancelRecording",
+                             "onCommand:qcode.helloWorld",
+                             "onCommand:qcode.analyzeWithGrok3",
+                             "onCommand:qcode.modifyFile"
+                         ],
     "files":  [
                   "src/webview/dashboard.html",
                   "dist/**/*",
