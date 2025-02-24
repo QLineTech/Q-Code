@@ -140,7 +140,7 @@ export interface CodeChange {
     finish_position: number | null; // Nullable
     action: 'add' | 'replace' | 'remove' | 'create' | 'remove_file'; // Added 'remove_file'
     reason: string; // Explanation for the change
-    newCode: string; // Code to apply (ignored for 'remove' and 'remove_file')
+    newCode: string; // // Full lines only, ignored for 'remove' and 'remove_file'
 }
 
 

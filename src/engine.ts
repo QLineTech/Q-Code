@@ -140,37 +140,35 @@ export class EngineHandler {
                                 break;
 
                             case 'add':
-                                if (change.line === null || change.position === null) {
-                                    throw new Error(`Action 'add' requires line and position`);
+                                if (change.line === null || change.position !== null || change.finish_line !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'add' requires only 'line' as number, all position fields must be null`);
                                 }
-                                if (change.finish_line !== null || change.finish_position !== null) {
-                                    throw new Error(`Action 'add' should not have finish_line or finish_position`);
-                                }
-                                edit.insert(uri, new vscode.Position(change.line - 1, change.position), change.newCode);
-                                response += `\n[Applied add to ${change.relativePath || path.basename(uri.fsPath)}:${change.line} - ${change.reason}] ✅`;
+                                // Insert at start of specified line
+                                edit.insert(uri, new vscode.Position(change.line - 1, 0), change.newCode + '\n');
+                                response += `\n[Added lines at ${change.relativePath || path.basename(uri.fsPath)}:${change.line} - ${change.reason}] ✅`;
                                 break;
-
+    
                             case 'replace':
-                                if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
-                                    throw new Error(`Action 'replace' requires line, position, finish_line, finish_position`);
+                                if (change.line === null || change.finish_line === null || change.position !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'replace' requires 'line' and 'finish_line' as numbers, position fields must be null`);
                                 }
                                 edit.replace(
                                     uri,
-                                    new vscode.Range(change.line - 1, change.position, change.finish_line - 1, change.finish_position),
-                                    change.newCode
+                                    new vscode.Range(change.line - 1, 0, change.finish_line, 0),
+                                    change.newCode + '\n'
                                 );
-                                response += `\n[Applied replace to ${change.relativePath || path.basename(uri.fsPath)}:${change.line}-${change.finish_line} - ${change.reason}] ✅`;
+                                response += `\n[Replaced lines ${change.line}-${change.finish_line} in ${change.relativePath || path.basename(uri.fsPath)} - ${change.reason}] ✅`;
                                 break;
-
+    
                             case 'remove':
-                                if (change.line === null || change.position === null || change.finish_line === null || change.finish_position === null) {
-                                    throw new Error(`Action 'remove' requires line, position, finish_line, finish_position`);
+                                if (change.line === null || change.finish_line === null || change.position !== null || change.finish_position !== null) {
+                                    throw new Error(`Action 'remove' requires 'line' and 'finish_line' as numbers, position fields must be null`);
                                 }
                                 edit.delete(
                                     uri,
-                                    new vscode.Range(change.line - 1, change.position, change.finish_line - 1, change.finish_position)
+                                    new vscode.Range(change.line - 1, 0, change.finish_line, 0)
                                 );
-                                response += `\n[Applied remove to ${change.relativePath || path.basename(uri.fsPath)}:${change.line}-${change.finish_line} - ${change.reason}] ✅`;
+                                response += `\n[Removed lines ${change.line}-${change.finish_line} from ${change.relativePath || path.basename(uri.fsPath)} - ${change.reason}] ✅`;
                                 break;
 
                             default:

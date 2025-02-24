@@ -106,30 +106,34 @@ export class FlutterEngine {
         const userRequest = prompt;
 
         // Response format instructions
-        const responseFormat = 'Return ONLY a JSON array of objects, where each object represents a code change. Each object must follow this structure, with strict type and value rules based on "action":\n\n' +
+        const responseFormat = 'Return ONLY a JSON array of objects, where each object represents a code change in LINE units (no substrings). Each object must follow this structure:\n\n' +
             '- **"action"**: One of "add", "replace", "remove", "create", "remove_file".\n' +
             '- **"relativePath"**: String or null.\n' +
             '  - REQUIRED for "create" and "remove_file": e.g., "./lib/main.dart".\n' +
-            '  - Optional for "add", "replace", "remove": null means use the current file.\n' +
-            '- **"line", "position", "finish_line", "finish_position"**:\n' +
-            '  - MUST be JSON numbers (e.g., 5, not "5") or null.\n' +
-            '  - For "add": "line" (1-based) and "position" (0-based) are REQUIRED; "finish_line" and "finish_position" MUST be null.\n' +
-            '  - For "replace" and "remove": ALL FOUR are REQUIRED as numbers defining the range (lines from 1, positions from 0).\n' +
-            '  - For "create" and "remove_file": ALL FOUR MUST be null.\n' +
+            '  - Optional for "add", "replace", "remove": null means current file.\n' +
+            '- **"line"**: Number (1-based) or null.\n' +
+            '  - REQUIRED for "add": line to insert before.\n' +
+            '  - REQUIRED with "finish_line" for "replace" and "remove": range of lines.\n' +
+            '  - MUST be null for "create" and "remove_file".\n' +
+            '- **"finish_line"**: Number (1-based) or null.\n' +
+            '  - REQUIRED for "replace" and "remove": last line of range (inclusive).\n' +
+            '  - MUST be null for "add", "create", "remove_file".\n' +
+            '- **"position", "finish_position"**: MUST be null (no character-level changes).\n' +
             '- **"newCode"**: String or null.\n' +
-            '  - REQUIRED for "add", "replace", "create": the code to apply.\n' +
+            '  - REQUIRED for "add", "replace", "create": full lines to insert.\n' +
             '  - MUST be null for "remove" and "remove_file".\n' +
             '- **"reason"**: String explaining the change.\n' +
             '- **"file"**: String, typically matches "relativePath" or filename.\n\n' +
             '**Rules**:\n' +
-            '- Line numbers start at 1; positions are 0-based character indices.\n' +
-            '- Match the provided code’s line numbers exactly.\n\n' +
+            '- Changes MUST be full lines only (no substring operations).\n' +
+            '- Line numbers start at 1.\n' +
+            '- Match provided code’s line numbers exactly.\n\n' +
             'Example:\n' +
             '```json\n' +
             '[\n' +
-            '  {"file": "main.dart", "relativePath": "./lib/main.dart", "line": 5, "position": 0, "finish_line": null, "finish_position": null, "action": "add", "reason": "Add entry point", "newCode": "void main() {}"},\n' +
-            '  {"file": "utils.dart", "relativePath": "./lib/utils.dart", "line": 10, "position": 2, "finish_line": 12, "finish_position": 5, "action": "replace", "reason": "Fix function", "newCode": "int sum(a, b) => a + b;"},\n' +
-            '  {"file": "old.dart", "relativePath": "./lib/old.dart", "line": null, "position": null, "finish_line": null, "finish_position": null, "action": "remove_file", "reason": "Remove unused file", "newCode": null}\n' +
+            '  {"file": "main.dart", "relativePath": "./lib/main.dart", "line": 5, "finish_line": null, "position": null, "finish_position": null, "action": "add", "reason": "Add entry point", "newCode": "void main() {}"},\n' +
+            '  {"file": "utils.dart", "relativePath": "./lib/utils.dart", "line": 10, "finish_line": 12, "position": null, "finish_position": null, "action": "replace", "reason": "Fix function", "newCode": "int sum(a, b) => a + b;"},\n' +
+            '  {"file": "old.dart", "relativePath": "./lib/old.dart", "line": null, "finish_line": null, "position": null, "finish_position": null, "action": "remove_file", "reason": "Remove unused file", "newCode": null}\n' +
             ']\n' +
             '```\n' +
             'Return ONLY the JSON array, with no text before or after.';
