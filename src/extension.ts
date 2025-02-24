@@ -6,6 +6,10 @@ import { getValidSettings } from './settings/settings';
 import { logger } from './utils/logger';
 import { connectWebSocket, getWebSocket } from './websocket/websocket';
 
+/**
+ * Activates the QCode extension, setting up commands, webview, and WebSocket connections.
+ * @param context The extension context provided by VS Code.
+ */
 export function activate(context: vscode.ExtensionContext) {
     logger.info('QCode extension activated');
     context.subscriptions.push({
