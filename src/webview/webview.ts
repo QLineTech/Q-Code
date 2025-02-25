@@ -215,10 +215,17 @@ export async function getWebviewContentFromFile(
         
         // Attempt to load from primary paths (dist/webview)
         try {
-            htmlPath = path.join(context.extensionPath, 'dist', 'webview', 'dashboard.html');
-            cssPath = path.join(context.extensionPath, 'dist', 'webview', 'styles.css');
-            jsPath = path.join(context.extensionPath, 'dist', 'webview', 'script.js');
 
+            if (context.extensionMode === vscode.ExtensionMode.Development) {
+                htmlPath = path.join(context.extensionPath, 'src', 'webview', 'dashboard.html');
+                cssPath = path.join(context.extensionPath, 'src', 'webview', 'styles.css');
+                jsPath = path.join(context.extensionPath, 'src', 'webview', 'script.js');
+            } else {
+                htmlPath = path.join(context.extensionPath, 'dist', 'webview', 'dashboard.html');
+                cssPath = path.join(context.extensionPath, 'dist', 'webview', 'styles.css');
+                jsPath = path.join(context.extensionPath, 'dist', 'webview', 'script.js');
+            }
+            
             const [htmlBuffer, cssBuffer, jsBuffer] = await Promise.all([
                 vscode.workspace.fs.readFile(vscode.Uri.file(htmlPath)),
                 vscode.workspace.fs.readFile(vscode.Uri.file(cssPath)),

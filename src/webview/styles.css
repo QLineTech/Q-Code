@@ -1,8 +1,15 @@
-/* Custom scrollbar styling */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-thumb { background: #a1a1aa; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #71717a; }
+::-webkit-scrollbar { display: none; }
 /* Updated tab content styling */
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
 .tab-content {
     display: none;
     height: 100%;
@@ -287,30 +294,35 @@ body[data-theme="dark"] .qmode-radio:checked + .qmode-label {
     height: 0.75rem;
 }
 
-#chat-input {
-    height: auto;
-    min-height: 2rem; /* 1 row */
-    max-height: 10rem; /* 5 rows, assuming 2rem per row */
-    resize: vertical; /* Only vertical resizing */
-    overflow-y: auto;
-    border-radius: 28px;
-    background: rgba(255, 255, 255, 0.9); /* Light theme */
-    color: black;
-    border:1px solid #181818;
-}
-
-body[data-theme="dark"] #chat-input {
-    border: 1px solid rgba(153, 153, 153, 0.2); /* Dark theme */
-    background: rgba(39, 39, 42, 0.9); /* Dark theme */
-}
 
 .swal-wide {
     width: 400px !important;
 }
 
+#chat-input {
+    height: auto;
+    min-height: 2rem; /* 1 row */
+    max-height: 10rem; /* 5 rows, assuming 2rem per row */
+    overflow-y: auto;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9); /* Light theme */
+    color: black;
+    border:1px solid #cacaca;
+    resize: none;
+}
+
+
+body[data-theme="dark"] #chat-input {
+    border: 1px solid rgba(153, 153, 153, 0.2); /* Dark theme */
+    background: rgba(39, 39, 42, 0.9); /* Dark theme */
+    color: white;
+}
+
+
 #chat-input:focus {
     outline: none;
     /* border-color: #0d9488; */
+    border:1px solid #9b9b9b;
 }
 
 /* Model box styling */
