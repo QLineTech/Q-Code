@@ -221,19 +221,18 @@
                                 <button id="toggle-recording" type="button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Toggle Recording">
                                     <i id="mic-icon" class="fas fa-microphone-slash text-grey-600 text-xl"></i>
                                 </button>
-                                <button id="chat-options-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Chat Options">
+                                <button id="chat-options-toggle" type="button"  class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Chat Options">
                                     <i class="fas fa-sliders text-gray-600 dark:text-gray-400 text-xl"></i>
                                 </button>
                             </div>
                         
-                            <!-- Dropdown on the right -->
                             <div class="relative inline-block text-left ml-auto">
                                 <div>
                                     <button 
                                         type="button" 
                                         class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50" 
                                         id="menu-button" 
-                                        aria-expanded="true" 
+                                        aria-expanded="false" 
                                         aria-haspopup="true"
                                     >
                                         Options
@@ -253,24 +252,43 @@
                                     </button>
                                 </div>
                                 <div 
-                                    class="absolute left-0 z-10 mt-2 w-56 origin-top-left rounded-md bg-white ring-1 shadow-lg ring-black/5 focus:outline-none" 
+                                    class="absolute left-0 z-10 mb-2 w-56 bottom-full origin-bottom-left rounded-md bg-white ring-1 shadow-lg ring-black/5 focus:outline-none hidden" 
+                                    id="menu-dropdown" 
                                     role="menu" 
                                     aria-orientation="vertical" 
                                     aria-labelledby="menu-button" 
                                     tabindex="-1"
                                 >
                                     <div class="py-1" role="none">
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
-                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-0">
+                                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                            Account settings
+                                        </a>
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-1">
+                                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                            </svg>
+                                            Support
+                                        </a>
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-2">
+                                            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            License
+                                        </a>
                                         <form method="POST" action="#" role="none">
                                             <button 
                                                 type="submit" 
-                                                class="block w-full px-4 py-2 text-left text-sm text-gray-700" 
+                                                class="flex items-center w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" 
                                                 role="menuitem" 
                                                 tabindex="-1" 
                                                 id="menu-item-3"
                                             >
+                                                <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                                </svg>
                                                 Sign out
                                             </button>
                                         </form>
@@ -278,8 +296,9 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
-                    
+                        
                 </form>
             </div>
             <!-- Chat History Tab -->

@@ -250,6 +250,21 @@ textarea[id$="-keys"] {
     height: 60px;
 }
 
+/* QMode dropdown aligns with theme */
+body[data-theme="dark"] #qmode-dropdown-button {
+    background-color: #181818;
+    color: #f4f4f5;
+    border-color: #374151;
+}
+body[data-theme="dark"] #qmode-dropdown-menu {
+    background-color: #181818;
+    color: #f4f4f5;
+    border-color: #374151;
+}
+body[data-theme="dark"] #qmode-dropdown-menu button:hover {
+    background-color: #3f3f46;
+}
+
 /* QMode radio styling */
 .qmode-radio {
     appearance: none;

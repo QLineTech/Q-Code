@@ -366,6 +366,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const menuButton = document.getElementById('menu-button');
+    const menuDropdown = document.getElementById('menu-dropdown');
+
+    menuButton.addEventListener('click', () => {
+        const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+        menuButton.setAttribute('aria-expanded', !isExpanded);
+        menuDropdown.classList.toggle('hidden');
+    });
+    
     // Set initial active label
     const initialRadio = document.querySelector('.qmode-radio:checked');
     if (initialRadio) {
