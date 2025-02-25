@@ -39,19 +39,43 @@ function sendChat() {
     if (text) {
         showProgress(10); // Start at 10%
         const chatDisplay = document.getElementById('chat-display');
+        const chatStates = getChatStates();
         chatDisplay.innerHTML += `
             <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
                 ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}">
                 <div class="flex items-center">
                     <i class="fas fa-user mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-white-400' : 'text-black-500'}"></i>
-                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">You:</span>
+                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Order #${currentQMode}</span>
                 </div>
                 <div class="mt-1 text-sm ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100' : 'text-gray-800'}">
-                    ${marked.parse(text)}
+                    ${marked.parse(text)}<hr />
+                    Mode: ${chatStates.states.qmode}<hr />
+                    Related: ${chatStates.states.attachRelated}<hr />
+                    Auto-Pilot: ${chatStates.states.autoApply}<hr />
+                    Struct: ${chatStates.states.folderStructure}<hr />
+                    FullRewrite: ${chatStates.states.fullRewrite}<hr />
+                    WebAccess: ${chatStates.states.webAccess}<hr />
+                </div>
+            </div>`;
+            chatDisplay.innerHTML += `
+            <div class="mb-4 p-3 rounded-md shadow-sm transition-colors duration-200
+                ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}">
+                <div class="flex items-center">
+                    <i class="fas fa-user mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-white-400' : 'text-black-500'}"></i>
+                    <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Order #${currentQMode}</span>
+                </div>
+                <div class="mt-1 text-sm ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100' : 'text-gray-800'}">
+                    ${marked.parse(text)}<hr />
+                    Mode: ${chatStates.states.qmode}<hr />
+                    Related: ${chatStates.states.attachRelated}<hr />
+                    Auto-Pilot: ${chatStates.states.autoApply}<hr />
+                    Struct: ${chatStates.states.folderStructure}<hr />
+                    FullRewrite: ${chatStates.states.fullRewrite}<hr />
+                    WebAccess: ${chatStates.states.webAccess}<hr />
                 </div>
             </div>`;
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        const chatStates = getChatStates();
+
         vscode.postMessage({ 
             type: 'sendChatMessage', 
             text: text, 
@@ -191,10 +215,10 @@ function applyTheme(theme) {
     body.classList.toggle('dark', theme === 'dark');
     
     if (themeIcon) {
-        themeIcon.classList.remove('fa-sun', 'fa-moon', 'fa-adjust');
+        themeIcon.classList.remove('fa-lightbulb', 'fa-moon', 'fa-adjust');
         themeIcon.classList.add(
-            theme === 'light' ? 'fa-sun' :
-            theme === 'dark' ? 'fa-moon' : 'fa-adjust'
+            theme === 'dark' ? 'fa-lightbulb' :
+            theme === 'light' ? 'fa-moon' : 'fa-adjust'
         );
     }
 }
@@ -442,10 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update the icon with error handling
         const themeIcon = document.getElementById('theme-icon');
         if (themeIcon) {
-            themeIcon.classList.remove('fa-sun', 'fa-moon', 'fa-adjust');
+            themeIcon.classList.remove('fa-lightbulb', 'fa-moon', 'fa-adjust');
             themeIcon.classList.add(
-                newTheme === 'light' ? 'fa-sun' :
-                newTheme === 'dark' ? 'fa-moon' : 'fa-adjust'
+                newTheme === 'dark' ? 'fa-lightbulb' :
+                newTheme === 'light' ? 'fa-moon' : 'fa-adjust'
             );
         }
     });
