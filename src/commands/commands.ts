@@ -7,6 +7,7 @@ import { EngineHandler } from '../engine';
 import { getValidSettings } from '../settings/settings';
 import { logger } from '../utils/logger';
 import { populateEditorContext } from '../frameworks/editorContext';
+import { TrafficSwitch } from '../frameworks/trafficSwitch';
 
 async function detectProjectType(
     editorContext: EditorContext | null,
@@ -179,15 +180,7 @@ export async function sendChatMessage(
 
         let messageParams: {
             type?: string;
-            states?: {
-                attachRelated: boolean;
-                thinking: boolean;
-                webAccess: boolean;
-                autoApply: boolean;
-                folderStructure: boolean;
-                fullRewrite: boolean;
-                qmode: string;
-            };
+            states?: Partial<ChatStates>;
             history?: any[];
             [key: string]: any; // Allow for additional properties
         } = {};
@@ -207,15 +200,26 @@ export async function sendChatMessage(
         }
 
         // Extract states (if present) with defaults
-        const states = messageParams.states || {
-            attachRelated: false,
-            thinking: false,
-            webAccess: false,
-            autoApply: false,
-            folderStructure: false,
-            fullRewrite: false,
-            qmode: 'default' // Default qmode if not provided
+        // Ensure states matches ChatStates with defaults for missing properties
+        const states: ChatStates = {
+            attachRelated: messageParams.states?.attachRelated ?? false,
+            thinking: messageParams.states?.thinking ?? false,
+            webAccess: messageParams.states?.webAccess ?? false,
+            autoApply: messageParams.states?.autoApply ?? false,
+            folderStructure: messageParams.states?.folderStructure ?? false,
+            fullRewrite: messageParams.states?.fullRewrite ?? false,
+            qmode: messageParams.states?.qmode ?? 'default',
+            extra: messageParams.states?.extra ?? [], // Default for extra (adjust type if needed)
+            includeOpenTabs: messageParams.states?.includeOpenTabs ?? false, // Default for includeOpenTabs
         };
+
+
+        // TODO 
+        // to-do
+        // todo
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+        // define different detail levels 
+        // for editor context population
 
         if (workspaceFolders || editor) {
             try {
@@ -260,49 +264,63 @@ export async function sendChatMessage(
             // Add your provider-specific logic here using editorContext
         }
         const settings = getValidSettings(context.globalState.get('qcode.settings'));
-        const activeModels = Object.entries(settings.aiModels)
-            .filter(([_, config]) => config.active)
-            .map(([model]) => model);
         
-        let responseText = 'No active AI models configured.';
-        let rawResponse: any = null;
-        let providerUsed: string | undefined;
+        // MAIN SWITCH
+        const trafficSwitch = new TrafficSwitch(
+            text,
+            context,
+            provider,
+            editorContext,
+            states,
+            ...additionalArgs
+          );
+          await trafficSwitch.handleTraffic();
+        return;
 
-        provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
-
-
-        if (activeModels.length > 0 && editorContext) {
-            const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
-            responseText = result;
-            console.log(responseText);
-        } else if (!editorContext) {
-            responseText = 'No editor context available.';
-        }
-
-        provider.sendMessage({
-            type: 'chatResponse',
-            text: responseText,
-            responseType: 'markdown',
-            progress: 100,
-            complete: true,
-            context: editorContext,
-            prompt: text
+        // const activeModels = Object.entries(settings.aiModels)
+        //     .filter(([_, config]) => config.active)
+        //     .map(([model]) => model);
         
-        });
+        // let responseText = 'No active AI models configured.';
+        // let rawResponse: any = null;
+        // let providerUsed: string | undefined;
 
-        const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
 
-        const newEntry: ChatHistoryEntry = {
-            id: Date.now().toString(),
-            prompt: text,
-            response: responseText,
-            rawResponse, // Store the raw response
-            timestamp: new Date().toISOString(),
-            context: editorContext,
-            provider: providerUsed // Store the provider used
-        };
-        chatHistory.push(newEntry);
-        await context.globalState.update('qcode.chatHistory', chatHistory);
+        // provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
+
+
+        // if (activeModels.length > 0 && editorContext) {
+        //     const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
+        //     responseText = result;
+        //     console.log(responseText);
+        // } else if (!editorContext) {
+        //     responseText = 'No editor context available.';
+        // }
+
+        // provider.sendMessage({
+        //     type: 'chatResponse',
+        //     text: responseText,
+        //     responseType: 'markdown',
+        //     progress: 100,
+        //     complete: true,
+        //     context: editorContext,
+        //     prompt: text
+        
+        // });
+
+        // const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+
+        // const newEntry: ChatHistoryEntry = {
+        //     id: Date.now().toString(),
+        //     prompt: text,
+        //     response: responseText,
+        //     rawResponse, // Store the raw response
+        //     timestamp: new Date().toISOString(),
+        //     context: editorContext,
+        //     provider: providerUsed // Store the provider used
+        // };
+        // chatHistory.push(newEntry);
+        // await context.globalState.update('qcode.chatHistory', chatHistory);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         provider.sendMessage({ type: 'chatError', text: `Error: ${message}` });

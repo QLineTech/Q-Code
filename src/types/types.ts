@@ -99,6 +99,7 @@ export interface ChatStates {
     folderStructure: boolean;
     fullRewrite: boolean;
     extra: string[];
+    qmode: string;
     includeOpenTabs: boolean;
 }
 
