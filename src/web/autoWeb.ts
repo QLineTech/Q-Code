@@ -1,5 +1,5 @@
 import * as playwright from 'playwright';
-import { Browser, BrowserContext, Page, BrowserType, LaunchOptions, BrowserContextOptions, Route, TimeoutError } from 'playwright';
+import { Browser, BrowserContext, Page, BrowserType, LaunchOptions, BrowserContextOptions, Route } from 'playwright';
 
 /**
  * Utility function to launch a browser with specific error handling.
@@ -13,10 +13,11 @@ async function launchBrowser(browserType: 'chromium' | 'firefox' | 'webkit', opt
         const browserLauncher: BrowserType = playwright[browserType];
         return await browserLauncher.launch(options);
     } catch (error) {
-        if (error.message.includes('ECONNREFUSED')) {
+        const err = error as Error; // Assert error as Error type
+        if (err.message.includes('ECONNREFUSED')) {
             throw new Error(`Browser launch failed: ${browserType} connection refused. Check if browser binaries are installed.`);
         }
-        throw new Error(`Failed to launch ${browserType} browser: ${error.message}`);
+        throw new Error(`Failed to launch ${browserType} browser: ${err.message}`);
     }
 }
 
@@ -31,7 +32,8 @@ async function createContext(browser: Browser, options: BrowserContextOptions = 
     try {
         return await browser.newContext(options);
     } catch (error) {
-        throw new Error(`Failed to create browser context: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Failed to create browser context: ${err.message}`);
     }
 }
 
@@ -45,7 +47,8 @@ async function createPage(context: BrowserContext): Promise<Page> {
     try {
         return await context.newPage();
     } catch (error) {
-        throw new Error(`Failed to create new page: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Failed to create new page: ${err.message}`);
     }
 }
 
@@ -81,24 +84,29 @@ export async function launchAndNavigate(
             page = await createPage(context);
         }
 
-        await page.goto(url, { waitUntil: 'load' }).catch((error: TimeoutError | Error) => {
-            if (error instanceof TimeoutError) {
-                throw new Error(`Navigation timeout for ${url}: ${error.message}`);
+        await page.goto(url, { waitUntil: 'load' }).catch((error) => {
+            const err = error as Error;
+            if (err.message.includes('Timeout')) {
+                throw new Error(`Navigation timeout for ${url}: ${err.message}`);
             }
-            throw new Error(`Navigation failed for ${url}: ${error.message}`);
+            throw new Error(`Navigation failed for ${url}: ${err.message}`);
         });
 
         const title = await page.title();
-        if (!title) throw new Error(`No title found for ${url}`);
+        if (!title) {
+            throw new Error(`No title found for ${url}`);
+        }
         return title;
     } catch (error) {
-        throw new Error(`Failed to launch and navigate: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Failed to launch and navigate: ${err.message}`);
     } finally {
         if (!browserContext && browser) {
             try {
                 await browser.close();
             } catch (closeError) {
-                console.warn(`Failed to close browser: ${closeError.message}`);
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
             }
         }
     }
@@ -139,24 +147,146 @@ export async function launchHeadlessOrHeadful(
             page = await createPage(context);
         }
 
-        await page.goto(url, { waitUntil: 'load' }).catch((error: TimeoutError | Error) => {
-            if (error instanceof TimeoutError) {
-                throw new Error(`Navigation timeout in ${headless ? 'headless' : 'headful'} mode for ${url}: ${error.message}`);
+        await page.goto(url, { waitUntil: 'load' }).catch((error) => {
+            const err = error as Error;
+            if (err.message.includes('Timeout')) {
+                throw new Error(`Navigation timeout in ${headless ? 'headless' : 'headful'} mode for ${url}: ${err.message}`);
             }
-            throw new Error(`Navigation failed in ${headless ? 'headless' : 'headful'} mode for ${url}: ${error.message}`);
+            throw new Error(`Navigation failed in ${headless ? 'headless' : 'headful'} mode for ${url}: ${err.message}`);
         });
 
         const content = await page.content();
-        if (!content) throw new Error(`No content retrieved from ${url}`);
+        if (!content) {
+            throw new Error(`No content retrieved from ${url}`);
+        }
         return content;
     } catch (error) {
-        throw new Error(`Failed to launch in ${headless ? 'headless' : 'headful'} mode: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Failed to launch in ${headless ? 'headless' : 'headful'} mode: ${err.message}`);
     } finally {
         if (!browserContext && browser) {
             try {
                 await browser.close();
             } catch (closeError) {
-                console.warn(`Failed to close browser: ${closeError.message}`);
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
+            }
+        }
+    }
+}
+
+// Feature 3: Modern Web Automation (Shadow DOM)
+/**
+ * Interacts with shadow DOM elements on a page, with or without an existing session.
+ * @param selector The selector for the shadow DOM element.
+ * @param browserType The type of browser to launch if no session is provided.
+ * @param launchOptions Optional launch options for the browser.
+ * @param contextOptions Optional options for the browser context.
+ * @param browserContext Optional existing browser context (session). If not provided, a new one is created.
+ * @returns A promise that resolves to the text content of the element.
+ * @throws Error if element is not found or interaction fails.
+ */
+export async function interactWithShadowDom(
+    selector: string,
+    browserType: 'chromium' | 'firefox' | 'webkit',
+    launchOptions: LaunchOptions = {},
+    contextOptions: BrowserContextOptions = {},
+    browserContext?: BrowserContext
+): Promise<string> {
+    let browser: Browser | undefined;
+    let context: BrowserContext;
+    let page: Page;
+
+    try {
+        if (browserContext) {
+            context = browserContext;
+            page = await createPage(context);
+        } else {
+            browser = await launchBrowser(browserType, launchOptions);
+            context = await createContext(browser, contextOptions);
+            page = await createPage(context);
+        }
+
+        const element = await page.locator(selector).textContent();
+        if (!element) {
+            throw new Error(`Shadow DOM element '${selector}' not found`);
+        }
+        return element;
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Failed to interact with shadow DOM: ${err.message}`);
+    } finally {
+        if (!browserContext && browser) {
+            try {
+                await browser.close();
+            } catch (closeError) {
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
+            }
+        }
+    }
+}
+
+// Feature 4: Page Interaction
+/**
+ * Simulates user interactions on a page, with or without an existing session.
+ * @param actions An array of actions to perform (e.g., [{ type: 'click', selector: 'button' }]).
+ * @param browserType The type of browser to launch if no session is provided.
+ * @param launchOptions Optional launch options for the browser.
+ * @param contextOptions Optional options for the browser context.
+ * @param browserContext Optional existing browser context (session). If not provided, a new one is created.
+ * @returns A promise that resolves when all actions are completed.
+ * @throws Error if any action fails.
+ */
+export async function simulateUserInteractions(
+    actions: Array<{ type: string; selector?: string; value?: string }>,
+    browserType: 'chromium' | 'firefox' | 'webkit',
+    launchOptions: LaunchOptions = {},
+    contextOptions: BrowserContextOptions = {},
+    browserContext?: BrowserContext
+): Promise<void> {
+    let browser: Browser | undefined;
+    let context: BrowserContext;
+    let page: Page;
+
+    try {
+        if (browserContext) {
+            context = browserContext;
+            page = await createPage(context);
+        } else {
+            browser = await launchBrowser(browserType, launchOptions);
+            context = await createContext(browser, contextOptions);
+            page = await createPage(context);
+        }
+
+        for (const action of actions) {
+            switch (action.type) {
+                case 'click':
+                    if (!action.selector) {
+                        throw new Error('Selector required for click action');
+                    }
+                    await page.click(action.selector);
+                    break;
+                case 'fill':
+                    if (!action.selector || !action.value) {
+                        throw new Error('Selector and value required for fill action');
+                    }
+                    await page.fill(action.selector, action.value);
+                    break;
+                default:
+                    throw new Error(`Unsupported action type: ${action.type}`);
+            }
+        }
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`User interaction failed: ${err.message}`);
+    } finally {
+        if (!browserContext && browser) {
+            try {
+                await browser.close();
+            } catch (closeError) {
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
             }
         }
     }
@@ -197,22 +327,36 @@ export async function interceptNetworkRequests(
         }
 
         await page.route(urlPattern, handler).catch((error) => {
-            throw new Error(`Failed to set up network interception for pattern '${urlPattern}': ${error.message}`);
+            const err = error as Error;
+            throw new Error(`Failed to set up network interception for pattern '${urlPattern}': ${err.message}`);
         });
     } catch (error) {
-        throw new Error(`Network interception failed: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Network interception failed: ${err.message}`);
     } finally {
         if (!browserContext && browser) {
             try {
                 await browser.close();
             } catch (closeError) {
-                console.warn(`Failed to close browser: ${closeError.message}`);
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
             }
         }
     }
 }
 
-
+// Feature: Device Emulation
+/**
+ * Emulates a device and navigates to a URL, with or without an existing session.
+ * @param deviceName The name of the device to emulate (e.g., 'iPhone 12').
+ * @param url The URL to navigate to.
+ * @param browserType The type of browser to launch if no session is provided.
+ * @param launchOptions Optional launch options for the browser.
+ * @param contextOptions Optional options for the browser context.
+ * @param browserContext Optional existing browser context (session).
+ * @returns A promise that resolves to the page content.
+ * @throws Error with specific message if emulation or navigation fails.
+ */
 export async function emulateDevice(
     deviceName: string,
     url: string,
@@ -227,8 +371,10 @@ export async function emulateDevice(
 
     try {
         const device = playwright.devices[deviceName];
-        if (!device) throw new Error(`Device '${deviceName}' not found in Playwright device list`);
-        
+        if (!device) {
+            throw new Error(`Device '${deviceName}' not found in Playwright device list`);
+        }
+
         if (browserContext) {
             context = browserContext;
         } else {
@@ -237,146 +383,49 @@ export async function emulateDevice(
         }
         page = await createPage(context);
 
-        await page.goto(url, { waitUntil: 'load' }).catch((error: TimeoutError | Error) => {
-            if (error instanceof TimeoutError) {
-                throw new Error(`Navigation timeout for ${url} on ${deviceName}: ${error.message}`);
+        await page.goto(url, { waitUntil: 'load' }).catch((error) => {
+            const err = error as Error;
+            if (err.message.includes('Timeout')) {
+                throw new Error(`Navigation timeout for ${url} on ${deviceName}: ${err.message}`);
             }
-            throw new Error(`Navigation failed for ${url} on ${deviceName}: ${error.message}`);
+            throw new Error(`Navigation failed for ${url} on ${deviceName}: ${err.message}`);
         });
 
         const content = await page.content();
-        if (!content) throw new Error(`No content retrieved from ${url} on ${deviceName}`);
+        if (!content) {
+            throw new Error(`No content retrieved from ${url} on ${deviceName}`);
+        }
         return content;
     } catch (error) {
-        throw new Error(`Device emulation failed for ${deviceName}: ${error.message}`);
+        const err = error as Error;
+        throw new Error(`Device emulation failed for ${deviceName}: ${err.message}`);
     } finally {
         if (!browserContext && browser) {
             try {
                 await browser.close();
             } catch (closeError) {
-                console.warn(`Failed to close browser: ${closeError.message}`);
+                const err = closeError as Error;
+                console.warn(`Failed to close browser: ${err.message}`);
             }
         }
     }
 }
-
-// Feature 3: Modern Web Automation (Shadow DOM)
-/**
- * Interacts with shadow DOM elements on a page, with or without an existing session.
- * @param selector The selector for the shadow DOM element.
- * @param browserType The type of browser to launch if no session is provided.
- * @param launchOptions Optional launch options for the browser.
- * @param contextOptions Optional options for the browser context.
- * @param browserContext Optional existing browser context (session). If not provided, a new one is created.
- * @returns A promise that resolves to the text content of the element.
- * @throws Error if element is not found or interaction fails.
- */
-export async function interactWithShadowDom(
-    selector: string,
-    browserType: 'chromium' | 'firefox' | 'webkit',
-    launchOptions: LaunchOptions = {},
-    contextOptions: BrowserContextOptions = {},
-    browserContext?: BrowserContext
-): Promise<string> {
-    let browser: Browser | undefined;
-    let context: BrowserContext;
-    let page: Page;
-
-    try {
-        if (browserContext) {
-            context = browserContext;
-            page = await createPage(context);
-        } else {
-            browser = await launchBrowser(browserType, launchOptions);
-            context = await createContext(browser, contextOptions);
-            page = await createPage(context);
-        }
-
-        const element = await page.locator(selector).textContent();
-        if (!element) throw new Error(`Shadow DOM element '${selector}' not found`);
-        return element;
-    } catch (error) {
-        throw new Error(`Failed to interact with shadow DOM: ${error.message}`);
-    } finally {
-        if (!browserContext && browser) {
-            await browser.close();
-        }
-    }
-}
-
-// Feature 4: Page Interaction
-/**
- * Simulates user interactions on a page, with or without an existing session.
- * @param actions An array of actions to perform (e.g., [{ type: 'click', selector: 'button' }]).
- * @param browserType The type of browser to launch if no session is provided.
- * @param launchOptions Optional launch options for the browser.
- * @param contextOptions Optional options for the browser context.
- * @param browserContext Optional existing browser context (session). If not provided, a new one is created.
- * @returns A promise that resolves when all actions are completed.
- * @throws Error if any action fails.
- */
-export async function simulateUserInteractions(
-    actions: Array<{ type: string; selector?: string; value?: string }>,
-    browserType: 'chromium' | 'firefox' | 'webkit',
-    launchOptions: LaunchOptions = {},
-    contextOptions: BrowserContextOptions = {},
-    browserContext?: BrowserContext
-): Promise<void> {
-    let browser: Browser | undefined;
-    let context: BrowserContext;
-    let page: Page;
-
-    try {
-        if (browserContext) {
-            context = browserContext;
-            page = await createPage(context);
-        } else {
-            browser = await launchBrowser(browserType, launchOptions);
-            context = await createContext(browser, contextOptions);
-            page = await createPage(context);
-        }
-
-        for (const action of actions) {
-            switch (action.type) {
-                case 'click':
-                    if (!action.selector) throw new Error('Selector required for click action');
-                    await page.click(action.selector);
-                    break;
-                case 'fill':
-                    if (!action.selector || !action.value) throw new Error('Selector and value required for fill action');
-                    await page.fill(action.selector, action.value);
-                    break;
-                default:
-                    throw new Error(`Unsupported action type: ${action.type}`);
-            }
-        }
-    } catch (error) {
-        throw new Error(`User interaction failed: ${error.message}`);
-    } finally {
-        if (!browserContext && browser) {
-            await browser.close();
-        }
-    }
-}
-
-// More features can be added similarly...
 
 // Example Usage
-// async function main() {
-//     try {
-//         // Without session
-//         const title = await launchAndNavigate('chromium', 'https://example.com');
-//         console.log('Page title:', title);
+async function main() {
+    try {
+        const title = await launchAndNavigate('chromium', 'https://example.com');
+        console.log('Page title:', title);
 
-//         // With session
-//         const browser = await launchBrowser('chromium');
-//         const context = await createContext(browser);
-//         const sessionTitle = await launchAndNavigate('chromium', 'https://example.com', {}, {}, context);
-//         console.log('Session page title:', sessionTitle);
-//         await browser.close();
-//     } catch (error) {
-//         console.error(`Error: ${error.message}`);
-//     }
-// }
+        const browser = await launchBrowser('chromium');
+        const context = await createContext(browser);
+        const sessionTitle = await launchAndNavigate('chromium', 'https://example.com', {}, {}, context);
+        console.log('Session page title:', sessionTitle);
+        await browser.close();
+    } catch (error) {
+        const err = error as Error;
+        console.error(`Error: ${err.message}`);
+    }
+}
 
-// main();
+main();
