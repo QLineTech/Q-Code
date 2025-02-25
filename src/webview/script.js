@@ -646,6 +646,15 @@ window.addEventListener('message', event => {
                     term.write(message.text + '\r\n');
                 }
                 break;
+            case 'rawHTML':
+                // Expect message.text to be an array of HTML strings
+                if (Array.isArray(message.text)) {
+                    renderedContent = message.text.join('');
+                } else {
+                    // Fallback if not an array
+                    renderedContent = message.text || '';
+                }
+                break;
             default:
                 renderedContent = marked.parse(message.text); // Fallback to Markdown
         }
@@ -663,64 +672,68 @@ window.addEventListener('message', event => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = renderedContent;
 
-        // Process code blocks for Markdown (if applicable)
-        if (message.responseType === 'markdown') {
-            const topLevelPreElements = Array.from(tempDiv.querySelectorAll('pre')).filter(pre => !pre.closest('pre'));
-            topLevelPreElements.forEach(pre => {
-                const codeElement = pre.querySelector('code') || pre.firstChild;
-                if (codeElement && codeElement.tagName === 'CODE') {
-                    let language = 'Code Block';
-                    const classAttr = codeElement.getAttribute('class');
-                    if (classAttr) {
-                        const matches = classAttr.match(/language-(\w+)/);
-                        if (matches) {
-                            language = matches[1];
+        if (message.responseType !== 'rawHTML') {
+            // Process code blocks for Markdown (if applicable)
+            if (message.responseType === 'markdown') {
+                const topLevelPreElements = Array.from(tempDiv.querySelectorAll('pre')).filter(pre => !pre.closest('pre'));
+                topLevelPreElements.forEach(pre => {
+                    const codeElement = pre.querySelector('code') || pre.firstChild;
+                    if (codeElement && codeElement.tagName === 'CODE') {
+                        let language = 'Code Block';
+                        const classAttr = codeElement.getAttribute('class');
+                        if (classAttr) {
+                            const matches = classAttr.match(/language-(\w+)/);
+                            if (matches) {
+                                language = matches[1];
+                            }
                         }
+                        const details = document.createElement('details');
+                        const summary = document.createElement('summary');
+                        summary.textContent = language.charAt(0).toUpperCase() + language.slice(1);
+                        const newPre = document.createElement('pre');
+                        const newCode = document.createElement('code');
+                        newCode.innerHTML = codeElement.innerHTML;
+                        if (language !== 'Code Block') {
+                            newCode.className = `language-${language}`;
+                        }
+                        newPre.appendChild(newCode);
+                        details.appendChild(summary);
+                        details.appendChild(newPre);
+                        pre.replaceWith(details);
                     }
-                    const details = document.createElement('details');
-                    const summary = document.createElement('summary');
-                    summary.textContent = language.charAt(0).toUpperCase() + language.slice(1);
-                    const newPre = document.createElement('pre');
-                    const newCode = document.createElement('code');
-                    newCode.innerHTML = codeElement.innerHTML;
-                    if (language !== 'Code Block') {
-                        newCode.className = `language-${language}`;
-                    }
-                    newPre.appendChild(newCode);
-                    details.appendChild(summary);
-                    details.appendChild(newPre);
-                    pre.replaceWith(details);
-                }
-            });
+                });
+            }
+
+            // Build the chat message HTML
+            chatDisplay.innerHTML += `
+                <div class="mb-2 p-2 rounded-md shadow-sm transition-colors duration-200
+                    ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center">
+                            <i class="fas fa-robot mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-blue-400' : 'text-blue-500'}"></i>
+                            <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Q:</span>
+                        </div>
+                        <button class="copy-btn bg-teal-600 text-white px-2 py-1 rounded text-xs hover:bg-teal-700" data-text="${encodeURIComponent(message.text)}">Copy</button>
+                    </div>
+                    <div class="prose prose-sm max-w-none ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100 prose-invert' : 'text-gray-800'}">
+                        ${tempDiv.innerHTML}
+                    </div>
+                    ${additionalContent}
+                    ${message.context ? `
+                        <div class="mt-2 text-xs border-t pt-1 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}">
+                            <p><strong>Context:</strong> ${message.context.fileName} (${message.context.fileType})</p>
+                            ${message.context.selection ? `
+                                <pre class="mt-1 p-1 rounded border text-xs overflow-auto ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-900 text-gray-200 border-gray-700' : 'bg-white text-gray-700 border-gray-200'}">
+                                    ${message.context.selection}
+                                </pre>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>`;
+        } else {
+            // For rawHTML, append directly without container
+            chatDisplay.innerHTML += renderedContent;
         }
-
-        // Build the chat message HTML
-        chatDisplay.innerHTML += `
-            <div class="mb-2 p-2 rounded-md shadow-sm transition-colors duration-200
-                ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="flex items-center">
-                        <i class="fas fa-robot mr-2 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-blue-400' : 'text-blue-500'}"></i>
-                        <span class="font-medium ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-200' : 'text-gray-700'}">Q:</span>
-                    </div>
-                    <button class="copy-btn bg-teal-600 text-white px-2 py-1 rounded text-xs hover:bg-teal-700" data-text="${encodeURIComponent(message.text)}">Copy</button>
-                </div>
-                <div class="prose prose-sm max-w-none ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-100 prose-invert' : 'text-gray-800'}">
-                    ${tempDiv.innerHTML}
-                </div>
-                ${additionalContent}
-                ${message.context ? `
-                    <div class="mt-2 text-xs border-t pt-1 ${document.body.getAttribute('data-theme') === 'dark' ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'}">
-                        <p><strong>Context:</strong> ${message.context.fileName} (${message.context.fileType})</p>
-                        ${message.context.selection ? `
-                            <pre class="mt-1 p-1 rounded border text-xs overflow-auto ${document.body.getAttribute('data-theme') === 'dark' ? 'bg-gray-900 text-gray-200 border-gray-700' : 'bg-white text-gray-700 border-gray-200'}">
-                                ${message.context.selection}
-                            </pre>
-                        ` : ''}
-                    </div>
-                ` : ''}
-            </div>`;
-
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
         chatHistory.push({
             prompt: message.prompt,
@@ -729,17 +742,18 @@ window.addEventListener('message', event => {
             timestamp: new Date().toISOString(),
             context: message.context
         });
-
-        // Reattach copy button listeners
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = decodeURIComponent(btn.dataset.text);
-                navigator.clipboard.writeText(text).then(() => {
-                    btn.textContent = 'Copied!';
-                    setTimeout(() => btn.textContent = 'Copy', 2000);
+        if (message.responseType !== 'rawHTML') {
+            // Reattach copy button listeners
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = decodeURIComponent(btn.dataset.text);
+                    navigator.clipboard.writeText(text).then(() => {
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => btn.textContent = 'Copy', 2000);
+                    });
                 });
             });
-        });
+        }
 
     } else if (message.type === 'terminalOutput') {
         if (term) {

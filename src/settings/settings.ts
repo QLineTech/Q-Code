@@ -56,6 +56,7 @@ export function getValidSettings(partialSettings: Partial<QCodeSettings> | undef
             folderStructure: false,
             fullRewrite: false,
             includeOpenTabs: false,
+            qmode: "QCode",
             extra: []
         },
         analyzeAIs: ['grok3']

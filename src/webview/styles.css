@@ -319,7 +319,6 @@ body[data-theme="dark"] .qmode-radio:checked + .qmode-label {
     min-height: 2rem; /* 1 row */
     max-height: 10rem; /* 5 rows, assuming 2rem per row */
     overflow-y: auto;
-    background: rgba(255, 255, 255, 0.9); /* Light theme */
     color: black;
     resize: none;
     border:none;
