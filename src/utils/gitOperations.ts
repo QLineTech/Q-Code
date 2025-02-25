@@ -159,4 +159,61 @@ export class GitOperations {
             return undefined; // Silently fail if Git command fails (e.g., no Git installed)
         }
     }
+
+    /**
+     * Checks if the user has Git credentials configured (e.g., a username and email).
+     * @returns Promise resolving to true if credentials are set, false otherwise.
+     */
+    async isUserLoggedInToGit(): Promise<boolean> {
+        try {
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (!workspaceFolders || workspaceFolders.length === 0) {
+                return false;
+            }
+            const repoRoot = workspaceFolders[0].uri.fsPath;
+
+            // Check if Git is initialized and user config exists
+            const { stdout: userName } = await this.execPromise('git config --get user.name', { cwd: repoRoot });
+            const { stdout: userEmail } = await this.execPromise('git config --get user.email', { cwd: repoRoot });
+
+            return !!(userName.trim() && userEmail.trim());
+        } catch (error: unknown) {
+            // If Git commands fail (e.g., no Git repo or Git not installed), assume not logged in
+            return false;
+        }
+    }
+
+    /**
+     * Collects Git user information if credentials are configured.
+     * @returns Promise resolving to an object with username and email, or undefined if not logged in.
+     */
+    async collectGitUserInfo(): Promise<{ username: string; email: string } | undefined> {
+        try {
+            const isLoggedIn = await this.isUserLoggedInToGit();
+            if (!isLoggedIn) {
+                return undefined;
+            }
+
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (!workspaceFolders || workspaceFolders.length === 0) {
+                return undefined;
+            }
+            const repoRoot = workspaceFolders[0].uri.fsPath;
+
+            const { stdout: username } = await this.execPromise('git config --get user.name', { cwd: repoRoot });
+            const { stdout: email } = await this.execPromise('git config --get user.email', { cwd: repoRoot });
+
+            if (username.trim() && email.trim()) {
+                return {
+                    username: username.trim(),
+                    email: email.trim()
+                };
+            }
+            return undefined;
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            vscode.window.showErrorMessage(`Failed to collect Git user info: ${message}`);
+            return undefined;
+        }
+    }
 }

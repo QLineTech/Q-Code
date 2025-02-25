@@ -17,6 +17,9 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
     private _settings: QCodeSettings; // Current settings for the QCode panel
     private _disposables: vscode.Disposable[] = []; // Array of disposable resources to clean up
     private _themeListener?: vscode.Disposable; // Listener for theme change events
+    private _cachedWebviewContent?: string; // Cache the HTML content to restore it
+    private _webviewState: any = {}; // Store dynamic state from the webview (e.g., user input, scroll position)
+
 
     /**
      * Constructs a new QCodePanelProvider instance.
@@ -165,21 +168,44 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
             enableScripts: true,
             localResourceRoots: [vscode.Uri.file(this._context.extensionPath)] // Restrict resource access
         };
-        const panelTheme = this._settings.theme;
-        getWebviewContentFromFile(JSON.stringify(this._settings), this._context, panelTheme)
-            .then(html => {
-                if (this._webviewView && !token.isCancellationRequested) {
-                    this._webviewView.webview.html = html;
-                    const effectiveTheme = this.getEffectiveTheme();
-                    this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
-                }
-            })
-            .catch(error => {
-                console.error('Failed to load webview content:', error);
-                vscode.window.showErrorMessage('Failed to load QCode panel');
-            });
-        webviewView.webview.onDidReceiveMessage(this.handleWebviewMessage.bind(this), undefined, this._disposables);
-        webviewView.onDidDispose(() => this._disposables.forEach(d => d.dispose()), null, this._disposables);
+        
+        if (this._cachedWebviewContent && !token.isCancellationRequested) {
+            webviewView.webview.html = this._cachedWebviewContent;
+            const effectiveTheme = this.getEffectiveTheme();
+            webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
+            webviewView.webview.postMessage({ type: 'restoreState', state: this._webviewState });
+        } else {
+            const panelTheme = this._settings.theme;
+            getWebviewContentFromFile(JSON.stringify(this._settings), this._context, panelTheme)
+                .then(html => {
+                    if (this._webviewView && !token.isCancellationRequested) {
+                        this._webviewView.webview.html = html;
+                        const effectiveTheme = this.getEffectiveTheme();
+                        this._webviewView.webview.postMessage({ type: 'setTheme', theme: effectiveTheme });
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load webview content:', error);
+                    vscode.window.showErrorMessage('Failed to load QCode panel');
+                });
+
+        }
+
+        // Handle messages from the webview
+        const messageListener = webviewView.webview.onDidReceiveMessage(
+            this.handleWebviewMessage.bind(this),
+            undefined,
+            this._disposables
+        );
+
+        // When the view is about to be disposed (e.g., Activity Bar closed), save its state
+        // When the view is about to be disposed (e.g., Activity Bar closed), save its state
+        webviewView.onDidDispose(() => {
+            this._webviewView = undefined; // Clear reference but keep cached content
+            this._disposables.filter(d => d !== messageListener).forEach(d => d.dispose());
+        }, null, this._disposables);
+
+        this._disposables.push(messageListener);
     }
 
     /**
