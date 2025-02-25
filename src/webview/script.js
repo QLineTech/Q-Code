@@ -5,6 +5,8 @@ let isRecording = false;
 let recordingTimer = null;
 let recordingStartTime = null;
 let websocketConnected = false; // Track WebSocket connection status
+// Add QMODE to global state
+let currentQMode = 'QCode'; // Default mode
 
 // Add this function to update recording time display
 function updateRecordingTime() {
@@ -167,6 +169,7 @@ function getSettings() {
             autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
             folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
             fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false,
+            qmode: currentQMode,
             extra: []
         }
     };
@@ -182,7 +185,7 @@ function updateSettings() {
 // Apply theme to the UI
 function applyTheme(theme) {
     const body = document.body;
-    const themeIcon = document.getElementById('theme-icon');
+    const themeIcon = document.getElementById('theme-icon-chat');
     
     body.setAttribute('data-theme', theme);
     body.classList.toggle('dark', theme === 'dark');
@@ -222,6 +225,18 @@ function loadSettings(settings) {
     });
 
     const chatStates = settings.chatStates || {};
+
+    currentQMode = chatStates.qmode || 'QCode';
+    const qmodeRadio = document.getElementById(`qmode-${currentQMode.toLowerCase()}`);
+    if (qmodeRadio) {
+        qmodeRadio.checked = true;
+        const label = qmodeRadio.nextElementSibling;
+        if (label) {
+            label.classList.add('bg-teal-600', 'text-white');
+        }
+    }
+    document.getElementById('current-qmode').textContent = currentQMode;
+
     document.getElementById('attach-related-toggle').checked = chatStates.attachRelated || false;
     document.getElementById('thinking-toggle').checked = chatStates.thinking || false;
     document.getElementById('web-access-toggle').checked = chatStates.webAccess || false;
@@ -289,7 +304,8 @@ function getChatStates() {
             webAccess: document.getElementById('web-access-toggle')?.checked || false,
             autoApply: document.getElementById('auto-apply-toggle')?.checked || false,
             folderStructure: document.getElementById('folder-structure-toggle')?.checked || false,
-            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false
+            fullRewrite: document.getElementById('full-rewrite-toggle')?.checked || false,
+            qmode: currentQMode,
         }
     };
 }
@@ -331,6 +347,34 @@ document.addEventListener('DOMContentLoaded', () => {
     setupChatToggleListeners();
     setupSettingsToggleListeners();
     
+    // QMODE selection with label styling
+    const qmodeRadios = document.querySelectorAll('.qmode-radio');
+    qmodeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentQMode = e.target.value;
+            document.getElementById('current-qmode').textContent = currentQMode;
+            updateSettings();
+
+            // Update label styles
+            document.querySelectorAll('.qmode-label').forEach(label => {
+                label.classList.remove('bg-teal-600', 'text-white');
+            });
+            const activeLabel = e.target.nextElementSibling;
+            if (activeLabel) {
+                activeLabel.classList.add('bg-teal-600', 'text-white');
+            }
+        });
+    });
+
+    // Set initial active label
+    const initialRadio = document.querySelector('.qmode-radio:checked');
+    if (initialRadio) {
+        const initialLabel = initialRadio.nextElementSibling;
+        if (initialLabel) {
+            initialLabel.classList.add('bg-teal-600', 'text-white');
+        }
+    }
+
     let term = null;
     function initializeTerminal() {
         if (!term) {
@@ -366,17 +410,21 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput.style.height = `${Math.min(chatInput.scrollHeight, 10 * 16)}px`; // Cap at 5 rows (assuming 16px per row)
     });
 
-    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+    document.getElementById('theme-toggle-btn-chat').addEventListener('click', () => {
+        
         const currentTheme = document.body.getAttribute('data-theme') || 'system';
+        console.log(currentTheme);
+
         let newTheme;
         if (currentTheme === 'light') {
             newTheme = 'dark';
         } else if (currentTheme === 'dark') {
-            newTheme = 'system';
+            // newTheme = 'system';
+            newTheme = 'light';
         } else {
             newTheme = 'light';
         }
-        
+        console.log(newTheme);
         // Update the theme in settings and UI
         document.getElementById('theme').value = newTheme;
         applyTheme(newTheme);
@@ -451,6 +499,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('export-history').addEventListener('click', () => {
         vscode.postMessage({ type: 'exportChatHistory' });
+    });
+
+    // Toggle TabBar visibility
+    const tabBar = document.querySelector('.tab-navigation');
+    document.getElementById('tab-menu-btn').addEventListener('click', () => {
+        tabBar.classList.toggle('hidden');
     });
 
     

@@ -39,7 +39,7 @@ const copyWebviewAssetsPlugin = {
             try {
                 const webviewSrc = path.join(__dirname, 'src', 'webview');
                 const webviewDest = path.join(__dirname, 'dist', 'webview');
-                const files = ['dashboard.html', 'styles.css', 'script.js', 'icon.png'];
+                const files = ['dashboard.html', 'styles.css', 'script.js'];
 
                 // Ensure destination directory exists
                 await fs.mkdir(webviewDest, { recursive: true });

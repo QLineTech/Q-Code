@@ -211,15 +211,6 @@ html, body { height: 100%; margin: 0; padding: 0; }
 #chat-display { flex-grow: 1; overflow-y: auto; margin-bottom: 0; }
 #chat-form { flex-shrink: 0; margin-top: 1rem; }
 
-
-
-
-body[data-theme="dark"] #chat-input {
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Dark theme */
-}
-
-
-
 textarea[id$="-keys"] {
     white-space: pre; /* Preserves whitespace and only breaks on explicit newlines (Enter) */
     overflow-x: auto; /* Allows horizontal scrolling for long lines */
@@ -252,17 +243,74 @@ textarea[id$="-keys"] {
     height: 60px;
 }
 
+/* QMode radio styling */
+.qmode-radio {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #71717a;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.qmode-radio:checked {
+    border-color: #0d9488;
+    background-color: #0d9488;
+}
+
+.qmode-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+}
+
+.qmode-label {
+    transition: all 0.2s ease;
+}
+
+.qmode-radio:checked + .qmode-label {
+    background-color: #0d9488;
+    color: white;
+    font-weight: bold;
+}
+
+body[data-theme="dark"] .qmode-label {
+    color: #d4d4d8; /* Better visibility in dark mode */
+}
+
+body[data-theme="dark"] .qmode-radio:checked + .qmode-label {
+    background-color: #0f766e; /* Slightly darker teal for dark mode */
+}
+
+/* WebSocket status dot */
+#websocket-status {
+    width: 0.75rem; /* Slightly bigger */
+    height: 0.75rem;
+}
+
 #chat-input {
     height: auto;
     min-height: 2rem; /* 1 row */
     max-height: 10rem; /* 5 rows, assuming 2rem per row */
     resize: vertical; /* Only vertical resizing */
     overflow-y: auto;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.9); /* Light theme */
+    color: black;
+    border:1px solid #181818;
+}
+
+body[data-theme="dark"] #chat-input {
+    border: 1px solid rgba(153, 153, 153, 0.2); /* Dark theme */
+    background: rgba(39, 39, 42, 0.9); /* Dark theme */
+}
+
+.swal-wide {
+    width: 400px !important;
 }
 
 #chat-input:focus {
     outline: none;
-    border-color: #0d9488;
+    /* border-color: #0d9488; */
 }
 
 /* Model box styling */
@@ -285,6 +333,11 @@ details summary {
     outline: none;
     user-select: none;
     padding: 0.5rem 0;
+}
+
+/* Bigger icons */
+.text-xl {
+    font-size: 1.25rem; /* 20px, larger than default */
 }
 
 details summary::-webkit-details-marker {

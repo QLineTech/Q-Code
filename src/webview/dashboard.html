@@ -21,8 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/rxjs@7/dist/bundles/rxjs.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/validator@13/lib/validator.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4/crypto-js.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -40,7 +39,7 @@
         </div>
 
         <!-- Tab Navigation -->
-        <div class="tab-navigation flex border-b border-zinc-200 overflow-x-auto">
+        <div class="tab-navigation flex border-b border-zinc-200 overflow-x-auto hidden">
             <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none active-tab" data-tab="chat">
                 <i class="fas fa-comment hidden"></i>
                 <span>Chat</span>
@@ -74,10 +73,7 @@
                 <span>Actions</span>
             </button>
 
-            <button id="theme-toggle-btn" class="flex-1 py-3 px-4 text-sm font-medium text-zinc-600 hover:bg-zinc-50 focus:outline-none">
-                <i id="theme-icon" class="fas fa-sun"></i>
-                <!-- <span class="ml-1">Theme</span> -->
-            </button>
+            
         </div>
 
         <!-- Tab Content -->
@@ -85,23 +81,21 @@
             <!-- Chat Tab -->
             <div id="chat" class="tab-content active flex flex-col w-full">
                 <div class="flex justify-between items-center py-1 px-2 border-b border-zinc-200/20 w-full">
-                    <a href="https://q-e.io" target="_blank" class="flex items-center">
-                        <svg id="q-icon" class="h-10 w-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <!-- Light theme version (black) -->
-                            <path id="q-icon-light" class="block dark:hidden" fill="#18181b" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                            <!-- Dark theme version (white) -->
-                            <path id="q-icon-dark" class="hidden dark:block" fill="#f4f4f5" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                        </svg>
-                    </a>
+                    <div class="flex items-center space-x-2">    
+                        <a href="https://q-e.io" target="_blank" class="flex items-center">
+                            <img id="q-icon" class="h-10 w-10" src="https://q-e.io/Q-Code/ico.png" alt="QCode Icon">
+                        </a>
+                        <span id="current-qmode" class="text-sm font-medium text-teal-600 dark:text-teal-400">QCode</span>
+                    </div>
                     <div class="flex items-center space-x-1">
-                        <button id="chat-options-toggle" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Chat Options">
-                            <i class="fas fa-cog text-gray-600 dark:text-gray-400"></i>
-                        </button>
-                        <button id="toggle-recording" type="button" class="p-1 rounded-full hover:bg-gray-700 dark:hover:bg-gray-700" title="Toggle Recording">
-                            <i id="mic-icon" class="fas fa-microphone text-teal-600"></i>
-                        </button>
                         <button id="clear-chat-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Clear Chat">
                             <i class="fas fa-trash text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                        <button id="theme-toggle-btn-chat" class="p-1 rounded-full ...">
+                            <i id="theme-icon-chat" class="fas fa-sun text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                        <button id="tab-menu-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Tab Menu">
+                            <i class="fas fa-bars text-gray-600 dark:text-gray-400"></i>
                         </button>
                     </div>
                 </div>
@@ -110,17 +104,60 @@
                 </div>
                 <div id="chat-display" class="prose prose-sm max-w-none flex-1 overflow-auto w-full"></div>
                 <form id="chat-form" class="space-y-1 w-full px-1">
-                    <div class="w-full bg-white dark:bg-gray-700 rounded-lg">
+                    <div class="w-full flex items-center px-2 py-1">
                         <textarea 
                             id="chat-input" 
                             rows="1" 
-                            class="block w-full px-2 py-1 text-base text-gray-800 bg-transparent border border-gray-200/30 dark:border-gray-600/30 rounded-lg focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 resize-y overflow-auto" 
+                            class="flex-1 px-3 py-2 text-base text-gray-800 bg-white dark:bg-gray-700 border-none focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400 resize-y overflow-auto rounded-[28px] shadow-sm" 
                             placeholder="Ask anything..." 
                             required
-                            style="min-height: 2rem; max-height: 10rem;"
+                            style="min-height: 2.5rem; max-height: 10rem;"
                         ></textarea>
+                        <div class="flex items-center space-x-2 ml-2">
+                            <button id="chat-options-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Chat Options">
+                                <i class="fas fa-cog text-gray-600 dark:text-gray-400 text-xl"></i>
+                            </button>
+                            <button id="toggle-recording" type="button" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="Toggle Recording">
+                                <i id="mic-icon" class="fas fa-microphone text-teal-600 text-xl"></i>
+                            </button>
+                            <div id="websocket-status" class="w-3 h-3 rounded-full" title="WebSocket Status"></div>
+                        </div>
                     </div>
                     <div id="chat-options" class="p-1 hidden w-full">
+                        <div class="mb-2">
+                            <p class="text-sm font-medium text-zinc-600 mb-1">QMode</p>
+                            <div class="grid grid-cols-4 gap-2 text-sm text-zinc-600">
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-qcode" value="QCode" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full" checked>
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">QCode</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-qresearcher" value="QResearcher" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">QResearcher</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-qfunc" value="QFunc" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">QFunc</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-qdesign" value="QDesign" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">QDesign</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-q1" value="Q1" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">Q1</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-q2" value="Q2" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">Q2</span>
+                                </label>
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="qmode" id="qmode-q3" value="Q3" class="qmode-radio h-4 w-4 text-teal-600 focus:ring-teal-500 border-zinc-300 rounded-full">
+                                    <span class="font-bold qmode-label px-2 py-1 rounded">Q3</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="faded-divider my-2"></div>
                         <div class="mb-2">
                             <p class="text-sm font-medium text-zinc-600 mb-1">AI Models</p>
                             <div class="grid grid-cols-3 gap-1 text-sm text-zinc-600">
@@ -195,7 +232,7 @@
                 </form>
             </div>
             <!-- Chat History Tab -->
-            <div id="history" class="tab-content">
+            <div id="history" class="tab-content p-5">
                 <h3 class="text-lg font-semibold title-text mb-4">Chat History</h3>
                 <div class="mb-4 flex space-x-2">
                     <button id="clear-history" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Clear History</button>
@@ -208,13 +245,13 @@
                 <div id="terminal-container" class="w-full h-[calc(100%-2rem)]"></div>
             </div>
             <!-- Account Tab -->
-            <div id="account" class="tab-content">
+            <div id="account" class="tab-content  p-5">
                 <h3 class="text-lg font-semibold title-text mb-4">Account</h3>
                 <div id="account-content" class="space-y-4"></div>
             </div>
 
             <!-- Settings Tab -->
-            <div id="settings" class="tab-content">
+            <div id="settings" class="tab-content p-5">
                 <h3 class="text-lg font-semibold title-text mb-4">Settings</h3>
                 <form id="settings-form" class="space-y-6">
 
@@ -616,7 +653,7 @@
                 </form>
             </div>
             <!-- Info Tab -->
-            <div id="info" class="tab-content">
+            <div id="info" class="tab-content  p-5">
                 <h3 class="text-lg font-semibold title-text mb-4">Info</h3>
                 <div id="info-content" class="space-y-4">
                     <div>
@@ -639,7 +676,7 @@
             </div>
 
             <!-- Quick Actions Tab -->
-            <div id="actions" class="tab-content">
+            <div id="actions" class="tab-content  p-5">
                 <h3 class="text-lg font-semibold title-text mb-4">Quick Actions</h3>
                 <div id="actions-list" class="space-y-2">
                     <button class="action-btn w-full text-left px-3 py-2 rounded-md transition-colors" data-tab="chat">Go to Chat</button>
