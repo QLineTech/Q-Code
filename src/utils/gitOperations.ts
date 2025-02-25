@@ -1,4 +1,8 @@
 import * as vscode from 'vscode';
+import * as path from 'path'; // Added missing import
+import * as fs from 'fs/promises';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
 interface GitExtension {
     getAPI(version: number): GitAPI;
@@ -14,10 +18,14 @@ interface GitRepository {
     push(): Promise<void>;
     pull(): Promise<void>;
     reset(value: string): Promise<void>;
+    // Properties below are not guaranteed by public typings; we'll handle dynamically
+    rootUri?: vscode.Uri; // We'll infer from workspace or filesystem
+    state?: { HEAD?: { name?: string } }; // We'll approximate branch info
 }
 
 export class GitOperations {
     private context: vscode.ExtensionContext;
+    private execPromise = promisify(exec); // Moved into class as a private property
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -96,6 +104,59 @@ export class GitOperations {
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             vscode.window.showErrorMessage(`Git pull failed: ${message}`);
+        }
+    }
+
+    /**
+     * Retrieves Git repository information for the current workspace.
+     * @param workspaceFolders Optional array of workspace folders to check for Git repo.
+     * @returns Git info including whether it’s a Git repo, the repo root, and current branch.
+     */
+    async getGitInfo(workspaceFolders?: readonly vscode.WorkspaceFolder[]): Promise<{ isGit: boolean; repoRoot?: string; branch?: string } | undefined> {
+        try {
+            if (!workspaceFolders || workspaceFolders.length === 0) {return { isGit: false };}
+
+            const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git');
+            if (gitExtension && gitExtension.isActive) {
+                const git = gitExtension.exports.getAPI(1);
+                const repo = git.repositories.find(r => workspaceFolders.some(w => w.uri.fsPath === (r as any).rootUri?.fsPath || w.uri.fsPath.startsWith((r as any).rootUri?.fsPath || '')));
+                if (repo) {
+                    const repoRoot = (repo as any).rootUri?.fsPath || workspaceFolders[0].uri.fsPath; // Fallback to workspace root
+                    const branch = (repo as any).state?.HEAD?.name || await this.getBranchFromGitCommand(repoRoot);
+                    return {
+                        isGit: true,
+                        repoRoot,
+                        branch
+                    };
+                }
+            }
+
+            // Fallback: Check for .git directory in workspace root
+            const rootPath = workspaceFolders[0].uri.fsPath;
+            if (await fs.stat(path.join(rootPath, '.git')).then(() => true).catch(() => false)) {
+                const branch = await this.getBranchFromGitCommand(rootPath);
+                return { isGit: true, repoRoot: rootPath, branch };
+            }
+
+            return { isGit: false };
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            vscode.window.showErrorMessage(`Failed to get Git info: ${message}`);
+            return { isGit: false };
+        }
+    }
+
+    /**
+     * Helper to get the current branch using a Git command if API fails.
+     * @param repoRoot Path to the repository root.
+     * @returns Current branch name or undefined if not determinable.
+     */
+    private async getBranchFromGitCommand(repoRoot: string): Promise<string | undefined> {
+        try {
+            const { stdout } = await this.execPromise('git rev-parse --abbrev-ref HEAD', { cwd: repoRoot });
+            return stdout.trim() || undefined;
+        } catch (error) {
+            return undefined; // Silently fail if Git command fails (e.g., no Git installed)
         }
     }
 }

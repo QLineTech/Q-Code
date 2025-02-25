@@ -77,11 +77,7 @@ function sendChat() {
         vscode.postMessage({ 
             type: 'sendChatMessage', 
             text: text, 
-            states: chatStates.states 
-        });
-        console.log({ 
-            type: 'sendChatMessage', 
-            text: text, 
+            history: [],
             states: chatStates.states 
         });
         chatInput.value = '';
@@ -374,7 +370,25 @@ document.addEventListener('DOMContentLoaded', () => {
     qmodeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             currentQMode = e.target.value;
+            // Define icon mappings for specific QModes (using Font Awesome classes or Unicode)
+            const qModeIcons = {
+                'QCyber': '<i class="fas fa-shield-alt"></i> QCyber',        // Shield for cybersecurity
+                'QAnalyzer': '<i class="fas fa-chart-bar"></i> QAnalyzer',   // Chart for analysis
+                'QLawyer': '<i class="fas fa-gavel"></i> QLawyer',           // Gavel for legal
+                'QDesign': '<i class="fas fa-paint-brush"></i> QDesign',     // Brush for design
+                'QFunc': '<i class="fas fa-cogs"></i> QFunc',                // Cogs for functionality
+                'QResearcher': '<i class="fas fa-search"></i> QResearcher',  // Magnifier for research
+                'QCode': '<i class="fas fa-code"></i> QCode'                 // Code symbol for coding
+            };
+
+            // Check if the currentQMode has a defined icon
+            if (qModeIcons[currentQMode]) {
+                qModeElement.innerHTML = qModeIcons[currentQMode]; // Use innerHTML to render the icon + text
+            } else {
+                qModeElement.textContent = currentQMode; // Fallback to plain text for other values
+            }
             document.getElementById('current-qmode').textContent = currentQMode;
+            
             updateSettings();
 
             // Update label styles

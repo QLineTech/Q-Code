@@ -5,6 +5,7 @@ import { readFile } from '../utils/file';
 import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType, ChatStates } from '../types/types';
 import { EngineHandler } from '../engine';
 import { getValidSettings } from '../settings/settings';
+import { logger } from '../utils/logger';
 
 async function detectProjectType(
     editorContext: EditorContext | null,
@@ -162,6 +163,7 @@ export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
     provider: QCodePanelProvider,
+    ...additionalArgs: any[] // Optional additional arguments like states, files, etc.
 ) {
     try {
         const editor = vscode.window.activeTextEditor;
@@ -171,6 +173,48 @@ export async function sendChatMessage(
             name: folder.name, 
             path: folder.uri.fsPath 
         })) : [];
+        console.log('here in back');
+        logger.info('QCode Prompt came');
+
+        let messageParams: {
+            type?: string;
+            states?: {
+                attachRelated: boolean;
+                thinking: boolean;
+                webAccess: boolean;
+                autoApply: boolean;
+                folderStructure: boolean;
+                fullRewrite: boolean;
+                qmode: string;
+            };
+            history?: any[];
+            [key: string]: any; // Allow for additional properties
+        } = {};
+
+        // Check if additionalArgs exists and has content
+        if (additionalArgs.length > 0) {
+            // Loop through all additional arguments
+            additionalArgs.forEach((arg, index) => {
+                if (arg && typeof arg === 'object') {
+                    // Merge the argument into messageParams
+                    messageParams = { ...messageParams, ...arg };
+                    console.log(`Argument ${index}:`, arg);
+                } else {
+                    console.log(`Argument ${index} is not an object or is undefined:`, arg);
+                }
+            });
+        }
+
+        // Extract states (if present) with defaults
+        const states = messageParams.states || {
+            attachRelated: false,
+            thinking: false,
+            webAccess: false,
+            autoApply: false,
+            folderStructure: false,
+            fullRewrite: false,
+            qmode: 'default' // Default qmode if not provided
+        };
 
         if (editor) {
             const document = editor.document;
@@ -216,51 +260,52 @@ export async function sendChatMessage(
 
         }
 
+        return;
+
+        // const settings = getValidSettings(context.globalState.get('qcode.settings'));
+        // const activeModels = Object.entries(settings.aiModels)
+        //     .filter(([_, config]) => config.active)
+        //     .map(([model]) => model);
         
-        const settings = getValidSettings(context.globalState.get('qcode.settings'));
-        const activeModels = Object.entries(settings.aiModels)
-            .filter(([_, config]) => config.active)
-            .map(([model]) => model);
+        // let responseText = 'No active AI models configured.';
+        // let rawResponse: any = null;
+        // let providerUsed: string | undefined;
+
+        // provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
+
+
+        // if (activeModels.length > 0 && editorContext) {
+        //     const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
+        //     responseText = result;
+        //     console.log(responseText);
+        // } else if (!editorContext) {
+        //     responseText = 'No editor context available.';
+        // }
+
+        // provider.sendMessage({
+        //     type: 'chatResponse',
+        //     text: responseText,
+        //     responseType: 'markdown',
+        //     progress: 100,
+        //     complete: true,
+        //     context: editorContext,
+        //     prompt: text
         
-        let responseText = 'No active AI models configured.';
-        let rawResponse: any = null;
-        let providerUsed: string | undefined;
+        // });
 
-        provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
+        // const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
 
-
-        if (activeModels.length > 0 && editorContext) {
-            const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
-            responseText = result;
-            console.log(responseText);
-        } else if (!editorContext) {
-            responseText = 'No editor context available.';
-        }
-
-        provider.sendMessage({
-            type: 'chatResponse',
-            text: responseText,
-            responseType: 'markdown',
-            progress: 100,
-            complete: true,
-            context: editorContext,
-            prompt: text
-        
-        });
-
-        const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
-
-        const newEntry: ChatHistoryEntry = {
-            id: Date.now().toString(),
-            prompt: text,
-            response: responseText,
-            rawResponse, // Store the raw response
-            timestamp: new Date().toISOString(),
-            context: editorContext,
-            provider: providerUsed // Store the provider used
-        };
-        chatHistory.push(newEntry);
-        await context.globalState.update('qcode.chatHistory', chatHistory);
+        // const newEntry: ChatHistoryEntry = {
+        //     id: Date.now().toString(),
+        //     prompt: text,
+        //     response: responseText,
+        //     rawResponse, // Store the raw response
+        //     timestamp: new Date().toISOString(),
+        //     context: editorContext,
+        //     provider: providerUsed // Store the provider used
+        // };
+        // chatHistory.push(newEntry);
+        // await context.globalState.update('qcode.chatHistory', chatHistory);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         provider.sendMessage({ type: 'chatError', text: `Error: ${message}` });

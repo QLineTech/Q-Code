@@ -25,8 +25,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.window.registerWebviewViewProvider('qcode-view', provider));
     vscode.commands.executeCommand('qcode-view.focus');
     context.subscriptions.push(
-        vscode.commands.registerCommand('qcode.sendChatMessage', (text: string, states: any ) => {
-            sendChatMessage(text, context, provider);
+        vscode.commands.registerCommand('qcode.sendChatMessage', (...args: any[]) => {
+            sendChatMessage(args[0], context, provider, ...args.slice(1));
         }),
         vscode.commands.registerCommand('qcode.getChatHistory', () => getChatHistory(context, provider)),
         vscode.commands.registerCommand('qcode.removeChatEntry', (id: string) => removeChatEntry(context, provider, id)),
