@@ -73,12 +73,17 @@ function sendChat() {
             `;
 
         chatDisplay.scrollTop = chatDisplay.scrollHeight;
-
+        console.log({ 
+            type: 'sendChatMessage', 
+            text: text, 
+            states: chatStates.states,
+            history: [],
+        });
         vscode.postMessage({ 
             type: 'sendChatMessage', 
             text: text, 
+            states: chatStates.states,
             history: [],
-            states: chatStates.states 
         });
         chatInput.value = '';
     }

@@ -8,6 +8,7 @@ import { getValidSettings } from '../settings/settings';
 import { logger } from '../utils/logger';
 import { populateEditorContext } from '../frameworks/editorContext';
 import { TrafficSwitch } from '../frameworks/trafficSwitch';
+import { GitOperations } from '../utils/gitOperations';
 
 async function detectProjectType(
     editorContext: EditorContext | null,
@@ -161,6 +162,7 @@ async function detectProjectType(
     }
 }
 
+
 export async function sendChatMessage(
     text: string, 
     context: vscode.ExtensionContext, 
@@ -263,8 +265,9 @@ export async function sendChatMessage(
             console.log(`Sending message with context from file: ${editorContext.fileName}`);
             // Add your provider-specific logic here using editorContext
         }
-        const settings = getValidSettings(context.globalState.get('qcode.settings'));
-        
+
+
+
         // MAIN SWITCH
         const trafficSwitch = new TrafficSwitch(
             text,

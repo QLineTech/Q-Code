@@ -510,6 +510,18 @@ export class QCodeAIProvider {
     }
 }
 
+
+export async function queryAI2(
+    prompt: string,
+    context: ExtensionContext,
+    provider: keyof QCodeSettings['aiModels'] = 'grok3'
+): Promise<{ result:string; raw: any; cost: { sum: number; inputCost: number; outputCost: number } }> {
+    const aiProvider = new QCodeAIProvider(context);
+    const result = await aiProvider.queryAI(prompt, provider);
+    // const changes = parseGitDiffResponse(result.text);
+    return { result: result.text, raw: result.raw, cost: result.cost };
+}
+
 export async function queryAI(
     prompt: string,
     context: ExtensionContext,

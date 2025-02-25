@@ -1,11 +1,63 @@
 // /src/frameworks/trafficSwitch.ts
+import * as vscode from 'vscode';
 import { QCodePanelProvider } from '../webview/webview';
-import { EditorContext, ChatStates } from '../types/types';
+import { EditorContext, ChatStates, AIModels } from '../types/types';
 import { logger } from '../utils/logger';
 import { MediaGenerator } from './html/media';
 import { generateStepper } from './html/stepper';
 import { generateToast } from './html/toast';
 import { TextGenerator } from './html/typography';
+import { generateTableHTML } from './html/table';
+import { GitOperations } from '../utils/gitOperations';
+import { getValidSettings } from '../settings/settings';
+import { queryAI, queryAI2 } from '../ai/ai';
+
+
+
+async function checkGitUserStatus(context: vscode.ExtensionContext) {
+    // Create an instance of GitOperations
+    const gitOps = new GitOperations(context);
+
+    try {
+        // Check if user is logged in to Git
+        const isLoggedIn = await gitOps.isUserLoggedInToGit();
+        
+        // Variable to store user info (will be undefined if not logged in)
+        let gitUserInfo: { username: string; email: string } | undefined;
+
+        if (isLoggedIn) {
+            // Get user info if logged in
+            gitUserInfo = await gitOps.collectGitUserInfo();
+            
+            if (gitUserInfo) {
+                // console.log(`Git User: ${gitUserInfo.username} <${gitUserInfo.email}>`);
+                // vscode.window.showInformationMessage(
+                //     `Git User: ${gitUserInfo.username} <${gitUserInfo.email}>`
+                // );
+            } else {
+                // console.log('User is logged in but no credentials found');
+                // vscode.window.showWarningMessage('Git credentials not fully configured');
+            }
+        } else {
+            // console.log('No Git user logged in or no Git repository found');
+            // vscode.window.showInformationMessage(
+            //     'No Git user logged in or no Git repository detected'
+            // );
+        }
+
+        // Now you can use isLoggedIn and gitUserInfo in your code
+        // For example:
+        return {
+            isLoggedIn,
+            user: gitUserInfo
+        };
+
+    } catch (error) {
+        console.error('Error checking Git user status:', error);
+        vscode.window.showErrorMessage('Failed to check Git user status');
+        throw error;
+    }
+}
 
 export class TrafficSwitch {
   private text: string;
@@ -31,11 +83,32 @@ export class TrafficSwitch {
     this.additionalArgs = additionalArgs;
   }
 
+  
+
   // Main method to handle traffic (you can implement your logic here)
   public async handleTraffic(): Promise<void> {
     logger.info(`TrafficSwitch handling message: "${this.text}"`);
     // Add your routing logic here (e.g., to AI models, web search, etc.)
     // For now, we'll just call the test method
+    const settings = getValidSettings(this.context.globalState.get('qcode.settings'));
+
+    const userGitAccount = await checkGitUserStatus(this.context);
+    const resultJson = JSON.stringify(userGitAccount, null, 2); 
+
+    this.provider.sendMessage({
+      type: 'chatResponse',
+      text: "```json\n" + resultJson + "\n```",
+      responseType: 'markdown',
+      prompt: "USER GIT INFO",
+      context: {
+        fileName: 'account',
+        fileType: 'git',
+        selection: 'git account',
+      },
+      progress: 100, // Mark as complete
+      complete: true,
+    });
+    
 
     switch(this.states.qmode) {
       case("QCode"):
@@ -60,20 +133,70 @@ export class TrafficSwitch {
 
       break;
       default: 
-        return;
+        // return;
     }
-    await this.sendTestMessages();
+
+    const activeModels = Object.entries(settings.aiModels)
+        .filter(([_, config]) => config.active)
+        .map(([model]) => model);
+    
+    let responseText = 'No active AI models configured.';
+    let rawResponse: any = null;
+    let providerUsed: string | undefined;
+
+
+    this.provider.sendMessage({ type: 'chatContext', context: this.editorContext, prompt: this.text });
+
+    let response = '';
+    if (activeModels.length > 0 && this.editorContext) {
+        const activeAI = activeModels[0]; 
+        const aiResult = await queryAI2(this.text, this.context, activeAI as keyof AIModels);
+        
+        response += '\n--------\n';
+        response += '| Description  | Amount         |\n';
+        response += '|--------------|----------------|\n';
+        response += `| Total Cost   | $${aiResult.cost.sum.toFixed(6)} |\n`;
+        response += `| Input Cost   | $${aiResult.cost.inputCost.toFixed(6)} |\n`;
+        response += `| Output Cost  | $${aiResult.cost.outputCost.toFixed(6)} |\n`;
+        response += '\n--------\n';
+
+        this.provider.sendMessage({
+          type: 'chatResponse',
+          text: response,
+          responseType: "markdown",
+          prompt: "Cost Report",
+          context: "Demo",
+          progress: 100, // Mark as complete
+          complete: true,
+        });
+        this.provider.sendMessage({
+          type: 'chatResponse',
+          text: aiResult.result,
+          responseType: "markdown",
+          prompt: this.text,
+          context: "Demo",
+          progress: 100, // Mark as complete
+          complete: true,
+        });
+
+    } else if (!this.editorContext) {
+        responseText = 'No editor context available.';
+    }
+
+
+    
+    // await this.sendTestMessages();
   }
 
+  
   // Test method to send all supported message types to the UI
-private async sendTestMessages(): Promise<void> {
+  private async sendTestMessages(): Promise<void> {
     const sampleContext = this.editorContext || {
       fileName: 'example.ts',
       fileType: 'typescript',
       selection: 'console.log("Hello");',
     };
   
-    // 40 sample messages across all supported responseTypes
     const testMessages = [
       // Markdown (10 examples)
       {
@@ -633,11 +756,195 @@ private async sendTestMessages(): Promise<void> {
         prompt: 'Display a paragraph with blockquote',
         context: sampleContext,
       },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'default',
+          columns: [
+            { header: 'Item', key: 'item' },
+            { header: 'Quantity', key: 'quantity' },
+            { header: 'Price', key: 'price' },
+          ],
+          data: [
+            { item: 'Pen', quantity: 10, price: '$5' },
+            { item: 'Notebook', quantity: 5, price: '$10' },
+          ],
+        }),
+        prompt: 'Show a basic default table',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'stripped-row',
+          columns: [
+            { header: 'Name', key: 'name' },
+            { header: 'Status', key: 'status' },
+          ],
+          data: [
+            { name: 'Task 1', status: 'Completed' },
+            { name: 'Task 2', status: 'Pending' },
+          ],
+          hasShadow: true,
+        }),
+        prompt: 'Display a stripped-row table with shadow',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'sortable',
+          columns: [
+            { header: 'Product', key: 'product', sortable: true },
+            { header: 'Price', key: 'price', sortable: true },
+          ],
+          data: [
+            { product: 'Laptop', price: '$999' },
+            { product: 'Phone', price: '$499' },
+          ],
+          rounded: true,
+        }),
+        prompt: 'Show a sortable table with rounded corners',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'foot-included',
+          columns: [
+            { header: 'Expense', key: 'expense' },
+            { header: 'Amount', key: 'amount' },
+          ],
+          data: [
+            { expense: 'Travel', amount: '$200' },
+            { expense: 'Food', amount: '$50' },
+          ],
+          footer: { expense: 'Total', amount: '$250' },
+        }),
+        prompt: 'Display a table with footer',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'checkbox-list',
+          columns: [
+            { header: 'Task', key: 'task' },
+            { header: 'Due Date', key: 'due' },
+          ],
+          data: [
+            { task: 'Design', due: '2025-03-01' },
+            { task: 'Code', due: '2025-03-05' },
+          ],
+          checkboxes: true,
+          hasShadow: true,
+        }),
+        prompt: 'Show a checkbox-list table with shadow',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'users',
+          columns: [
+            { header: 'User', key: 'user' },
+            { header: 'Role', key: 'role' },
+          ],
+          data: [
+            { user: { image: '/img/user1.jpg', text: 'Alice', email: 'alice@example.com' }, role: 'Developer' },
+            { user: { image: '/img/user2.jpg', text: 'Bob', email: 'bob@example.com' }, role: 'Designer' },
+          ],
+          search: true,
+          actions: [{ label: 'Edit', href: '#' }],
+        }),
+        prompt: 'Display a users table with search and actions',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'horizontal-overflow',
+          columns: [
+            { header: 'Col1', key: 'c1' },
+            { header: 'Col2', key: 'c2' },
+            { header: 'Col3', key: 'c3' },
+            { header: 'Col4', key: 'c4' },
+            { header: 'Col5', key: 'c5' },
+          ],
+          data: [
+            { c1: 'A', c2: 'B', c3: 'C', c4: 'D', c5: 'E' },
+          ],
+          overflowX: true,
+        }),
+        prompt: 'Show a table with horizontal overflow',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'comparison',
+          columns: [
+            { header: 'Feature', key: 'feature' },
+            { header: 'Basic', key: 'basic' },
+            { header: 'Pro', key: 'pro' },
+          ],
+          data: [
+            { feature: 'Support', basic: true, pro: true },
+            { feature: 'Analytics', basic: false, pro: true },
+          ],
+        }),
+        prompt: 'Display a comparison table',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'modal',
+          columns: [
+            { header: 'Item', key: 'item' },
+            { header: 'Stock', key: 'stock' },
+          ],
+          data: [
+            { item: 'Chair', stock: 15 },
+            { item: 'Table', stock: 8 },
+          ],
+          actions: [{ label: 'Edit', href: '#modal' }],
+          search: true,
+          rounded: true,
+        }),
+        prompt: 'Show a table with modal action and search',
+        context: sampleContext,
+      },
+      {
+        responseType: 'rawHTML',
+        text: generateTableHTML({
+          type: 'stripped-column',
+          columns: [
+            { header: 'Project', key: 'project' },
+            { header: 'Progress', key: 'progress' },
+          ],
+          data: [
+            { project: 'App', progress: '80%' },
+            { project: 'Website', progress: '60%' },
+          ],
+          hasShadow: true,
+          checkboxes: true,
+        }),
+        prompt: 'Display a stripped-column table with checkboxes',
+        context: sampleContext,
+      },
     ];
-  
-    // Send each test message to the UI with random delay
-    for (const msg of testMessages) {
-      this.provider.sendMessage({ // Changed from sendMessage to postMessage to match typical VSCode webview API
+    // Randomly determine how many messages to send (between 5 and 10)
+    const messageCount = Math.floor(Math.random() * (10 - 5 + 1)) + 5;
+
+    // Send random messages
+    for (let i = 0; i < messageCount; i++) {
+      // Pick a random message from testMessages
+      const randomIndex = Math.floor(Math.random() * testMessages.length);
+      const msg = testMessages[randomIndex];
+
+      // Send the randomly selected message to the UI
+      this.provider.sendMessage({
         type: 'chatResponse',
         text: msg.text,
         responseType: msg.responseType,
@@ -647,6 +954,7 @@ private async sendTestMessages(): Promise<void> {
         complete: true,
       });
       logger.info(`Sent test message with responseType: ${msg.responseType}`);
+
       // Random delay between 0.2s (200ms) and 2s (2000ms)
       const delay = Math.floor(Math.random() * (2000 - 200) + 200);
       await new Promise(resolve => setTimeout(resolve, delay));

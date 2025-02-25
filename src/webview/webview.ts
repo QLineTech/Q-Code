@@ -106,7 +106,7 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
     private async handleWebviewMessage(message: any) {
         switch (message.type) {
             case 'sendChatMessage':
-                await vscode.commands.executeCommand('qcode.sendChatMessage', message.text);
+                await vscode.commands.executeCommand('qcode.sendChatMessage', message);
                 break;
             case 'terminalInput':
                 await vscode.commands.executeCommand('qcode.terminalInput', message.data);
