@@ -66,11 +66,11 @@ class Logger {
     public error(message: string, error?: Error): void {
         const formattedMessage = this.formatMessage(LogLevel.ERROR, message);
         this.outputChannel.appendLine(formattedMessage);
-        
+
         if (error?.stack) {
             this.outputChannel.appendLine(error.stack);
         }
-        
+
         // Show error notification to user
         vscode.window.showErrorMessage(message);
     }

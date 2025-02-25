@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { EditorContext } from '../types/editor';
+import { EditorContext } from '../types/editorContext';
 import { GitOperations } from '../utils/gitOperations';
 import { Diagnostics } from '../utils/diagnostics';
 import { logger } from '../utils/logger';

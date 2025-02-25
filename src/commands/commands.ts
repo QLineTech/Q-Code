@@ -6,6 +6,7 @@ import { EditorContext, ChatHistoryEntry, QCodeSettings, ProjectType, ChatStates
 import { EngineHandler } from '../engine';
 import { getValidSettings } from '../settings/settings';
 import { logger } from '../utils/logger';
+import { populateEditorContext } from '../frameworks/editorContext';
 
 async function detectProjectType(
     editorContext: EditorContext | null,
@@ -68,7 +69,7 @@ async function detectProjectType(
             if (await fileExists(`${folderPath}/pubspec.yaml`)) {
                 indicators.push('pubspec.yaml found');
                 const flutterConfig = await fileExists(`${folderPath}/lib/main.dart`);
-                if (flutterConfig) indicators.push('main.dart found');
+                if (flutterConfig) {indicators.push('main.dart found');}
                 if (projectType.type === 'flutter' || projectType.type === 'unknown') {
                     projectType = { 
                         type: 'flutter', 
@@ -100,7 +101,7 @@ async function detectProjectType(
                 await fileExists(`${folderPath}/Pipfile`)) {
                 indicators.push('Python project files found');
                 const pyMainExists = await fileExists(`${folderPath}/main.py`);
-                if (pyMainExists) indicators.push('main.py found');
+                if (pyMainExists) {indicators.push('main.py found');}
                 if (projectType.type === 'python' || projectType.type === 'unknown') {
                     projectType = { 
                         type: 'python', 
@@ -124,7 +125,7 @@ async function detectProjectType(
                 if (isVsCodeExtension) {
                     indicators.push('VS Code extension indicators found');
                     const hasDist = await fileExists(`${folderPath}/dist/extension.js`);
-                    if (hasDist) indicators.push('dist/extension.js found');
+                    if (hasDist) {indicators.push('dist/extension.js found');}
                     projectType = { 
                         type: 'vscode-extension', 
                         confidence: hasDist ? 0.98 : 0.95, 
@@ -134,7 +135,7 @@ async function detectProjectType(
                     indicators.push('React detected in dependencies');
                     const reactAppExists = await fileExists(`${folderPath}/src/index.js`) || 
                                         await fileExists(`${folderPath}/src/index.tsx`);
-                    if (reactAppExists) indicators.push('React entry point found');
+                    if (reactAppExists) {indicators.push('React entry point found');}
                     projectType = { 
                         type: 'react', 
                         confidence: reactAppExists ? 0.98 : 0.95, 
@@ -216,96 +217,92 @@ export async function sendChatMessage(
             qmode: 'default' // Default qmode if not provided
         };
 
-        if (editor) {
-            const document = editor.document;
-            const selection = editor.selection;
-
-         
-            const openEditors = vscode.window.visibleTextEditors;
-
-            editorContext = {
-                fileName: path.basename(document.fileName),
-                fileType: document.languageId,
-                content: document.getText(),
-                selection: selection.isEmpty ? null : {
-                    text: document.getText(selection),
-                    startLine: selection.start.line + 1,
-                    endLine: selection.end.line + 1,
-                    startCharacter: selection.start.character,
-                    endCharacter: selection.end.character
-                },
-                filePath: document.fileName,
-                cursorPosition: { 
-                    line: selection.active.line + 1, 
-                    character: selection.active.character 
-                },
-                isDirty: document.isDirty,
-                project: { 
-                    workspaceName: vscode.workspace.name || 'Unnamed Workspace', 
-                    directories: projectInfo,
-                    type: await detectProjectType(editorContext, workspaceFolders)
-                }, 
-                openTabs: openEditors.map((editor) => {
-                    const document = editor.document; // Corrected property name
-                    return {
-                        fileName: path.basename(document.fileName),
-                        fileType: document.languageId,
-                        content: document.getText(),
-                        filePath: document.fileName,
-                        isDirty: document.isDirty
-                    };
-                }),
-            };
-
-
+        if (workspaceFolders || editor) {
+            try {
+                // Using populateEditorContext from src/frameworks/editorContext.ts
+                editorContext = await populateEditorContext(context);
+                logger.info('EditorContext successfully populated for sendChatMessage');
+                
+                // Enhance project type detection using frameworkHelper if needed
+                if (editorContext && workspaceFolders) {
+                    const enhancedProjectType = await detectProjectType(editorContext, workspaceFolders);
+                    editorContext.project.type = enhancedProjectType;
+                    logger.info(`Project type refined to ${enhancedProjectType.type} with confidence ${enhancedProjectType.confidence}`);
+                }
+            } catch (error) {
+                logger.error(`Failed to populate EditorContext: ${error instanceof Error ? error.message : String(error)}`);
+                // Fallback to minimal context if full population fails
+                editorContext = {
+                    fileName: editor?.document.fileName ? path.basename(editor.document.fileName) : '',
+                    fileType: editor?.document.languageId || 'unknown',
+                    content: editor?.document.getText() || '',
+                    selection: null,
+                    filePath: editor?.document.fileName || '',
+                    cursorPosition: editor ? { 
+                        line: editor.selection.active.line + 1, 
+                        character: editor.selection.active.character 
+                    } : { line: 1, character: 0 },
+                    isDirty: editor?.document.isDirty || false,
+                    project: {
+                        workspaceName: vscode.workspace.name || 'Unnamed Workspace',
+                        directories: projectInfo,
+                        type: { type: 'unknown', confidence: 0, indicators: [] }
+                    },
+                    openTabs: []
+                };
+            }
+        } else {
+            logger.info('No workspace or editor open, proceeding with null EditorContext');
         }
 
-        return;
-
-        // const settings = getValidSettings(context.globalState.get('qcode.settings'));
-        // const activeModels = Object.entries(settings.aiModels)
-        //     .filter(([_, config]) => config.active)
-        //     .map(([model]) => model);
+        if (editorContext) {
+            console.log(`Sending message with context from file: ${editorContext.fileName}`);
+            // Add your provider-specific logic here using editorContext
+        }
+        const settings = getValidSettings(context.globalState.get('qcode.settings'));
+        const activeModels = Object.entries(settings.aiModels)
+            .filter(([_, config]) => config.active)
+            .map(([model]) => model);
         
-        // let responseText = 'No active AI models configured.';
-        // let rawResponse: any = null;
-        // let providerUsed: string | undefined;
+        let responseText = 'No active AI models configured.';
+        let rawResponse: any = null;
+        let providerUsed: string | undefined;
 
-        // provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
+        provider.sendMessage({ type: 'chatContext', context: editorContext, prompt: text });
 
 
-        // if (activeModels.length > 0 && editorContext) {
-        //     const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
-        //     responseText = result;
-        //     console.log(responseText);
-        // } else if (!editorContext) {
-        //     responseText = 'No editor context available.';
-        // }
+        if (activeModels.length > 0 && editorContext) {
+            const result = await EngineHandler.processPrompt(text, editorContext, context, provider);
+            responseText = result;
+            console.log(responseText);
+        } else if (!editorContext) {
+            responseText = 'No editor context available.';
+        }
 
-        // provider.sendMessage({
-        //     type: 'chatResponse',
-        //     text: responseText,
-        //     responseType: 'markdown',
-        //     progress: 100,
-        //     complete: true,
-        //     context: editorContext,
-        //     prompt: text
+        provider.sendMessage({
+            type: 'chatResponse',
+            text: responseText,
+            responseType: 'markdown',
+            progress: 100,
+            complete: true,
+            context: editorContext,
+            prompt: text
         
-        // });
+        });
 
-        // const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
+        const chatHistory: ChatHistoryEntry[] = context.globalState.get('qcode.chatHistory', []);
 
-        // const newEntry: ChatHistoryEntry = {
-        //     id: Date.now().toString(),
-        //     prompt: text,
-        //     response: responseText,
-        //     rawResponse, // Store the raw response
-        //     timestamp: new Date().toISOString(),
-        //     context: editorContext,
-        //     provider: providerUsed // Store the provider used
-        // };
-        // chatHistory.push(newEntry);
-        // await context.globalState.update('qcode.chatHistory', chatHistory);
+        const newEntry: ChatHistoryEntry = {
+            id: Date.now().toString(),
+            prompt: text,
+            response: responseText,
+            rawResponse, // Store the raw response
+            timestamp: new Date().toISOString(),
+            context: editorContext,
+            provider: providerUsed // Store the provider used
+        };
+        chatHistory.push(newEntry);
+        await context.globalState.update('qcode.chatHistory', chatHistory);
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         provider.sendMessage({ type: 'chatError', text: `Error: ${message}` });

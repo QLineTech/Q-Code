@@ -1,5 +1,5 @@
 // src/types/ai.ts
-import { EditorContext } from './editor';
+import { EditorContext } from './editorContext';
 import { ChatStates } from './chat';
 import { FrameworkConfig } from './project';
 import { Pricing, RateLimits } from './utils';

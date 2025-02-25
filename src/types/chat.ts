@@ -1,5 +1,5 @@
 // src/types/chat.ts
-import { EditorContext } from './editor';
+import { EditorContext } from './editorContext';
 
 export interface ChatStates {
     attachRelated: boolean;          // Attach related context
