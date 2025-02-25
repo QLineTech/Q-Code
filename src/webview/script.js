@@ -481,8 +481,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('toggle-recording').addEventListener('click', () => {
         if (document.getElementById('toggle-recording').disabled) {
+            vscode.postMessage('getWebSocketStatus');
             return;
         }
+        const micIcon = document.getElementById('mic-icon');
+        micIcon.classList.remove('fa-microphone-slash');
+        micIcon.classList.add('fa-microphone');
+
         if (!isRecording) {
             vscode.postMessage({ type: 'startRecording' });
             startRecordingUI();
@@ -507,23 +512,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBar.classList.toggle('hidden');
     });
 
+    vscode.postMessage('getWebSocketStatus');
     
 });
 
 function updateWebSocketStatus(connected) {
-    const statusDiv = document.getElementById('websocket-status');
+    // const statusDiv = document.getElementById('websocket-status');
     const recordingButton = document.getElementById('toggle-recording');
+    const micIcon = document.getElementById('mic-icon');
+    console.log("ws status came: ");
+    console.log(connected);
     websocketConnected = connected;
 
     if (connected) {
-        statusDiv.classList.remove('bg-red-500');
-        statusDiv.classList.add('bg-green-500');
-        statusDiv.title = 'WebSocket Connected';
+        micIcon.classList.remove('fa-microphone-slash');
+        micIcon.classList.add('fa-microphone');
+        // statusDiv.classList.remove('bg-red-500');
+        // statusDiv.classList.add('bg-green-500');
+        // statusDiv.title = 'WebSocket Connected';
         recordingButton.disabled = false;
     } else {
-        statusDiv.classList.remove('bg-green-500');
-        statusDiv.classList.add('bg-red-500');
-        statusDiv.title = 'WebSocket Disconnected';
+        micIcon.classList.remove('fa-microphone');
+        micIcon.classList.add('fa-microphone-slash');
+        // statusDiv.classList.remove('bg-green-500');
+        // statusDiv.classList.add('bg-red-500');
+        // statusDiv.title = 'WebSocket Disconnected';
         recordingButton.disabled = true;
         if (isRecording) {
             stopRecordingUI();
@@ -534,15 +547,23 @@ function updateWebSocketStatus(connected) {
 function startRecordingUI() {
     isRecording = true;
     const micIcon = document.getElementById('mic-icon');
-    micIcon.classList.add('text-red-600');
-    micIcon.classList.remove('text-teal-600');
+    const wsStat = document.getElementById('websocket-status');
+
+    wsStat.classList.remove('invisible');
+    wsStat.classList.add('visible');
+    micIcon.classList.add('text-green-600');
+    micIcon.classList.remove('text-grey-600');
 }
 
 function stopRecordingUI() {
     isRecording = false;
     const micIcon = document.getElementById('mic-icon');
-    micIcon.classList.remove('text-red-600');
-    micIcon.classList.add('text-teal-600');
+    const wsStat = document.getElementById('websocket-status');
+
+    wsStat.classList.remove('visible');
+    wsStat.classList.add('invisible');
+    micIcon.classList.remove('text-green-600');
+    micIcon.classList.add('text-grey-600');
 }
 
 
@@ -711,6 +732,8 @@ window.addEventListener('message', event => {
             inputField.focus(); // Add focus to the text field
         }
     } else if (message.type === 'websocketStatus') {
+        console.log("WS UPDATE CAME");
+        console.log(message);
         updateWebSocketStatus(message.connected);
     }
 });

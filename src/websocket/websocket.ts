@@ -44,8 +44,8 @@ export function connectWebSocket(settings: QCodeSettings, provider: QCodePanelPr
         ws.on('open', () => {
             wsReconnectAttempts = 0;
             console.log('Connected to speech server');
-            vscode.window.showInformationMessage('Voice command server connected');
             provider.sendMessage({ type: 'websocketStatus', connected: true });
+            vscode.window.showInformationMessage('Voice command server connected');
         });
 
         ws.on('message', (data: WebSocket.Data) => {
