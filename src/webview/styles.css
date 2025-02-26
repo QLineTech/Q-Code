@@ -182,10 +182,6 @@ body[data-theme="dark"] #chat-display .user-message { background-color: #4b5563;
     width: 100%;
 }
 
-.hidden {
-    display: none !important;
-}
-
 #chat-form {
     padding-left: 0.25rem;
     padding-right: 0.25rem;
@@ -255,34 +251,48 @@ textarea[id$="-keys"] {
 }
 
 /* QMode dropdown aligns with theme */
-body[data-theme="dark"] #qmode-dropdown {
+body[data-theme="dark"] #qmode-dropdown-button {
     background-color: #181818;
-    color: #f4f4f5; /* Ensure parent has correct text color */
+    color: #f4f4f5;
     border-color: #374151;
 }
-
-body[data-theme="dark"] #qmode-dropdown a {
-    color: #f4f4f5; /* Explicitly set text color for links */
+body[data-theme="dark"] #qmode-dropdown-menu {
+    background-color: #181818;
+    color: #f4f4f5;
+    border-color: #374151;
 }
-
-body[data-theme="dark"] #qmode-dropdown a:hover {
+body[data-theme="dark"] #qmode-dropdown-menu button:hover {
     background-color: #3f3f46;
-    color: #ffffff; /* Brighter on hover for contrast */
 }
 
-body[data-theme="light"] #qmode-dropdown {
-    background-color: #ffffff;
-    color: #18181b;
-    border-color: #e4e4e7;
+/* QMode radio styling */
+.qmode-radio {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #71717a;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
-body[data-theme="light"] #qmode-dropdown a {
-    color: #18181b;
+.qmode-radio:checked {
+    border-color: #0d9488;
+    background-color: #0d9488;
 }
 
-body[data-theme="light"] #qmode-dropdown a:hover {
-    background-color: #e4e4e7;
-    color: #000000;
+.qmode-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+}
+
+.qmode-label {
+    transition: all 0.2s ease;
+}
+
+.qmode-radio:checked + .qmode-label {
+    background-color: #0d9488;
+    color: white;
+    font-weight: bold;
 }
 
 body[data-theme="dark"] .qmode-label {
