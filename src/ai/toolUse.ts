@@ -41,12 +41,12 @@ export class ToolUse {
     private conversationHistory: Message[] = [];
     private tools: Map<string, Tool>;
     private settings: QCodeSettings;
-
+    private defaultTools(): Tool[] {
+        return [];
+    }
     constructor(context: ExtensionContext) {
         this.aiProvider = new QCodeAIProvider(context);
         this.settings = this.aiProvider.getCurrentSettings();
-        
-        // Define example tools (expand as needed)
         this.tools = new Map<string, Tool>([
             [
                 'get_current_time',

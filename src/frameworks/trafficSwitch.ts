@@ -1,7 +1,7 @@
 // /src/frameworks/trafficSwitch.ts
 import * as vscode from 'vscode';
 import { QCodePanelProvider } from '../webview/webview';
-import { EditorContext, ChatStates, AIModels } from '../types/types';
+import { EditorContext, ChatStates, AIModels, QCodeSettings } from '../types/types';
 import { logger } from '../utils/logger';
 import { MediaGenerator } from './html/media';
 import { generateStepper } from './html/stepper';
@@ -11,7 +11,8 @@ import { generateTableHTML } from './html/table';
 import { GitOperations } from '../utils/gitOperations';
 import { getValidSettings } from '../settings/settings';
 import { queryAI, queryAI2 } from '../ai/ai';
-
+import { ToolUse } from '../ai/toolUse'; 
+import { ToolLib } from '../engine/toolLib'; 
 
 
 async function checkGitUserStatus(context: vscode.ExtensionContext) {
@@ -66,6 +67,7 @@ export class TrafficSwitch {
   private editorContext: EditorContext | null;
   private states: ChatStates;
   private additionalArgs: any[];
+  private toolLib: ToolLib; 
 
   constructor(
     text: string,
@@ -81,15 +83,49 @@ export class TrafficSwitch {
     this.editorContext = editorContext;
     this.states = states;
     this.additionalArgs = additionalArgs;
+    this.toolLib = new ToolLib(); 
+
+    // Register default tools from toolLib.ts
+    this.registerDefaultTools();
   }
 
   
+  private registerDefaultTools(): void {
+    // Register example tools from toolLib.ts (you can move this to a config file or separate method)
+    this.toolLib.registerTool({
+        metadata: {
+            name: 'git_status',
+            title: 'Git Status',
+            description: 'Retrieve the status of the current Git repository.',
+            parameters: {},
+            usage: 'Run this tool to check the status of your Git repository.',
+            keywords: ['git', 'status', 'repository'],
+            categories: ['git_operations'],
+        },
+        execute: async () => 'Git status: clean',
+    });
+
+    this.toolLib.registerTool({
+        metadata: {
+            name: 'read_file',
+            title: 'Read File',
+            description: 'Read the contents of a specified file.',
+            parameters: {
+                path: { type: 'string', description: 'The file path', required: true },
+            },
+            usage: 'Provide the file path to read its contents.',
+            keywords: ['file', 'read', 'contents'],
+            categories: ['file_operations'],
+        },
+        execute: async (args: { path: string }) => `Contents of ${args.path}`,
+    });
+
+      // Add more tools as needed...
+  }
 
   // Main method to handle traffic (you can implement your logic here)
   public async handleTraffic(): Promise<void> {
     logger.info(`TrafficSwitch handling message: "${this.text}"`);
-    // Add your routing logic here (e.g., to AI models, web search, etc.)
-    // For now, we'll just call the test method
     const settings = getValidSettings(this.context.globalState.get('qcode.settings'));
 
     const userGitAccount = await checkGitUserStatus(this.context);
@@ -118,7 +154,7 @@ export class TrafficSwitch {
 
       break;
       case("QFunc"):
-
+        await this.handleQFuncMode(settings);
       break;
       case("QDesign"):
 
@@ -133,7 +169,17 @@ export class TrafficSwitch {
 
       break;
       default: 
-        // return;
+        logger.warning(`Unknown qmode: ${this.states.qmode}`);
+        this.provider.sendMessage({
+            type: 'chatResponse',
+            text: 'Unknown mode selected.',
+            responseType: 'plain',
+            prompt: this.text,
+            context: this.editorContext,
+            progress: 100,
+            complete: true,
+        });
+        return;
     }
 
     const activeModels = Object.entries(settings.aiModels)
@@ -180,12 +226,89 @@ export class TrafficSwitch {
         });
 
     } else if (!this.editorContext) {
-        responseText = 'No editor context available.';
-    }
-
-
-    
+      responseText = 'No editor context available.';
+      this.provider.sendMessage({
+          type: 'chatResponse',
+          text: responseText,
+          responseType: 'plain',
+          prompt: this.text,
+          context: this.editorContext,
+          progress: 100,
+          complete: true,
+      });
+    }    
     // await this.sendTestMessages();
+  }
+
+  private async handleQFuncMode(settings: QCodeSettings): Promise<void> {
+    logger.info('Handling QFunc mode for tool use.');
+
+    // Get active models that support function calling
+    const functionCallingModels = Object.entries(settings.aiModels)
+        .filter(([_, config]) => config.active && settings.functionCallingAIs?.[_[0] as keyof AIModels])
+        .map(([model]) => model as keyof QCodeSettings['aiModels']);
+
+      if (functionCallingModels.length === 0) {
+          this.provider.sendMessage({
+              type: 'chatResponse',
+              text: 'No AI models configured for function calling.',
+              responseType: 'plain',
+              prompt: this.text,
+              context: this.editorContext,
+              progress: 100,
+              complete: true,
+          });
+          return;
+      }
+
+      // Use the first available function-calling model
+      const provider = functionCallingModels[0];
+      logger.info(`Using AI provider: ${provider} for QFunc mode.`);
+
+      // Initialize ToolUse with tools from ToolLib
+      const toolsForUse = this.toolLib.getToolsForUse();
+      const toolUse = new ToolUse(this.context);
+      // Note: We'll need to modify ToolUse constructor to accept tools or add a setter
+      // For now, we'll assume ToolUse uses its default tools; adjust as needed
+
+      try {
+          const result = await toolUse.queryWithTools(this.text, provider);
+
+          // Send the tool use result to the UI
+          let responseText = `**Tool Use Result**:\n${result.result}`;
+          if (result.cost.sum > 0) {
+              responseText += '\n\n**Cost Breakdown**:\n';
+              responseText += '| Description  | Amount         |\n';
+              responseText += '|--------------|----------------|\n';
+              responseText += `| Total Cost   | $${result.cost.sum.toFixed(6)} |\n`;
+              responseText += `| Input Cost   | $${result.cost.inputCost.toFixed(6)} |\n`;
+              responseText += `| Output Cost  | $${result.cost.outputCost.toFixed(6)} |\n`;
+          }
+
+          this.provider.sendMessage({
+              type: 'chatResponse',
+              text: responseText,
+              responseType: 'markdown',
+              prompt: this.text,
+              context: this.editorContext,
+              progress: 100,
+              complete: true,
+          });
+
+          // Log raw response for debugging
+          // logger.info('Tool use raw response:', JSON.stringify(result.raw, null, 2));
+      } catch (error) {
+          logger.error(`Error in QFunc mode with provider ${provider}: ` +  error);
+          this.provider.sendMessage({
+              type: 'chatResponse',
+              text: `Error executing tool: ${error instanceof Error ? error.message : String(error)}`,
+              responseType: 'plain',
+              prompt: this.text,
+              context: this.editorContext,
+              progress: 100,
+              complete: true,
+          });
+      }
   }
 
   
