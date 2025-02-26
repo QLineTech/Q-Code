@@ -148,6 +148,7 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
                 this.sendMessage({ type: 'websocketStatus', connected });
                 break;
             default:
+                console.warn(message);
                 console.warn('Unknown message type:', message.type);
         }
     }
