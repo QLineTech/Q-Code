@@ -1,0 +1,1613 @@
+{
+  "slides": [
+    {
+      "blocks": [
+        {
+          "type": "h1",
+          "content": "Nmap ile Ağ Keşfine Hazır mısın?",
+          "transition": "bounceIn",
+          "transitionDuration": "1s",
+          "transitionOrder": 0
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Nmap, ağları tarayan süper bir araç!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Açık portları, cihazları, hizmetleri bulur.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Sana adım adım öğreteceğim!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Güvenlik ve hackleme dünyasını keşfedeceksin.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Hadi başlayalım!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 4
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Nmap Nedir?",
+          "transition": "zoomIn",
+          "transitionDuration": "0.5s"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Nmap, Network Mapper demek.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Ağdaki cihazları ve portları bulur.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Bir alışveriş merkezi gibi düşün.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Güvenlik görevlisi hangi dükkanların açık olduğunu kontrol eder.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Nmap de dijital dünyada bunu yapar!",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 4
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Niye Nmap Kullanıyoruz?",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "ul",
+          "items": [
+            "Geliştirme: Ağını kontrol et.",
+            "Güvenlik: Açıkları bul, cihazları tespit et.",
+            "Hackleme: Zayıf noktaları keşfet!"
+          ],
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Hackerlar ve Güvenlik Nmap’i Nasıl Kullanır?",
+          "transition": "bounceIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Nmap, siber dünyada bir rockstar!",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Güvenlikçiler ağlarını korur.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar keşif yapar.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Mesela, güvenlik uzmanı portları kapatır.",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar ise kötü niyetle tarar!",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 4
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Büyük Saldırılarda Nmap Kullanımı",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Büyük saldırılarda Nmap direkt geçmez.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Ama benzer araçlar keşifte hep var.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Örnek: 2013 Target ihlali.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Saldırganlar ağ yapısını çözdü.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Nmap gibi bir şey kullandılar.",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 4
+        },
+        {
+          "type": "p",
+          "content": "Bu, hırsızın kapıları kontrol etmesi gibi!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 5
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Adım Adım Nmap Öğreniyoruz!",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Basitten zora gidiyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Her komut için detay vereceğim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz, niye, çıktı ne diyor?",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Gerçek senaryolarla öğrenelim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Sıkılmak yok, hadi gaza basalım!",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 1: Temel Tarama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Bir IP’nin aktifliğini kontrol ediyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Açık portları buluyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Yeni ağ yöneticisisin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Bir cihazın çalışıp çalışmadığını merak ettin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Temel Tarama?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Basit bir başlangıç için en hızlı yol.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Hedef IP’nin durumunu öğreniyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Açık portları hızlıca buluyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Gereksiz detaylara girmeden sonuç alalım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Temel Tarama Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:25 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.09 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Host is up: Cihaz aktif!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "22 (SSH), 80 (HTTP), 443 (HTTPS) açık.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Sokakta hangi evlerin ışığı yanıyor gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Host is down: Cihaz kapalı olurdu.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "All ports closed: Hizmet yok demek.",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 2: Çoklu Hedef Tarama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Ağdaki birden fazla cihazı tarıyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Tüm ağını kontrol etmek istiyorsun.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Hangi cihazlar aktif?",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap 192.168.1.1-10",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Çoklu Tarama?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Tek tek taramak yerine aralık tarıyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "192.168.1.1’den 10’a kadar kontrol.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Zamandan tasarruf bombası!",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çoklu Hedef Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:30 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\n...\nNmap scan report for 192.168.1.2\nHost is up (0.00050s latency).\n...\nNmap scan report for 192.168.1.3\nHost is down.\n...",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "1 ve 2 aktif, 3 kapalı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Mahallede hangi evler dolu gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Hepsi down: Ağda aktif cihaz yok.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Filtered: Firewall şüphesi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 3: Belirli Port Tarama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Sadece web sunucusunu kontrol edelim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: 80 ve 443 açık mı?",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -p 80,443 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Belirli Portlar?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Tüm portları taramak zaman alır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Sadece HTTP ve HTTPS istiyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Hedefe odaklı, hızlı tarama!",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Belirli Port Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:35 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nPORT   STATE SERVICE\n80/tcp open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 0.25 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "80 ve 443 açık, web çalışıyor!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Closed: Portlar kapalı olurdu.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Filtered: Güvenlik duvarı engeller.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Alışveriş merkezinde dükkan kontrolü gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 4: Servis Tespiti",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Açık portlarda hizmetleri buluyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Versiyonlarını öğreniyoruz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Sunucu detayları lazım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -sV 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Servis Tespiti?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Portların açık olması yetmez.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Hangi yazılım çalışıyor?",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Eski mi, savunmasız mı?",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar bunu çok sever!",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Servis Tespiti Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:40 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT     STATE SERVICE     VERSION\n22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.2\n80/tcp   open  http        Apache httpd 2.4.41 ((Unix))\n443/tcp  open  ssl/http    Apache httpd 2.4.41 ((Unix))\n\nNmap done: 1 IP address (1 host up) scanned in 5.31 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "SSH ve Apache çalışıyor.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Versiyonları belli!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Dükkândaki ürün markası gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Eski versiyon: Güvenlik açığı olabilir.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Unknown: Hizmet tanınmadı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 5: OS Tespiti",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Cihazın işletim sistemini tahmin edelim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Windows mu Linux mu?",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -O 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye OS Tespiti?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "OS bilmek strateji için önemli.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Linux’a başka, Windows’a başka saldırı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar da bunu sever!",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "OS Tespiti Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:45 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT     STATE SERVICE\n22/tcp   open  ssh\n80/tcp   open  http\n443/tcp  open  https\n\nDevice type: general purpose\nRunning: Linux\nOS CPE: cpe:/o:linux:linux_kernel\n\nNmap done: 1 IP address (1 host up) scanned in 6.32 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Linux çalışıyor!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Evin türü gibi anlamaya benzer.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Windows: Başka strateji gerekirdi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "No match: Nmap emin olamadı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 6: SYN Tarama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Gizli bir tarama yapalım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Kimseye fark edilmeden tarama.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -sS 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye SYN Tarama?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Normal tarama log bırakır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "SYN yarım bağlantı yapar.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Daha az fark edilir.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar keşifte bunu kullanır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Güvenlik duvarını atlatmak için ideal!",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "SYN Tarama Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:50 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.15 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Sonuç aynı ama gizli!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Sokakta sessizce dolaşmak gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Filtered: Güvenlik duvarı yakaladı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 7: Zamanlama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Taramayı hızlandıralım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Acelen var, hızlı sonuç lazım!",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -T4 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Zamanlama?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "-T4 taramayı hızlandırır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "0 yavaş, 5 çok hızlı.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar hızlı keşif için kullanır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Ama dikkat, duvar fark edebilir!",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Zamanlama Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:55 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 1.85 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "1.85 saniye, çok hızlı!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Hızlı arabayla gezmek gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Filtered artarsa, duvar fark etti.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 8: Çıktı Kaydetme",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Sonuçları dosyaya kaydedelim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Sonra analiz etmek istiyorsun.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap -oN scan.txt 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Kaydetme?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ekranda kaybolmasın.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Dosya olarak saklayalım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Güvenlik raporları için pratik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Hackleme sonrası analiz için süper!",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Kaydetme Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 17:00 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.09 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Aynı çıktı, ama scan.txt’de!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Rapor yazdırmak gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Dosya yoksa, izin sorunu olabilir.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 9: NSE Tarama",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Ne yapıyoruz?",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Web sunucusunun başlığını görelim.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Senaryo: Sunucu ne diyor?",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "nmap --script http-title 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye NSE Kullanıyoruz?",
+          "transition": "zoomIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "NSE ile standart taramayı aşarız.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "HTTP başlığını çekeriz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Sunucunun kimliğini öğreniriz.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar keşifte bayılır buna!",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "NSE Çıktısı",
+          "transition": "fadeIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 17:05 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT   STATE SERVICE\n80/tcp open  http\n\nHost script results:\n|_http-title: Apache2 Ubuntu Default Page: It works\n\nNmap done: 1 IP address (1 host up) scanned in 2.31 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "position": { "padding": "15px", "borderRadius": "8px" }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Apache varsayılan sayfası!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Dükkân tabelası gibi.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "404: Sunucu yapılandırılmamış.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Siber Saldırılarda Nmap",
+          "transition": "bounceIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Hackerlar Nmap’i keşif için kullanır.",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Ağın haritasını çıkarır (-sS).",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Açık portları bulur (-sV).",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "OS’u tahmin eder (-O).",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Örnek: 2017 Equifax ihlali.",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        },
+        {
+          "type": "p",
+          "content": "Açık portlar exploit edildi!",
+          "transition": "fadeInUp",
+          "transitionOrder": 5
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Nmap’i Kapadın!",
+          "transition": "bounceIn"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "p",
+          "content": "Basitten zora öğrendin!",
+          "transition": "fadeInUp",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Gerçek senaryolarla kaptın.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "p",
+          "content": "Ağ güvenliğini güçlendirebilirsin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 2
+        },
+        {
+          "type": "p",
+          "content": "Etik hackleme yapabilirsin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 3
+        },
+        {
+          "type": "p",
+          "content": "Nmap’i sevdin mi?",
+          "transition": "fadeInUp",
+          "transitionOrder": 4
+        },
+        {
+          "type": "p",
+          "content": "Hadi kullanmaya başla!",
+          "transition": "fadeInUp",
+          "transitionOrder": 5
+        }
+      ]
+    }
+  ]
+}

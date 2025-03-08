@@ -1,0 +1,116 @@
+{
+    "backgroundColor": "#ffffff",
+    "textColor": "#000000",
+    "slides": [
+      {
+        "blocks": [
+          { "type": "h1", "content": "Technology Advancements", "transition": "zoomIn", "transitionDuration": "1s" },
+          { "type": "p", "content": "A journey through the latest in tech", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#e0f7fa" }
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "The Future", "textColor": "#0d47a1" },
+          { "type": "h2", "content": "Innovations", "textColor": "#1565c0" },
+          { "type": "h3", "content": "Breakthroughs", "textColor": "#1976d2" },
+          { "type": "h4", "content": "Developments", "textColor": "#1e88e5" },
+          { "type": "h5", "content": "Trends", "textColor": "#2196f3" },
+          { "type": "h6", "content": "Insights", "textColor": "#42a5f5" }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "p", "content": "Technology evolves rapidly, from AI to quantum computing.", "textColor": "#004d40" }
+        ],
+        "background": { "type": "color", "value": "#e0f2f1" }
+      },
+      { "blocks": [{ "type": "image", "src": "images/tech-gadget.jpg", "transition": "fadeIn", "transitionDuration": "0.5s" }] },
+      { "blocks": [{ "type": "video", "src": "videos/tech-video.mp4", "transition": "slideInUp", "transitionDuration": "0.7s" }] },
+      {
+        "blocks": [
+          { "type": "code", "content": "const tech = 'future';\nconsole.log(`The ${tech} is now.`);", "language": "javascript", "transition": "fadeInLeft" }
+        ],
+        "background": { "type": "color", "value": "#263238" },
+        "textColor": "#ffffff"
+      },
+      {
+        "blocks": [
+          { "type": "markdown", "content": "# Tech\n- AI\n- Robotics\n- **IoT**", "transition": "fadeInUp" }
+        ]
+      },
+      { "blocks": [{ "type": "ul", "items": ["Apple", "Google", "Microsoft"], "transition": "bounceIn", "textColor": "#3e2723" }] },
+      { "blocks": [{ "type": "ol", "items": ["Code", "Test", "Deploy"], "transition": "fadeInRight" }] },
+      {
+        "blocks": [
+          { "type": "blockquote", "content": "\"The future is now.\" - Tech Leader", "textColor": "#bf360c" }
+        ],
+        "background": { "type": "color", "value": "#ffebee" }
+      },
+      { "blocks": [{ "type": "iframe", "src": "https://en.wikipedia.org/wiki/Technology", "width": "800", "height": "600", "transition": "zoomIn" }] },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/floating-image.jpg", "position": { "top": "50px", "right": "50px" }, "transition": "fadeInRight" },
+          { "type": "p", "content": "Positioned image.", "position": { "bottom": "20px", "left": "20px" }, "transition": "fadeInUp", "transitionOrder": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Transitions", "transition": "bounceInDown", "transitionDuration": "1s", "transitionOrder": 0 },
+          { "type": "p", "content": "Bounce in.", "transition": "fadeInLeft", "transitionDuration": "0.8s", "transitionOrder": 1 },
+          { "type": "p", "content": "Fade in.", "transition": "fadeInRight", "transitionDuration": "0.8s", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Color BG", "textColor": "#ffffff" }],
+        "background": { "type": "color", "value": "#004d40" }
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Image BG", "textColor": "#ffffff" }],
+        "background": { "type": "image", "value": "images/tech-bg.jpg" }
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Innovation", "transition": "zoomIn" },
+          { "type": "p", "content": "Driving tech forward.", "transition": "fadeInUp", "transitionOrder": 1 },
+          { "type": "image", "src": "images/innovation.jpg", "transition": "fadeInRight", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "vertical_slides": [
+          {
+            "blocks": [
+              { "type": "h3", "content": "AI", "transition": "slideInLeft" },
+              { "type": "p", "content": "Transforming industries." }
+            ]
+          },
+          {
+            "blocks": [
+              { "type": "h3", "content": "Quantum", "transition": "slideInRight" },
+              { "type": "p", "content": "Next frontier." }
+            ]
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "code", "content": "function compute() {}", "language": "javascript", "position": { "left": "20px", "top": "20px" } },
+          { "type": "p", "content": "Code explanation.", "position": { "right": "20px", "bottom": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/tech1.jpg", "position": { "top": "20px", "left": "20px" } },
+          { "type": "image", "src": "images/tech2.jpg", "position": { "top": "20px", "right": "20px" } },
+          { "type": "image", "src": "images/tech3.jpg", "position": { "bottom": "20px", "left": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Thank You", "transition": "zoomIn" },
+          { "type": "p", "content": "Visit our site.", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#e0f7fa" }
+      }
+    ]
+  }

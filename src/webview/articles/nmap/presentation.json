@@ -1,0 +1,767 @@
+{
+  "slides": [
+    {
+      "blocks": [
+        {
+          "type": "h1",
+          "content": "Hey! Nmap ile Ağ Keşfine Hazır mısın?",
+          "transition": "bounceIn",
+          "transitionDuration": "1s",
+          "transitionOrder": 0
+        },
+        {
+          "type": "p",
+          "content": "Nmap, ağları tarayıp açık portları, cihazları ve hizmetleri bulan süper bir araç! Sana bunu adım adım, gerçek örneklerle öğreteceğim. Hem güvenlik için, hem hackleme dünyasında nasıl kullanıldığını göreceksin. Hadi başlayalım!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Nmap Nedir?",
+          "transition": "zoomIn",
+          "transitionDuration": "0.5s"
+        },
+        {
+          "type": "p",
+          "content": "Nmap (Network Mapper), ağdaki cihazları ve açık portları tespit eden bir güvenlik aracı. Düşünsene, bir alışveriş merkezinde güvenlik görevlisisin ve hangi dükkanların açık olduğunu, ne sattığını öğrenmek istiyorsun. Nmap tam olarak bunu yapıyor, ama dijital dünyada!",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Niye Nmap Kullanıyoruz?",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "ul",
+          "items": [
+            "Geliştirme: Uygulamanı yaymadan önce ağını kontrol et.",
+            "Güvenlik: Açıkları bul, izinsiz cihazları tespit et.",
+            "Hackleme: Etik hackerlar zayıf noktaları bulmak için bayılır buna!"
+          ],
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Hackerlar ve Güvenlikçiler Nmap’i Nasıl Kullanıyor?",
+          "transition": "bounceIn"
+        },
+        {
+          "type": "p",
+          "content": "Nmap, siber dünyada bir rockstar! Güvenlikçiler ağlarını korumak için, hackerlar ise keşif için kullanıyor. Mesela, bir güvenlik uzmanı şirket ağını tarayıp açık portları kapatır. Hackerlar da aynı şeyi yapar, ama kötü niyetle!",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.6s",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Büyük Saldırılarda Nmap: Gerçek Örnekler",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Büyük saldırılarda Nmap’in adı direkt geçmez ama benzer araçlar keşifte hep var. Mesela, 2013 Target ihlalinde saldırganlar ağ yapısını çözmek için Nmap gibi bir şey kullandı. Düşünsene, bir hırsız evin kapılarını kontrol ediyor!",
+          "transition": "fadeInUp",
+          "transitionDuration": "0.8s",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Adım Adım Nmap: Basitten Zora Gidiyoruz!",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Her komut için ne yapıyoruz, niye yapıyoruz, çıktı ne diyor, hepsini göreceksin. Gerçek senaryolarla öğrenelim, sıkılmak yok!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 1: Temel Tarama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Bir IP’nin aktif olup olmadığını ve açık portlarını kontrol ediyoruz. Senaryo: Yeni ağ yöneticisisin, bir cihazın çalışıp çalışmadığını merak ettin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Basit bir başlangıç için en hızlı yol bu! Hedef IP’nin açık portlarını ve durumunu öğrenmek istiyoruz. Gereksiz detaylara girmeden direkt sonuç alalım.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Temel Tarama Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:25 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.09 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Host is up: Cihaz aktif! 22 (SSH), 80 (HTTP), 443 (HTTPS) portları açık. Bu, bir sokakta hangi evlerin ışığının yandığını görmeye benziyor. Eğer 'Host is down' görseydik, cihaz kapalı derdik. Ya da hiç port açık olmasaydı, 'All ports closed' çıkardı, yani cihaz çalışıyor ama hizmet sunmuyor.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 2: Çoklu Hedef Tarama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Ağındaki birden fazla cihazı tarıyoruz. Senaryo: Bütün ağını kontrol etmek istiyorsun, hangi cihazlar aktif?",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap 192.168.1.1-10",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Tek tek IP taramak yerine bir aralığı hızlıca kontrol ediyoruz. 192.168.1.1’den 192.168.1.10’a kadar tüm cihazları tarıyor. Zamandan tasarruf bombası!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çoklu Hedef Tarama Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:30 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\n...\nNmap scan report for 192.168.1.2\nHost is up (0.00050s latency).\n...\nNmap scan report for 192.168.1.3\nHost is down.\n...",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "1 ve 2 numaralı IP’ler aktif, 3 kapalı. Bu, bir mahallede hangi evlerin dolu olduğunu anlamaya benziyor. Eğer tümü 'Host is down' olsaydı, ağda hiç aktif cihaz yok derdik. Ya da bazıları filtrelenmiş olsaydı (filtered), firewall var diye şüphelenirdik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 3: Belirli Portları Tarama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Sadece web sunucusunu kontrol edelim. Senaryo: 80 ve 443 portlarının açık olup olmadığını merak ettin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -p 80,443 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Tüm portları taramak zaman alır, biz sadece web hizmetlerini (HTTP ve HTTPS) kontrol etmek istiyoruz. Hedefe odaklı, hızlı bir tarama!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Belirli Portları Tarama Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:35 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nPORT   STATE SERVICE\n80/tcp open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 0.25 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "80 ve 443 açık, yani web sunucusu çalışıyor! Eğer 'closed' görseydik, portlar kapalı derdik. 'Filtered' çıksaydı, bir güvenlik duvarı engelliyor olabilirdi. Bu, bir alışveriş merkezinde sadece belirli dükkanları kontrol etmeye benziyor.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 4: Servis ve Versiyon Tespiti - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Açık portlarda hangi hizmetler var, versiyonları ne? Senaryo: Sunucunun detaylarını öğrenmek istiyorsun.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -sV 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Sadece portların açık olduğunu bilmek yetmez, hangi yazılım çalışıyor, eski mi, savunmasız mı? Bunu öğrenmek için -sV kullanıyoruz. Hackerlar da bunu çok sever!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Servis ve Versiyon Tespiti Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:40 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT     STATE SERVICE     VERSION\n22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.2\n80/tcp   open  http        Apache httpd 2.4.41 ((Unix))\n443/tcp  open  ssl/http    Apache httpd 2.4.41 ((Unix))\n\nNmap done: 1 IP address (1 host up) scanned in 5.31 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "SSH ve Apache çalışıyor, versiyonları belli! Bu, bir dükkândaki ürünlerin markasını öğrenmeye benziyor. Eğer versiyon eskiyse (örneğin Apache 2.2), güvenlik açığı olabilir. 'Unknown' çıksaydı, Nmap hizmeti tanıyamamış derdik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 5: İşletim Sistemi Tespiti - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Hedef cihazın işletim sistemini tahmin edelim. Senaryo: Sunucunun Windows mu Linux mu olduğunu merak ettin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -O 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Hangi OS çalıştığını bilmek, güvenlik stratejisi için önemli. Mesela, Linux’a başka, Windows’a başka tür saldırılar olur. Hackerlar da bunu sever!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "İşletim Sistemi Tespiti Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:45 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT     STATE SERVICE\n22/tcp   open  ssh\n80/tcp   open  http\n443/tcp  open  https\n\nDevice type: general purpose\nRunning: Linux\nOS CPE: cpe:/o:linux:linux_kernel\n\nNmap done: 1 IP address (1 host up) scanned in 6.32 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Linux çalışıyor! Bu, bir evin hangi tür bina olduğunu anlamaya benziyor. Eğer 'Running: Windows' görseydik, başka bir strateji gerekirdi. 'No exact match' çıksaydı, Nmap emin olamamış derdik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 6: SYN Tarama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Gizli bir tarama yapalım. Senaryo: Kimseye fark edilmeden portları kontrol etmek istiyorsun.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -sS 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Normal tarama log bırakır, ama SYN tarama yarım bağlantı yapar, daha az fark edilir. Hackerlar bunu keşifte çok kullanır, güvenlik duvarını atlatmak için ideal!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "SYN Tarama Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:50 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.15 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Sonuç aynı ama daha gizli! Bu, sokakta kimseye çaktırmadan dolaşmaya benziyor. Eğer 'filtered' portlar görseydik, güvenlik duvarı SYN’i yakalamış derdik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 7: Zamanlama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Taramayı hızlandıralım. Senaryo: Acelen var, hızlı sonuç lazım!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -T4 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "-T4, taramayı hızlandırır (0 yavaş, 5 çok hızlı). Hackerlar hızlı keşif için bunu tercih eder, ama dikkat, güvenlik duvarları fark edebilir!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Zamanlama Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 16:55 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 1.85 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "1.85 saniye! Normal taramadan hızlı. Bu, hızlı bir arabayla gezmeye benziyor. Ama 'filtered' artarsa, güvenlik duvarı hızı fark etmiş olabilir.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 8: Çıktı Kaydetme - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Sonuçları bir dosyaya kaydedelim. Senaryo: Daha sonra analiz etmek istiyorsun.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap -oN scan.txt 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "Ekranda kaybolmasın, dosya olarak saklayalım. Güvenlik raporları veya hackleme sonrası analiz için süper pratik!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Kaydetme Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 17:00 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT    STATE SERVICE\n22/tcp  open  ssh\n80/tcp  open  http\n443/tcp open  https\n\nNmap done: 1 IP address (1 host up) scanned in 3.09 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Aynı çıktı, ama şimdi scan.txt dosyasında! Bu, bir raporu yazdırmaya benziyor. Dosya yoksa, yazma izni sorunu olabilir, dikkat et.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Durak 9: NSE ile Gelişmiş Tarama - Ne Yapıyoruz?",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "p",
+          "content": "Web sunucusunun başlığını görelim. Senaryo: Sunucunun ne dediğini merak ettin.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        },
+        {
+          "type": "code",
+          "content": "nmap --script http-title 192.168.1.1",
+          "language": "bash",
+          "transition": "fadeInLeft",
+          "transitionDuration": "0.7s",
+          "transitionOrder": 2
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Niye Bu Komutu Kullandık?",
+          "transition": "zoomIn"
+        },
+        {
+          "type": "p",
+          "content": "NSE (Nmap Scripting Engine) ile standart taramayı aşarız. HTTP başlığını çekip sunucunun kimliğini öğreniyoruz. Hackerlar bunu keşifte bayıla bayıla kullanır!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "NSE Çıktısı",
+          "transition": "fadeIn"
+        },
+        {
+          "type": "code",
+          "content": "Starting Nmap 7.92 ( https://nmap.org ) at 2025-03-05 17:05 PST\nNmap scan report for 192.168.1.1\nHost is up (0.00045s latency).\nNot shown: 997 closed ports\nPORT   STATE SERVICE\n80/tcp open  http\n\nHost script results:\n|_http-title: Apache2 Ubuntu Default Page: It works\n\nNmap done: 1 IP address (1 host up) scanned in 2.31 seconds",
+          "language": "text",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "h3",
+          "content": "Çıktı Analizi",
+          "transition": "slideInRight"
+        },
+        {
+          "type": "p",
+          "content": "Apache’nin varsayılan sayfası! Bu, bir dükkânın tabelasını okumaya benziyor. Eğer '404' veya garip bir başlık çıksaydı, sunucu yapılandırılmamış derdik.",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Siber Saldırılarda Nmap: Hackerlar Ne Yapar?",
+          "transition": "bounceIn"
+        },
+        {
+          "type": "p",
+          "content": "Hackerlar Nmap’i keşif için kullanır. Önce ağın haritasını çıkarır (nmap -sS), sonra açık portları ve hizmetleri bulur (-sV), OS’u tahmin eder (-O). Mesela, 2017 Equifax ihlalinde benzer araçlarla açık portlar bulundu ve exploit edildi!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    },
+
+    {
+      "blocks": [
+        {
+          "type": "h2",
+          "content": "Sonuç: Nmap’i Kapadın!",
+          "transition": "bounceIn"
+        },
+        {
+          "type": "p",
+          "content": "Bu turda Nmap’i basitten zora öğrendin! Gerçek senaryolar, çıktılar ve analizlerle artık ağ güvenliğini güçlendirebilir ya da etik hackleme yapabilirsin. Nmap’i sevdin mi? Hadi kullanmaya başla!",
+          "transition": "fadeInUp",
+          "transitionOrder": 1
+        }
+      ]
+    }
+  ]
+}

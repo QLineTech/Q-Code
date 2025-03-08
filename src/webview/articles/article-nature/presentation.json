@@ -1,0 +1,116 @@
+{
+    "backgroundColor": "#f0f7f5",
+    "textColor": "#1a3c34",
+    "slides": [
+      {
+        "blocks": [
+          { "type": "h1", "content": "Exploring Nature", "transition": "zoomIn", "transitionDuration": "1s" },
+          { "type": "p", "content": "Beauty of the natural world", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#d4edda" }
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Forests", "textColor": "#155724" },
+          { "type": "h2", "content": "Oceans", "textColor": "#1c7430" },
+          { "type": "h3", "content": "Mountains", "textColor": "#218838" },
+          { "type": "h4", "content": "Deserts", "textColor": "#28a745" },
+          { "type": "h5", "content": "Plains", "textColor": "#38c172" },
+          { "type": "h6", "content": "Rivers", "textColor": "#48c774" }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "p", "content": "Conservation preserves ecosystems for future generations.", "textColor": "#2f855a" }
+        ],
+        "background": { "type": "color", "value": "#e6fffa" }
+      },
+      { "blocks": [{ "type": "image", "src": "images/forest.jpg", "transition": "fadeIn", "transitionDuration": "0.5s" }] },
+      { "blocks": [{ "type": "video", "src": "videos/wildlife.mp4", "transition": "slideInUp", "transitionDuration": "0.7s" }] },
+      {
+        "blocks": [
+          { "type": "code", "content": "let trees = 100;\nconsole.log(trees + ' saved');", "language": "javascript", "transition": "fadeInLeft" }
+        ],
+        "background": { "type": "color", "value": "#2d3748" },
+        "textColor": "#ffffff"
+      },
+      {
+        "blocks": [
+          { "type": "markdown", "content": "# Nature\n- Forests\n- **Wildlife**\n- Oceans", "transition": "fadeInUp" }
+        ]
+      },
+      { "blocks": [{ "type": "ul", "items": ["Tiger", "Elephant", "Whale"], "transition": "bounceIn", "textColor": "#744210" }] },
+      { "blocks": [{ "type": "ol", "items": ["Plant trees", "Reduce waste", "Recycle"], "transition": "fadeInRight" }] },
+      {
+        "blocks": [
+          { "type": "blockquote", "content": "\"Nature is our home.\" - Ecologist", "textColor": "#9c4221" }
+        ],
+        "background": { "type": "color", "value": "#fefcbf" }
+      },
+      { "blocks": [{ "type": "iframe", "src": "https://www.worldwildlife.org", "width": "800", "height": "600", "transition": "zoomIn" }] },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/mountain.jpg", "position": { "top": "50px", "right": "50px" }, "transition": "fadeInRight" },
+          { "type": "p", "content": "Floating mountain.", "position": { "bottom": "20px", "left": "20px" }, "transition": "fadeInUp", "transitionOrder": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Nature Moves", "transition": "bounceInDown", "transitionDuration": "1s", "transitionOrder": 0 },
+          { "type": "p", "content": "Leaves fall.", "transition": "fadeInLeft", "transitionDuration": "0.8s", "transitionOrder": 1 },
+          { "type": "p", "content": "Waves crash.", "transition": "fadeInRight", "transitionDuration": "0.8s", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Sky Blue", "textColor": "#ffffff" }],
+        "background": { "type": "color", "value": "#4a90e2" }
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Landscape", "textColor": "#ffffff" }],
+        "background": { "type": "image", "value": "images/nature-bg.jpg" }
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Ecosystems", "transition": "zoomIn" },
+          { "type": "p", "content": "Vital to life.", "transition": "fadeInUp", "transitionOrder": 1 },
+          { "type": "image", "src": "images/flower.jpg", "transition": "fadeInRight", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "vertical_slides": [
+          {
+            "blocks": [
+              { "type": "h3", "content": "Forests", "transition": "slideInLeft" },
+              { "type": "p", "content": "Oxygen providers." }
+            ]
+          },
+          {
+            "blocks": [
+              { "type": "h3", "content": "Oceans", "transition": "slideInRight" },
+              { "type": "p", "content": "Life support." }
+            ]
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "code", "content": "function weather() {}", "language": "javascript", "position": { "left": "20px", "top": "20px" } },
+          { "type": "p", "content": "Weather simulation.", "position": { "right": "20px", "bottom": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/nature1.jpg", "position": { "top": "20px", "left": "20px" } },
+          { "type": "image", "src": "images/nature2.jpg", "position": { "top": "20px", "right": "20px" } },
+          { "type": "image", "src": "images/nature3.jpg", "position": { "bottom": "20px", "left": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Protect Nature", "transition": "zoomIn" },
+          { "type": "p", "content": "Our responsibility.", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#d4edda" }
+      }
+    ]
+  }

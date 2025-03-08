@@ -216,6 +216,83 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
     }
 }
 
+// In your VSCode extension (e.g., src/webview.ts)
+export async function getWebviewContentFromFile(
+    settingsJson: string,
+    context: vscode.ExtensionContext,
+    theme: string
+  ): Promise<string> {
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>QCode Panel</title>
+        <style>
+          body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+          }
+        </style>
+      </head>
+      <body>
+        <iframe id="react-app" src="http://localhost:5173/q/welcome?vscode=1"></iframe>
+        <script>
+          const vscode = acquireVsCodeApi();
+          const iframe = document.getElementById('react-app');
+  
+          // Forward messages from extension to iframe
+          window.addEventListener('message', event => {
+            const message = event.data;
+            iframe.contentWindow.postMessage(message, '*');
+          });
+  
+          // Handle messages from iframe to extension
+          window.addEventListener('message', event => {
+            if (event.source === iframe.contentWindow) {
+              const message = event.data;
+              if (message.type === 'vscodeCommand') {
+                // Execute VSCode command and send result back
+                try {
+                  vscode.postMessage(message.payload);
+                  if (message.command === 'getEditorContext') {
+                    // Special handling for context request
+                    vscode.postMessage({ type: 'getEditorContext' });
+                  }
+                } catch (error) {
+                  iframe.contentWindow.postMessage(
+                    { type: 'vscodeCommandError', command: message.command, error: error.message },
+                    '*'
+                  );
+                }
+              } else {
+                vscode.postMessage(message); // Forward other messages
+              }
+            }
+          });
+  
+          // Notify extension and iframe when loaded
+          iframe.addEventListener('load', () => {
+            vscode.postMessage({ type: 'ready' });
+            iframe.contentWindow.postMessage({ type: 'setState', state: 'vscode' }, '*');
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  
+    return htmlContent.replace('${SETTINGS}', settingsJson || '{}').replace('${THEME}', theme);
+  }
+
 // -----------------------------------------------
 // Function: getWebviewContentFromFile
 // -----------------------------------------------
@@ -226,7 +303,7 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
  * @param theme - The theme to apply to the webview.
  * @returns A promise resolving to the fully assembled HTML content.
  */
-export async function getWebviewContentFromFile(
+export async function getWebviewContentFromFileStatic(
     settingsJson: string,
     context: vscode.ExtensionContext,
     theme: string
