@@ -3,6 +3,7 @@ import * as path from 'path';
 import { QCodeSettings, getValidSettings, validateSettings } from '../settings/settings';
 import { EditorContext, ChatHistoryEntry } from '../types/types';
 import { getWebSocket } from '../websocket/websocket';
+import { populateEditorContext } from '../frameworks/editorContext';
 
 // -----------------------------------------------
 // Class: QCodePanelProvider
@@ -36,6 +37,13 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
             }
         });
         this._disposables.push(this._themeListener);
+
+        this._disposables.push(
+            vscode.workspace.onDidChangeWorkspaceFolders(async () => {
+              const editorContext = await populateEditorContext(this._context);
+              this.sendMessage({ type: 'projectInfo', project: editorContext.project });
+            })
+          );
     }
 
     /**
@@ -111,6 +119,87 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
             case 'terminalInput':
                 await vscode.commands.executeCommand('qcode.terminalInput', message.data);
                 break;
+            case 'getProjectInfo':
+                const editorContext = await populateEditorContext(this._context);
+                if (this._webviewView) {
+                    this._webviewView.webview.postMessage({
+                    type: 'projectInfo',
+                    project: editorContext.project,
+                    });
+                }
+                break;
+            case 'getEditorContext': // New case to handle getEditorContext
+              try {
+                const editorContext = await populateEditorContext(this._context);
+                if (this._webviewView) {
+                  this._webviewView.webview.postMessage({
+                    type: 'editorContext',
+                    context: editorContext,
+                  });
+                }
+              } catch (error) {
+                console.error('Failed to get editor context:', error);
+                this.sendMessage({
+                  type: 'error',
+                  error: (error as Error).message,
+                });
+              }
+              break;
+            case 'getFileTree':
+              try {
+                const workspaceFolders = vscode.workspace.workspaceFolders;
+                if (workspaceFolders) {
+                  const fileTree: FileNode[] = await Promise.all(
+                    workspaceFolders.map(async (folder) => {
+                      const rootUri = folder.uri;
+                      const entries = await vscode.workspace.fs.readDirectory(rootUri);
+                      return {
+                        id: rootUri.fsPath,
+                        name: folder.name,
+                        type: 'folder' as const,
+                        isOpen: false,
+                        path: rootUri.fsPath,
+                        children: entries.map(([name, type]) => ({
+                          id: `${rootUri.fsPath}/${name}`,
+                          name,
+                          type: type === vscode.FileType.Directory ? 'folder' : 'file',
+                          isOpen: false,
+                          path: `${rootUri.fsPath}/${name}`,
+                        })),
+                      };
+                    })
+                  );
+                  this.sendMessage({ type: 'fileTree', tree: fileTree });
+                }
+              } catch (error) {
+                this.sendMessage({ type: 'error', error: (error as Error).message });
+              }
+              break;
+            case 'getFolderContents':
+              try {
+                const folderUri = vscode.Uri.file(message.path);
+                const entries = await vscode.workspace.fs.readDirectory(folderUri);
+                const children: FileNode[] = entries.map(([name, type]) => ({
+                  id: `${message.path}/${name}`,
+                  name,
+                  type: type === vscode.FileType.Directory ? 'folder' : 'file',
+                  isOpen: false,
+                  path: `${message.path}/${name}`,
+                }));
+                this.sendMessage({
+                  type: 'folderContents',
+                  folderId: message.folderId,
+                  children,
+                });
+              } catch (error) {
+                this.sendMessage({ type: 'error', error: (error as Error).message });
+              }
+              break;
+            case 'fileSelected':
+              const uri = vscode.Uri.file(message.path);
+              vscode.window.showTextDocument(uri);
+              break;
+          
             case 'getChatHistory':
                 await vscode.commands.executeCommand('qcode.getChatHistory');
                 break;
@@ -206,6 +295,8 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
         }, null, this._disposables);
 
         this._disposables.push(messageListener);
+
+        
     }
 
     /**
@@ -218,6 +309,81 @@ export class QCodePanelProvider implements vscode.WebviewViewProvider {
 
 // In your VSCode extension (e.g., src/webview.ts)
 export async function getWebviewContentFromFile(
+    settingsJson: string,
+    context: vscode.ExtensionContext,
+    theme: string
+  ): Promise<string> {
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>QCode Panel</title>
+        <style>
+          body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+          }
+        </style>
+      </head>
+      <body>
+        <iframe id="react-app" src="http://localhost:5173/q/welcome?vscode=1"></iframe>
+        <script>
+          const vscode = acquireVsCodeApi();
+          const iframe = document.getElementById('react-app');
+  
+          // Forward messages from extension to iframe
+          window.addEventListener('message', event => {
+            const message = event.data;
+            iframe.contentWindow.postMessage(message, '*');
+          });
+  
+          // Handle messages from iframe to extension
+          window.addEventListener('message', event => {
+            if (event.source === iframe.contentWindow) {
+              const message = event.data;
+              if (message.type === 'vscodeCommand') {
+                try {
+                  vscode.postMessage(message.payload);
+                  if (message.command === 'getEditorContext') {
+                    vscode.postMessage({ type: 'getEditorContext' });
+                  }
+                } catch (error) {
+                  iframe.contentWindow.postMessage(
+                    { type: 'vscodeCommandError', command: message.command, error: error.message },
+                    '*'
+                  );
+                }
+              } else {
+                vscode.postMessage(message); // Forward all other messages, including 'getProjectInfo'
+              }
+            }
+          });
+  
+          // Notify extension and iframe when loaded, and request project info
+          iframe.addEventListener('load', () => {
+            vscode.postMessage({ type: 'ready' });
+            iframe.contentWindow.postMessage({ type: 'setState', state: 'vscode' }, '*');
+            vscode.postMessage({ type: 'getProjectInfo' }); // Explicitly request project info on load
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  
+    return htmlContent.replace('${SETTINGS}', settingsJson || '{}').replace('${THEME}', theme);
+  }
+
+export async function getWebviewContentFromFile2(
     settingsJson: string,
     context: vscode.ExtensionContext,
     theme: string
