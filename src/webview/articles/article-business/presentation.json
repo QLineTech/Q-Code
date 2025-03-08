@@ -1,0 +1,116 @@
+{
+    "backgroundColor": "#edf2f7",
+    "textColor": "#2d3748",
+    "slides": [
+      {
+        "blocks": [
+          { "type": "h1", "content": "Business Strategies", "transition": "zoomIn", "transitionDuration": "1s" },
+          { "type": "p", "content": "Success in the modern market", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#bee3f8" }
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Markets", "textColor": "#2b6cb0" },
+          { "type": "h2", "content": "Trends", "textColor": "#3182ce" },
+          { "type": "h3", "content": "Growth", "textColor": "#4299e1" },
+          { "type": "h4", "content": "Profit", "textColor": "#63b3ed" },
+          { "type": "h5", "content": "Risks", "textColor": "#90cdf4" },
+          { "type": "h6", "content": "Plans", "textColor": "#bee3f8" }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "p", "content": "Entrepreneurship drives economic growth.", "textColor": "#9b2c2c" }
+        ],
+        "background": { "type": "color", "value": "#fed7d7" }
+      },
+      { "blocks": [{ "type": "image", "src": "images/stock-chart.jpg", "transition": "fadeIn", "transitionDuration": "0.5s" }] },
+      { "blocks": [{ "type": "video", "src": "videos/business-talk.mp4", "transition": "slideInUp", "transitionDuration": "0.7s" }] },
+      {
+        "blocks": [
+          { "type": "code", "content": "let profit = revenue - cost;", "language": "javascript", "transition": "fadeInLeft" }
+        ],
+        "background": { "type": "color", "value": "#4a5568" },
+        "textColor": "#ffffff"
+      },
+      {
+        "blocks": [
+          { "type": "markdown", "content": "# SWOT\n- Strengths\n- **Weaknesses**\n- Opportunities", "transition": "fadeInUp" }
+        ]
+      },
+      { "blocks": [{ "type": "ul", "items": ["Retail", "Tech", "Service"], "transition": "bounceIn", "textColor": "#744210" }] },
+      { "blocks": [{ "type": "ol", "items": ["Plan", "Fund", "Launch"], "transition": "fadeInRight" }] },
+      {
+        "blocks": [
+          { "type": "blockquote", "content": "\"Innovate or perish.\" - CEO", "textColor": "#2c5282" }
+        ],
+        "background": { "type": "color", "value": "#ebf8ff" }
+      },
+      { "blocks": [{ "type": "iframe", "src": "https://www.bloomberg.com", "width": "800", "height": "600", "transition": "zoomIn" }] },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/briefcase.jpg", "position": { "top": "50px", "right": "50px" }, "transition": "fadeInRight" },
+          { "type": "p", "content": "Business asset.", "position": { "bottom": "20px", "left": "20px" }, "transition": "fadeInUp", "transitionOrder": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Dynamic Business", "transition": "bounceInDown", "transitionDuration": "1s", "transitionOrder": 0 },
+          { "type": "p", "content": "Grow.", "transition": "fadeInLeft", "transitionDuration": "0.8s", "transitionOrder": 1 },
+          { "type": "p", "content": "Scale.", "transition": "fadeInRight", "transitionDuration": "0.8s", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Corporate Blue", "textColor": "#ffffff" }],
+        "background": { "type": "color", "value": "#2b6cb0" }
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Office", "textColor": "#ffffff" }],
+        "background": { "type": "image", "value": "images/office-bg.jpg" }
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Strategy", "transition": "zoomIn" },
+          { "type": "p", "content": "Plan for success.", "transition": "fadeInUp", "transitionOrder": 1 },
+          { "type": "image", "src": "images/graph.jpg", "transition": "fadeInRight", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "vertical_slides": [
+          {
+            "blocks": [
+              { "type": "h3", "content": "Tech", "transition": "slideInLeft" },
+              { "type": "p", "content": "High growth." }
+            ]
+          },
+          {
+            "blocks": [
+              { "type": "h3", "content": "Retail", "transition": "slideInRight" },
+              { "type": "p", "content": "Stable demand." }
+            ]
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "code", "content": "function crm() {}", "language": "javascript", "position": { "left": "20px", "top": "20px" } },
+          { "type": "p", "content": "Customer management.", "position": { "right": "20px", "bottom": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/tool1.jpg", "position": { "top": "20px", "left": "20px" } },
+          { "type": "image", "src": "images/tool2.jpg", "position": { "top": "20px", "right": "20px" } },
+          { "type": "image", "src": "images/tool3.jpg", "position": { "bottom": "20px", "left": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Grow Now", "transition": "zoomIn" },
+          { "type": "p", "content": "Contact us.", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#bee3f8" }
+      }
+    ]
+  }

@@ -1,0 +1,116 @@
+{
+    "backgroundColor": "#f7fafc",
+    "textColor": "#2d3748",
+    "slides": [
+      {
+        "blocks": [
+          { "type": "h1", "content": "Entertainment World", "transition": "zoomIn", "transitionDuration": "1s" },
+          { "type": "p", "content": "Fun for everyone", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#fed7e2" }
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Movies", "textColor": "#9b2c2c" },
+          { "type": "h2", "content": "Music", "textColor": "#c53030" },
+          { "type": "h3", "content": "Games", "textColor": "#e53e3e" },
+          { "type": "h4", "content": "TV", "textColor": "#f56565" },
+          { "type": "h5", "content": "Theater", "textColor": "#fc8181" },
+          { "type": "h6", "content": "Sports", "textColor": "#feb2b2" }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "p", "content": "Streaming services bring entertainment home.", "textColor": "#6b46c1" }
+        ],
+        "background": { "type": "color", "value": "#e9d8fd" }
+      },
+      { "blocks": [{ "type": "image", "src": "images/movie-poster.jpg", "transition": "fadeIn", "transitionDuration": "0.5s" }] },
+      { "blocks": [{ "type": "video", "src": "videos/concert.mp4", "transition": "slideInUp", "transitionDuration": "0.7s" }] },
+      {
+        "blocks": [
+          { "type": "code", "content": "let game = 'win';\nconsole.log(game);", "language": "javascript", "transition": "fadeInLeft" }
+        ],
+        "background": { "type": "color", "value": "#4a5568" },
+        "textColor": "#ffffff"
+      },
+      {
+        "blocks": [
+          { "type": "markdown", "content": "# Trends\n- Streaming\n- **VR**\n- Concerts", "transition": "fadeInUp" }
+        ]
+      },
+      { "blocks": [{ "type": "ul", "items": ["Netflix", "Spotify", "Twitch"], "transition": "bounceIn", "textColor": "#744210" }] },
+      { "blocks": [{ "type": "ol", "items": ["Script", "Film", "Release"], "transition": "fadeInRight" }] },
+      {
+        "blocks": [
+          { "type": "blockquote", "content": "\"Art inspires.\" - Star", "textColor": "#9b2c2c" }
+        ],
+        "background": { "type": "color", "value": "#fed7d7" }
+      },
+      { "blocks": [{ "type": "iframe", "src": "https://www.imdb.com", "width": "800", "height": "600", "transition": "zoomIn" }] },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/popcorn.jpg", "position": { "top": "50px", "right": "50px" }, "transition": "fadeInRight" },
+          { "type": "p", "content": "Movie night.", "position": { "bottom": "20px", "left": "20px" }, "transition": "fadeInUp", "transitionOrder": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Showtime", "transition": "bounceInDown", "transitionDuration": "1s", "transitionOrder": 0 },
+          { "type": "p", "content": "Lights.", "transition": "fadeInLeft", "transitionDuration": "0.8s", "transitionOrder": 1 },
+          { "type": "p", "content": "Action.", "transition": "fadeInRight", "transitionDuration": "0.8s", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Theater Red", "textColor": "#ffffff" }],
+        "background": { "type": "color", "value": "#c53030" }
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Stage", "textColor": "#ffffff" }],
+        "background": { "type": "image", "value": "images/stage-bg.jpg" }
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Fun", "transition": "zoomIn" },
+          { "type": "p", "content": "Enjoyment awaits.", "transition": "fadeInUp", "transitionOrder": 1 },
+          { "type": "image", "src": "images/controller.jpg", "transition": "fadeInRight", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "vertical_slides": [
+          {
+            "blocks": [
+              { "type": "h3", "content": "Action", "transition": "slideInLeft" },
+              { "type": "p", "content": "Thrilling plots." }
+            ]
+          },
+          {
+            "blocks": [
+              { "type": "h3", "content": "Comedy", "transition": "slideInRight" },
+              { "type": "p", "content": "Laugh out loud." }
+            ]
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "code", "content": "function play() {}", "language": "javascript", "position": { "left": "20px", "top": "20px" } },
+          { "type": "p", "content": "Media player.", "position": { "right": "20px", "bottom": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/ent1.jpg", "position": { "top": "20px", "left": "20px" } },
+          { "type": "image", "src": "images/ent2.jpg", "position": { "top": "20px", "right": "20px" } },
+          { "type": "image", "src": "images/ent3.jpg", "position": { "bottom": "20px", "left": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Enjoy", "transition": "zoomIn" },
+          { "type": "p", "content": "Stay entertained.", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#fed7e2" }
+      }
+    ]
+  }

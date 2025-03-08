@@ -1,0 +1,152 @@
+[
+    {
+      "provider": "Anthropic",
+      "modelName": "Claude 3 Haiku",
+      "baseURL": "https://api.anthropic.com",
+      "temperatureRange": [0, 1],
+      "maxTokens": 2048,
+      "supportsVision": false,
+      "supportsMotion": false,
+      "supportsFunctions": true,
+      "supportsImageGeneration": false,
+      "multilingual": true,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "depends on plan",
+        "inputTokensPerMinute": "depends on plan",
+        "outputTokensPerMinute": "depends on plan"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": 0.25,
+        "outputCostPerMillionTokens": 0.25,
+        "currency": "USD"
+      },
+      "maxOutput": 2048,
+      "trainingDataCutoff": "mid-2023"
+    },
+    {
+      "provider": "xAI",
+      "modelName": "Grok-1",
+      "baseURL": "https://api.x.ai",
+      "temperatureRange": [0, 2],
+      "maxTokens": 8192,
+      "supportsVision": false,
+      "supportsMotion": false,
+      "supportsFunctions": false,
+      "supportsImageGeneration": false,
+      "multilingual": false,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "unknown",
+        "inputTokensPerMinute": "unknown",
+        "outputTokensPerMinute": "unknown"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": "unknown",
+        "outputCostPerMillionTokens": "unknown",
+        "currency": "USD"
+      },
+      "maxOutput": 8192,
+      "trainingDataCutoff": "unknown"
+    },
+    {
+      "provider": "GroqCloud",
+      "modelName": "Groq-1",
+      "baseURL": "https://api.groq.com",
+      "temperatureRange": [0, 1],
+      "maxTokens": 4096,
+      "supportsVision": false,
+      "supportsMotion": false,
+      "supportsFunctions": false,
+      "supportsImageGeneration": false,
+      "multilingual": false,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "unknown",
+        "inputTokensPerMinute": "unknown",
+        "outputTokensPerMinute": "unknown"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": 100,
+        "outputCostPerMillionTokens": 100,
+        "currency": "USD"
+      },
+      "maxOutput": 4096,
+      "trainingDataCutoff": "unknown"
+    },
+    {
+      "provider": "Ollama",
+      "modelName": "Llama2-70b",
+      "baseURL": "http://localhost:11434",
+      "temperatureRange": [0, 1],
+      "maxTokens": 4096,
+      "supportsVision": false,
+      "supportsMotion": false,
+      "supportsFunctions": false,
+      "supportsImageGeneration": false,
+      "multilingual": true,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "unlimited",
+        "inputTokensPerMinute": "unlimited",
+        "outputTokensPerMinute": "unlimited"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": 0,
+        "outputCostPerMillionTokens": 0,
+        "currency": "N/A"
+      },
+      "maxOutput": 4096,
+      "trainingDataCutoff": "unknown"
+    },
+    {
+      "provider": "Gemini",
+      "modelName": "Gemini Pro",
+      "baseURL": "https://api.gemini.google.ai",
+      "temperatureRange": [0, 1],
+      "maxTokens": 32000,
+      "supportsVision": true,
+      "supportsMotion": false,
+      "supportsFunctions": false,
+      "supportsImageGeneration": false,
+      "multilingual": true,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "depends on plan",
+        "inputTokensPerMinute": "depends on plan",
+        "outputTokensPerMinute": "depends on plan"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": 0.4,
+        "outputCostPerMillionTokens": 8,
+        "currency": "USD"
+      },
+      "maxOutput": 32000,
+      "trainingDataCutoff": "unknown"
+    },
+    {
+      "provider": "OpenAI",
+      "modelName": "GPT-4",
+      "baseURL": "https://api.openai.com/v1",
+      "temperatureRange": [0, 2],
+      "maxTokens": 8192,
+      "supportsVision": true,
+      "supportsMotion": false,
+      "supportsFunctions": true,
+      "supportsImageGeneration": true,
+      "multilingual": true,
+      "thinking": true,
+      "rateLimits": {
+        "requestsPerMinute": "depends on plan",
+        "inputTokensPerMinute": "depends on plan",
+        "outputTokensPerMinute": "depends on plan"
+      },
+      "pricing": {
+        "inputCostPerMillionTokens": 10,
+        "outputCostPerMillionTokens": 30,
+        "currency": "USD"
+      },
+      "maxOutput": 8192,
+      "trainingDataCutoff": "unknown"
+    }
+  ]

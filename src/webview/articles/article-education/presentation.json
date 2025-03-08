@@ -1,0 +1,116 @@
+{
+    "backgroundColor": "#f7fafc",
+    "textColor": "#2d3748",
+    "slides": [
+      {
+        "blocks": [
+          { "type": "h1", "content": "Learning Today", "transition": "zoomIn", "transitionDuration": "1s" },
+          { "type": "p", "content": "Education in the digital age", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#bee3f8" }
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Math", "textColor": "#2b6cb0" },
+          { "type": "h2", "content": "Science", "textColor": "#3182ce" },
+          { "type": "h3", "content": "History", "textColor": "#4299e1" },
+          { "type": "h4", "content": "Art", "textColor": "#63b3ed" },
+          { "type": "h5", "content": "Music", "textColor": "#90cdf4" },
+          { "type": "h6", "content": "Sports", "textColor": "#bee3f8" }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "p", "content": "Online learning opens new doors for students.", "textColor": "#2c5282" }
+        ],
+        "background": { "type": "color", "value": "#ebf8ff" }
+      },
+      { "blocks": [{ "type": "image", "src": "images/classroom.jpg", "transition": "fadeIn", "transitionDuration": "0.5s" }] },
+      { "blocks": [{ "type": "video", "src": "videos/lecture.mp4", "transition": "slideInUp", "transitionDuration": "0.7s" }] },
+      {
+        "blocks": [
+          { "type": "code", "content": "let score = 95;\nif (score > 90) console.log('A');", "language": "javascript", "transition": "fadeInLeft" }
+        ],
+        "background": { "type": "color", "value": "#4a5568" },
+        "textColor": "#ffffff"
+      },
+      {
+        "blocks": [
+          { "type": "markdown", "content": "# Study Tips\n- Focus\n- **Practice**\n- Review", "transition": "fadeInUp" }
+        ]
+      },
+      { "blocks": [{ "type": "ul", "items": ["Zoom", "Google Classroom", "Khan Academy"], "transition": "bounceIn", "textColor": "#744210" }] },
+      { "blocks": [{ "type": "ol", "items": ["Enroll", "Attend", "Submit"], "transition": "fadeInRight" }] },
+      {
+        "blocks": [
+          { "type": "blockquote", "content": "\"Education is power.\" - Teacher", "textColor": "#9b2c2c" }
+        ],
+        "background": { "type": "color", "value": "#fed7d7" }
+      },
+      { "blocks": [{ "type": "iframe", "src": "https://www.khanacademy.org", "width": "800", "height": "600", "transition": "zoomIn" }] },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/diploma.jpg", "position": { "top": "50px", "right": "50px" }, "transition": "fadeInRight" },
+          { "type": "p", "content": "Achievement.", "position": { "bottom": "20px", "left": "20px" }, "transition": "fadeInUp", "transitionOrder": 1 }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Learn with Style", "transition": "bounceInDown", "transitionDuration": "1s", "transitionOrder": 0 },
+          { "type": "p", "content": "Step 1.", "transition": "fadeInLeft", "transitionDuration": "0.8s", "transitionOrder": 1 },
+          { "type": "p", "content": "Step 2.", "transition": "fadeInRight", "transitionDuration": "0.8s", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Chalkboard", "textColor": "#ffffff" }],
+        "background": { "type": "color", "value": "#2f855a" }
+      },
+      {
+        "blocks": [{ "type": "h3", "content": "Library", "textColor": "#ffffff" }],
+        "background": { "type": "image", "value": "images/library-bg.jpg" }
+      },
+      {
+        "blocks": [
+          { "type": "h2", "content": "Knowledge", "transition": "zoomIn" },
+          { "type": "p", "content": "Key to success.", "transition": "fadeInUp", "transitionOrder": 1 },
+          { "type": "image", "src": "images/book.jpg", "transition": "fadeInRight", "transitionOrder": 2 }
+        ]
+      },
+      {
+        "vertical_slides": [
+          {
+            "blocks": [
+              { "type": "h3", "content": "Visual", "transition": "slideInLeft" },
+              { "type": "p", "content": "Learn by seeing." }
+            ]
+          },
+          {
+            "blocks": [
+              { "type": "h3", "content": "Auditory", "transition": "slideInRight" },
+              { "type": "p", "content": "Learn by hearing." }
+            ]
+          }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "code", "content": "function quiz() {}", "language": "javascript", "position": { "left": "20px", "top": "20px" } },
+          { "type": "p", "content": "Quiz code.", "position": { "right": "20px", "bottom": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "image", "src": "images/book1.jpg", "position": { "top": "20px", "left": "20px" } },
+          { "type": "image", "src": "images/book2.jpg", "position": { "top": "20px", "right": "20px" } },
+          { "type": "image", "src": "images/book3.jpg", "position": { "bottom": "20px", "left": "20px" } }
+        ]
+      },
+      {
+        "blocks": [
+          { "type": "h1", "content": "Educate Yourself", "transition": "zoomIn" },
+          { "type": "p", "content": "Never stop learning.", "transition": "fadeInUp", "transitionOrder": 1 }
+        ],
+        "background": { "type": "color", "value": "#bee3f8" }
+      }
+    ]
+  }
